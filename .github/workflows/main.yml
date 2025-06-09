@@ -28,7 +28,7 @@ jobs:
     # Aquesta única comanda s'encarrega de compilar el teu codi React i empaquetar-lo amb Electron.
     # Els paràmetres --win --x64 asseguren que es construeixi per a Windows 64-bit.
     - name: Compilació i empaquetat de l'aplicació
-      run: npm run build:electron -- --win --x64
+      run: npm run build:electron -- --win --x64 --publish never
 
     # 5. Puja l'arxiu .exe que es genera a la carpeta 'dist' com a resultat
     - name: Pujada de l'executable com a artefacte
