@@ -1,0 +1,33 @@
+name: Compilar per a Linux (AppImage)
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    # Utilitzem un executor d'Ubuntu, l'estàndard per a Linux a GitHub
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 1. Checkout del codi
+      uses: actions/checkout@v4
+
+    - name: 2. Configuració de Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: 3. Instal·lació de dependències del projecte
+      run: npm install
+
+    - name: 4. Compilació i empaquetat de l'aplicació per a Linux
+      run: npm run build:electron -- --linux --x64 --publish never
+
+    - name: 5. Pujada de l'AppImage com a artefacte
+      uses: actions/upload-artifact@v4
+      with:
+        name: GestorEsdeveniments-Linux-AppImage
+        # La sortida per a Linux serà un arxiu .AppImage
+        path: dist/*.AppImage

@@ -60,11 +60,9 @@
       "target": "dmg",
       "icon": "public/icon.png",
       "minimumSystemVersion": "12.0",
-      "universal": {
-        "allowList": [
-          "LICENSE"
-        ]
-      }
+      "singleArchFiles": [
+        "**/LICENSE"
+      ]
     },
     "linux": {
       "target": [
