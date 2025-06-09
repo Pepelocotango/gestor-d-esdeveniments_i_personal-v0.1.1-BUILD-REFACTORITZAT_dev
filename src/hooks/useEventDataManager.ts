@@ -125,9 +125,8 @@ export const useEventDataManager = (): EventDataManagerReturn => {
     return { success: true };
   }, [eventFrames, markUnsaved]);
 
-  const updateAssignment = useCallback((updatedAssignment: Assignment): AssignmentOperationResult => {
+  const updateAssignment = useCallback((updatedAssignment: Assignment, context?: { changedDate?: string }): AssignmentOperationResult => {
     let finalAssignment = { ...updatedAssignment };
-
     if (finalAssignment.status === AssignmentStatus.Mixed) {
       if (!finalAssignment.dailyStatuses) finalAssignment.dailyStatuses = {};
     } else {
@@ -172,7 +171,15 @@ export const useEventDataManager = (): EventDataManagerReturn => {
     
     let warningMessage: string | null = null;
     if (finalAssignment.status !== AssignmentStatus.No) {
-        warningMessage = checkDateRange(new Date(finalAssignment.startDate), new Date(finalAssignment.endDate), finalAssignment.dailyStatuses || finalAssignment.status);
+        // Lògica de conflicte depenent del context
+        if (context?.changedDate) {
+            // Si es canvia un sol dia, només validem aquest dia
+            const specificDate = new Date(context.changedDate);
+            warningMessage = checkDateRange(specificDate, specificDate, finalAssignment.dailyStatuses || finalAssignment.status);
+        } else {
+            // Si no hi ha context, validem el rang sencer (comportament anterior)
+            warningMessage = checkDateRange(new Date(finalAssignment.startDate), new Date(finalAssignment.endDate), finalAssignment.dailyStatuses || finalAssignment.status);
+        }
     }
     
     setEventFrames(prev => prev.map(ef_loc =>
@@ -183,7 +190,6 @@ export const useEventDataManager = (): EventDataManagerReturn => {
     markUnsaved();
     return { success: true, warningMessage: warningMessage || undefined };
   }, [eventFrames, markUnsaved]);
-
 
   const deleteAssignment = useCallback((eventFrameId: string, assignmentId: string) => {
     setEventFrames(prev => prev.map(ef =>

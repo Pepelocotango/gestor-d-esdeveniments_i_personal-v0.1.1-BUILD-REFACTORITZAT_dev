@@ -101,9 +101,8 @@ export interface EventDataConteImplicits {
   deletePersonGroup: (personGroupId: string) => void;
   getPersonGroupById: (personGroupId: string) => PersonGroup | undefined;
   addAssignment: (eventFrameId: string, assignment: Omit<Assignment, 'id' | 'eventFrameId' | 'dailyStatuses' | 'isMixedStatus'>) => { success: boolean; message?: string; warningMessage?: string };
-  updateAssignment: (assignment: Assignment) => { success: boolean; message?: string; warningMessage?: string };
-  deleteAssignment: (eventFrameId: string, assignmentId: string) => void;
-  getAssignmentById: (eventFrameId: string, assignmentId: string) => Assignment | undefined;
+  updateAssignment: (assignment: Assignment, context?: { changedDate?: string }) => { success: boolean; message?: string; warningMessage?: string };
+  deleteAssignment: (eventFrameId: string, assignmentId: string) => void;  getAssignmentById: (eventFrameId: string, assignmentId: string) => Assignment | undefined;
   loadData: (data: AppData | null) => void;
   exportData: () => AppData;
   setPersonnelComplete: (eventFrameId: string, complete: boolean) => void;

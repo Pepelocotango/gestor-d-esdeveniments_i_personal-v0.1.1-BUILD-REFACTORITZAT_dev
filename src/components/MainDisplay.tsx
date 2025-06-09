@@ -108,9 +108,10 @@ const MainDisplay: React.FC<MainDisplayProps> = ({
     const person = getPersonGroupById(assign.personGroupId);
     const newDailyStatuses = assign.dailyStatuses ? { ...assign.dailyStatuses } : 
         Array.from({ length: (new Date(assign.endDate).getTime() - new Date(assign.startDate).getTime()) / (1000 * 3600 * 24) + 1 }, (_, i) => addDaysISO(assign.startDate, i))
-        .reduce((acc, date) => { acc[date] = assign.status; return acc; }, {} as { [date: string]: AssignmentStatus });
-    newDailyStatuses[dateYYYYMMDD] = newDailyStatus;
-    const result = updateAssignment({ ...assign, status: AssignmentStatus.Mixed, dailyStatuses: newDailyStatuses });
+       .reduce((acc, date) => { acc[date] = assign.status; return acc; }, {} as { [date: string]: AssignmentStatus });
+        newDailyStatuses[dateYYYYMMDD] = newDailyStatus;
+    const newAssignmentData = { ...assign, status: AssignmentStatus.Mixed, dailyStatuses: newDailyStatuses };
+    const result = updateAssignment(newAssignmentData, { changedDate: dateYYYYMMDD });
     if (result.success) {
       setToastMessage(`Estat del dia actualitzat a ${newDailyStatus}`, 'success');
       if (result.warningMessage && newDailyStatus !== AssignmentStatus.No) {
