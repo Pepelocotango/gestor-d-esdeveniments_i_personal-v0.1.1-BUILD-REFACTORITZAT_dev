@@ -5,7 +5,8 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
+  
+    runs-on: ubuntu-22.04
 
     steps:
       - name: 1. Checkout del codi
@@ -17,13 +18,12 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - name: 3. Instal·lació de dependències del sistema per a Ubuntu 20.04
+      - name: 3. Instal·lació de dependències del sistema per a Ubuntu 22.04
         run: |
           sudo apt-get update
-          # AQUESTA ÉS LA LLISTA ORIGINAL I CORRECTA PER A UBUNTU 20.04
-          # Inclou el famós 'libgconf-2-4' que només existeix en aquesta versió.
+          # AQUESTA ÉS LA LLISTA CORRECTA I VERIFICADA PER A UBUNTU 22.04
           sudo apt-get install -y --no-install-recommends \
-            libgconf-2-4 \
+            libfuse2 \
             libgtk-3-dev \
             libnss3 \
             libasound2 \
