@@ -27,4 +27,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: GestorEsdeveniments-macOS-x64
-          path: dist/*.{dmg,zip}
+          path: dist/
