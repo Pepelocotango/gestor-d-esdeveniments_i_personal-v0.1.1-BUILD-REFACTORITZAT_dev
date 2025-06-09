@@ -18,11 +18,12 @@ jobs:
         # Afegim caching per a npm
         cache: 'npm'
 
-    - name: 3. Instal·lació de dependències del sistema per a Electron Builder
+    - name: 3.5. Instal·lació de dependències del sistema per a Ubuntu 24.04
       run: |
         sudo apt-get update
-        sudo apt-get install -y --no-install-recommends libfuse2 libgtk-3-dev libnss3 libasound2 libxtst-dev libxss1 libappindicator3-1
-
+        # L'únic canvi és substituir libappindicator3-1 per libayatana-appindicator3-1
+        sudo apt-get install -y --no-install-recommends libfuse2 libgtk-3-dev libnss3 libasound2 libxtst-dev libxss1 libayatana-appindicator3-1
+        
     - name: 4. Instal·lació de dependències del projecte (npm)
       # Només s'executarà una instal·lació completa si el cache no existeix o package-lock.json ha canviat
       run: npm install
