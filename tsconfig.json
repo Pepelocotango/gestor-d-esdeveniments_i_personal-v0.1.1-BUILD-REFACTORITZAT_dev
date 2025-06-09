@@ -22,9 +22,22 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
 
-
     "paths": {
-      "@/*" :  ["./src*"]
+      "@/*" :  ["./src/*"]
     }
-  }
+  },
+  // LÍNIES AFEGIDES:
+  "include": [
+    "src",
+    "vite.config.ts",
+    "tailwind.config.cjs",
+    "postcss.config.cjs",
+    "main.cjs",
+    "preload.cjs"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "chekpoints" // La clau: ignorem explícitament les còpies de seguretat
+  ]
 }
