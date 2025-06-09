@@ -10,32 +10,34 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - name: 1. Checkout del codi (excloent la carpeta screenshots)
-      uses: actions/checkout@v4
-      with:
-        sparse-checkout: |
-          gestor-d-esdeveniments_i_personal-v0.1.1-BUILD-REFACTORITZAT_dev
-          !gestor-d-esdeveniments_i_personal-v0.1.1-BUILD-REFACTORITZAT_dev/screenshots
-        sparse-checkout-cone-mode: false
+    # PASSA CLAU: Soluciona l'error "Filename too long" permetent rutes llargues a Windows.
+    - name: 1. Activar suport per a rutes llargues a Git
+      run: git config --system core.longpaths true
 
-    - name: 2. Configuració de Python
+    # Fa una descàrrega estàndard del codi.
+    - name: 2. Checkout del codi
+      uses: actions/checkout@v4
+
+    - name: 3. Configuració de Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.x'
 
-    - name: 3. Instal·lació de dependències
+    # Indiquem la carpeta correcta on es troben els arxius `requirements.txt` i `main.py`.
+    - name: 4. Instal·lació de dependències
       working-directory: ./gestor-d-esdeveniments_i_personal-v0.1.1-BUILD-REFACTORITZAT_dev
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install pyinstaller
 
-    - name: 4. Compilació de l'aplicació amb PyInstaller
+    - name: 5. Compilació de l'aplicació amb PyInstaller
       working-directory: ./gestor-d-esdeveniments_i_personal-v0.1.1-BUILD-REFACTORITZAT_dev
       run: |
         pyinstaller --onefile --windowed --name "GestorEsdeveniments" main.py
 
-    - name: 5. Pujada de l'executable com a artefacte
+    # La ruta a l'arxiu generat ha d'incloure la carpeta del projecte.
+    - name: 6. Pujada de l'executable com a artefacte
       uses: actions/upload-artifact@v4
       with:
         name: GestorEsdeveniments-Windows-Portable
