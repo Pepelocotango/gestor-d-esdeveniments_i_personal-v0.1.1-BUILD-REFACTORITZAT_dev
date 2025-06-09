@@ -52,7 +52,8 @@ const AssignmentCard: React.FC<AssignmentCardProps> = ({
   const cardClass = `assignment-card ${statusCardClasses[assignment.status] || ''}`;
 
   const toggleDailyView = () => {
-    onToggleDailyView(isDailyViewExpanded ? '' : assignment.id);
+    // CANVI CLAU: Ara sempre passem l'ID. El pare s'encarrega de la lògica de toggle.
+    onToggleDailyView(assignment.id);
   };
 
   return (
