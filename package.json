@@ -54,7 +54,7 @@
       "dist/**/*",
       "main.cjs",
       "preload.cjs",
-      "LICENSE"
+      "LICENSE",
     ],
     "linux": {
       "target": [
