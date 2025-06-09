@@ -1,0 +1,135 @@
+{
+  "peopleGroups": [
+    {
+      "id": "person-1",
+      "name": "Joan Soler",
+      "role": "Tècnic de So Principal",
+      "tel1": "600111222",
+      "tel2": "931112233",
+      "email": "joan.soler@tecnicsevent.com",
+      "web": "https://www.joansoler.cat",
+      "notes": "Expert en consoles digitals Yamaha. Requereix cafè."
+    },
+    {
+      "id": "person-2",
+      "name": "Maria Puig",
+      "role": "Coordinadora de Logística",
+      "tel1": "600333444",
+      "tel2": "",
+      "email": "maria.puig@logisticafest.es",
+      "web": "",
+      "notes": "Responsable de voluntaris i acreditacions."
+    },
+    {
+      "id": "person-3",
+      "name": "Carles Vidal",
+      "role": "Ajudant de Producció",
+      "tel1": "600555666",
+      "tel2": "",
+      "email": "carles.vidal@email.com",
+      "web": "",
+      "notes": "Estudiant en pràctiques. Molt proactiu."
+    },
+    {
+      "id": "person-4",
+      "name": "Equip de Muntatge Pro",
+      "role": "Proveïdor Extern",
+      "tel1": "937891234",
+      "tel2": "600777888",
+      "email": "contacte@muntatgepro.com",
+      "web": "https://muntatgepro.com",
+      "notes": "Especialistes en estructures i escenaris. Cal avisar amb 2 setmanes d'antelació."
+    }
+  ],
+  "eventFrames": [
+    {
+      "id": "event-1",
+      "name": "Festival de Jazz de Terrassa",
+      "place": "Parc Vallparadís, Terrassa",
+      "startDate": "2025-07-10",
+      "endDate": "2025-07-13",
+      "generalNotes": "Edició 43 del festival. Cal revisar les necessitats tècniques d'il·luminació i so per a la tarima principal. Contactar amb l'ajuntament per permisos.",
+      "personnelComplete": false
+    },
+    {
+      "id": "event-2",
+      "name": "Presentació Producte a Fira BCN",
+      "place": "Fira de Barcelona, Montjuïc",
+      "startDate": "2025-08-05",
+      "endDate": "2025-08-05",
+      "generalNotes": "Esdeveniment corporatiu per a TechInnovate Inc. Només matí. Muntatge a les 8h, esdeveniment de 10h a 14h.",
+      "personnelComplete": true
+    },
+    {
+      "id": "event-3",
+      "name": "Reunió Planificació Anual",
+      "place": "Oficina Central",
+      "startDate": "2025-09-01",
+      "endDate": "2025-09-01",
+      "generalNotes": "Reunió per definir els objectius i pressupostos del pròxim any fiscal. Sala de juntes gran.",
+      "personnelComplete": false
+    }
+  ],
+  "assignments": [
+    {
+      "id": "assign-1",
+      "personGroupId": "person-1",
+      "eventFrameId": "event-1",
+      "startDate": "2025-07-10",
+      "endDate": "2025-07-13",
+      "status": "Mixt",
+      "notes": "Responsable de so els dos primers dies.",
+      "dailyStatuses": {
+        "2025-07-10": "Sí",
+        "2025-07-11": "Sí",
+        "2025-07-12": "Pendent",
+        "2025-07-13": "No"
+      }
+    },
+    {
+      "id": "assign-2",
+      "personGroupId": "person-2",
+      "eventFrameId": "event-1",
+      "startDate": "2025-07-12",
+      "endDate": "2025-07-13",
+      "status": "Sí",
+      "notes": "Coordinació de voluntaris el cap de setmana."
+    },
+    {
+      "id": "assign-3",
+      "personGroupId": "person-3",
+      "eventFrameId": "event-1",
+      "startDate": "2025-07-10",
+      "endDate": "2025-07-13",
+      "status": "No",
+      "notes": "Té exàmens finals durant aquestes dates."
+    },
+    {
+      "id": "assign-4",
+      "personGroupId": "person-4",
+      "eventFrameId": "event-2",
+      "startDate": "2025-08-05",
+      "endDate": "2025-08-05",
+      "status": "Pendent",
+      "notes": "Esperant confirmació del pressupost per part del proveïdor."
+    },
+    {
+      "id": "assign-5",
+      "personGroupId": "person-1",
+      "eventFrameId": "event-2",
+      "startDate": "2025-08-05",
+      "endDate": "2025-08-05",
+      "status": "Sí",
+      "notes": "Supervisió tècnica del muntatge audiovisual."
+    },
+    {
+      "id": "assign-6",
+      "personGroupId": "person-2",
+      "eventFrameId": "event-3",
+      "startDate": "2025-09-01",
+      "endDate": "2025-09-01",
+      "status": "Sí",
+      "notes": ""
+    }
+  ]
+}
