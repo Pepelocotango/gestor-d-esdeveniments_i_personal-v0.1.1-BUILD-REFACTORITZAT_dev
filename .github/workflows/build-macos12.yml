@@ -1,0 +1,37 @@
+name: Compilar per a macOS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    # PAS 1: Canviem el sistema operatiu de l'executor
+    runs-on: macos-latest
+
+    steps:
+    - name: 1. Checkout del codi
+      uses: actions/checkout@v4
+
+    - name: 2. Configuració de Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: 3. Instal·lació de dependències del projecte
+      run: npm install
+
+    # PAS 2: Canviem la comanda de compilació per a macOS
+    # L'opció --universal crea un executable compatible tant amb Macs antics (Intel)
+    # com amb els nous (Apple Silicon M1/M2/M3).
+    - name: 4. Compilació i empaquetat de l'aplicació per a macOS
+      run: npm run build:electron -- --mac --universal --publish never
+
+    # PAS 3: Canviem el nom i la ruta de l'artefacte
+    # Per a macOS, normalment es genera un arxiu .dmg
+    - name: 5. Pujada de l'instal·lador (.dmg) com a artefacte
+      uses: actions/upload-artifact@v4
+      with:
+        name: GestorEsdeveniments-macOS-Installer
+        path: dist/*.dmg

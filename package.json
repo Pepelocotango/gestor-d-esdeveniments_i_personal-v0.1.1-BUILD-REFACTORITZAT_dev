@@ -55,6 +55,12 @@
       "main.cjs",
       "preload.cjs"
     ],
+    "mac": {
+      "category": "public.app-category.office",
+      "target": "dmg",
+      "icon": "public/icon.png",
+      "minimumSystemVersion": "12.0" 
+    },
     "linux": {
       "target": [
         "AppImage"
