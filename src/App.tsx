@@ -37,7 +37,7 @@ const App: React.FC = () => {
   const eventDataManagerHookResult = useEventDataManager();
   const { loadData: loadDataFromManager, exportData: exportDataFromManager, setHasUnsavedChanges, hasUnsavedChanges } = eventDataManagerHookResult;
 
-  const [theme, setTheme] = useState(() => localStorage.getItem(THEME_STORAGE_KEY) || 'light');
+  const [theme, setTheme] = useState(() => localStorage.getItem(THEME_STORAGE_KEY) || 'dark');
   const [modalState, setModalState] = useState<ModalState>({ type: null, data: null });
   const [toastState, setToastState] = useState<ToastState | null>(null);
   const [currentFilterHighlight, setCurrentFilterHighlight] = useState<string>('');
