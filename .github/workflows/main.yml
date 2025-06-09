@@ -12,19 +12,27 @@ jobs:
     steps:
     - name: 1. Checkout del codi
       uses: actions/checkout@v4
+      # Aquesta passa crea una carpeta addicional amb el nom del repositori,
+      # per això cal especificar el working-directory a les passes següents.
+      with:
+        path: gestor-d-esdeveniments_i_personal-v0.1.1-BUILD-REFACTORITZAT_dev
 
     - name: 2. Configuració de Python
       uses: actions/setup-python@v5
       with:
-        python-version: '3.x' # Assegura't que aquesta és la versió de Python correcta
+        python-version: '3.x'
 
     - name: 3. Instal·lació de dependències
+      # Executem les comandes dins de la carpeta del projecte
+      working-directory: ./gestor-d-esdeveniments_i_personal-v0.1.1-BUILD-REFACTORITZAT_dev
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install pyinstaller
 
     - name: 4. Compilació de l'aplicació amb PyInstaller
+      # Ens assegurem de ser a la carpeta correcta per trobar el main.py
+      working-directory: ./gestor-d-esdeveniments_i_personal-v0.1.1-BUILD-REFACTORITZAT_dev
       run: |
         pyinstaller --onefile --windowed --name "GestorEsdeveniments" main.py
 
@@ -32,4 +40,5 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: GestorEsdeveniments-Windows-Portable
-        path: dist/GestorEsdeveniments.exe
+        # La ruta a l'artefacte ara ha d'incloure la carpeta del projecte
+        path: gestor-d-esdeveniments_i_personal-v0.1.1-BUILD-REFACTORITZAT_dev/dist/GestorEsdeveniments.exe
