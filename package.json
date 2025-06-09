@@ -54,6 +54,7 @@
       "dist/**/*",
       "main.cjs",
       "preload.cjs"
+      "LICENSE"
     ],
     "linux": {
       "target": [
@@ -61,6 +62,20 @@
       ],
       "category": "Office",
       "icon": "public/icon.png"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "public/icon.ico"
+    },
+
+    "mac": {
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "category": "public.app-category.productivity",
+      "icon": "public/icon.icns",
+      "identity": null
     }
   }
 }
