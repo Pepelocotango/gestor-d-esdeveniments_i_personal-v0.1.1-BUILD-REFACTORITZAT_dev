@@ -1,5 +1,5 @@
 {
-   "name": "gestor-esdeveniments-personal",
+  "name": "gestor-esdeveniments-personal",
   "productName": "Gestor de Esdeveniments i Personal",
   "version": "0.1.1-dev",
   "description": "Una aplicació per gestionar esdeveniments i personal",
@@ -59,7 +59,12 @@
       "category": "public.app-category.office",
       "target": "dmg",
       "icon": "public/icon.png",
-      "minimumSystemVersion": "12.0" 
+      "minimumSystemVersion": "12.0",
+      "universal": {
+        "allowList": [
+          "LICENSE"
+        ]
+      }
     },
     "linux": {
       "target": [
