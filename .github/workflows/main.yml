@@ -3,19 +3,20 @@ name: Compilar EXE portable per a Windows
 on:
   push:
     branches:
-      - main  # O la branca que vulguis utilitzar per activar la compilació
+      - main # O la branca que vulguis utilitzar per activar la compilació
 
 jobs:
   build:
     runs-on: windows-latest
 
     steps:
-    - name: 1. Checkout del codi
+    - name: 1. Checkout del codi (excloent la carpeta screenshots)
       uses: actions/checkout@v4
-      # Aquesta passa crea una carpeta addicional amb el nom del repositori,
-      # per això cal especificar el working-directory a les passes següents.
       with:
-        path: gestor-d-esdeveniments_i_personal-v0.1.1-BUILD-REFACTORITZAT_dev
+        sparse-checkout: |
+          gestor-d-esdeveniments_i_personal-v0.1.1-BUILD-REFACTORITZAT_dev
+          !gestor-d-esdeveniments_i_personal-v0.1.1-BUILD-REFACTORITZAT_dev/screenshots
+        sparse-checkout-cone-mode: false
 
     - name: 2. Configuració de Python
       uses: actions/setup-python@v5
@@ -23,7 +24,6 @@ jobs:
         python-version: '3.x'
 
     - name: 3. Instal·lació de dependències
-      # Executem les comandes dins de la carpeta del projecte
       working-directory: ./gestor-d-esdeveniments_i_personal-v0.1.1-BUILD-REFACTORITZAT_dev
       run: |
         python -m pip install --upgrade pip
@@ -31,7 +31,6 @@ jobs:
         pip install pyinstaller
 
     - name: 4. Compilació de l'aplicació amb PyInstaller
-      # Ens assegurem de ser a la carpeta correcta per trobar el main.py
       working-directory: ./gestor-d-esdeveniments_i_personal-v0.1.1-BUILD-REFACTORITZAT_dev
       run: |
         pyinstaller --onefile --windowed --name "GestorEsdeveniments" main.py
@@ -40,5 +39,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: GestorEsdeveniments-Windows-Portable
-        # La ruta a l'artefacte ara ha d'incloure la carpeta del projecte
         path: gestor-d-esdeveniments_i_personal-v0.1.1-BUILD-REFACTORITZAT_dev/dist/GestorEsdeveniments.exe
