@@ -1,4 +1,3 @@
-// ruta: src/components/EventFrameCard.tsx
 import { useRef, forwardRef } from 'react';
 import { useEventData } from '../contexts/EventDataContext';
 import { EventFrame, Assignment, AssignmentStatus, ModalType, ModalData } from '../types';
@@ -10,7 +9,7 @@ import AssignmentCard from './AssignmentCard';
 interface EventFrameCardProps {
   eventFrame: EventFrame;
   isExpanded: boolean;
-  expandedDailyViewAssignmentIds: Set<string>; // CANVI: Ara és un Set
+  expandedDailyViewAssignmentIds: Set<string>;
   filters: { person: string; status: AssignmentStatus | ''; };
   onToggleExpand: (id: string) => void;
   onToggleDailyView: (assignmentId: string) => void;
@@ -38,16 +37,21 @@ const EventFrameCard = forwardRef<HTMLDivElement, EventFrameCardProps>(({
     )
     .sort((a, b) => (getPersonGroupById(a.personGroupId)?.name || '').localeCompare(getPersonGroupById(b.personGroupId)?.name || ''));
 
+  // Lògica per determinar la classe del contenidor principal
+  const cardContainerClass = eventFrame.personnelComplete
+    ? 'event-card-complete'
+    : 'bg-white dark:bg-gray-800';
+
   return (
-    <div ref={ref} className="mb-4 rounded-lg shadow-sm overflow-hidden bg-white dark:bg-gray-800" aria-labelledby={`event-frame-title-${eventFrame.id}`}>
+    <div ref={ref} className={`mb-4 rounded-lg shadow-sm overflow-hidden transition-colors duration-300 ${cardContainerClass}`} aria-labelledby={`event-frame-title-${eventFrame.id}`}>
       <div
-        className="p-4 bg-slate-100 dark:bg-slate-800 cursor-pointer border-b-2 border-slate-200 dark:border-slate-700"
+        className="p-4 bg-transparent border-b-2 border-slate-200 dark:border-slate-700 cursor-pointer"
         onClick={(e) => {
           if ((e.target as HTMLElement).closest('button, input, select, a')) {
             skipNextCollapse.current = true;
             return;
           }
-          if (!skipNextCollapse.current) onToggleExpand(eventFrame.id); // CANVI: Passem l'ID
+          if (!skipNextCollapse.current) onToggleExpand(eventFrame.id);
           skipNextCollapse.current = false;
         }}
       >
@@ -90,7 +94,7 @@ const EventFrameCard = forwardRef<HTMLDivElement, EventFrameCardProps>(({
       </div>
 
       {isExpanded && (
-        <div className="p-4 bg-white dark:bg-gray-800">
+        <div className="p-4">
           {eventFrame.generalNotes && (
             <div className="mb-4">
               <h5 className="font-medium">Notes Generals</h5>
