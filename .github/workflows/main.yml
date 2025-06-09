@@ -9,32 +9,41 @@ jobs:
   build:
     runs-on: windows-latest
 
+    # PASSA CLAU 1: Utilitzem 'bash' per a totes les comandes per evitar problemes amb les rutes de Windows
+    defaults:
+      run:
+        shell: bash
+
     steps:
-    - name: 1. Checkout del codi
+    # Activa el suport per a noms llargs, que va ser el problema original
+    - name: 1. Activar suport per a rutes llargues a Git
+      run: git config --system core.longpaths true
+
+    - name: 2. Checkout del codi
       uses: actions/checkout@v4
 
-    # PASSA CLAU: Corregim l'estructura de directoris per evitar errors de ruta
-    - name: 2. Moure els arxius a l'arrel per simplificar les rutes
+    # PASSA CLAU 2: Corregim l'estructura de directoris niada
+    - name: 3. Moure els arxius a l'arrel per simplificar les rutes
       run: |
+        # Movem el contingut de la subcarpeta problemàtica al directori actual
         mv ./gestor-d-esdeveniments_i_personal-v0.1.1-BUILD-REFACTORITZAT_dev/* .
 
-    - name: 3. Configuració de Python
+    - name: 4. Configuració de Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.x'
 
-    - name: 4. Instal·lació de dependències
-      # Ara ja no cal 'working-directory' perquè els arxius estan a l'arrel
+    - name: 5. Instal·lació de dependències
+      # Ara les comandes són simples perquè els arxius estan a l'arrel
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install pyinstaller
 
-    - name: 5. Compilació de l'aplicació amb PyInstaller
-      run: |
-        pyinstaller --onefile --windowed --name "GestorEsdeveniments" main.py
+    - name: 6. Compilació de l'aplicació amb PyInstaller
+      run: pyinstaller --onefile --windowed --name "GestorEsdeveniments" main.py
 
-    - name: 6. Pujada de l'executable com a artefacte
+    - name: 7. Pujada de l'executable com a artefacte
       uses: actions/upload-artifact@v4
       with:
         name: GestorEsdeveniments-Windows-Portable
