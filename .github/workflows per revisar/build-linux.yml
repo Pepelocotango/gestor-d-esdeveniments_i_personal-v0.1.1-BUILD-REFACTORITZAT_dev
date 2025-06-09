@@ -1,0 +1,37 @@
+name: Compilar per a Linux (AppImage)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 1. Checkout del codi
+      uses: actions/checkout@v4
+
+    - name: 2. Configuració de Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        # Afegim caching per a npm
+        cache: 'npm'
+
+    - name: 3. Instal·lació de dependències del sistema per a Electron Builder
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libgconf-2-4 libgtk-3-dev libnss3 libasound2 libxtst-dev libxss1 libappindicator3-1
+
+    - name: 4. Instal·lació de dependències del projecte (npm)
+      # Només s'executarà una instal·lació completa si el cache no existeix o package-lock.json ha canviat
+      run: npm install
+
+    - name: 5. Compilació i empaquetat de l'aplicació per a Linux
+      run: npm run build:electron -- --linux --x64 --publish never
+
+    - name: 6. Pujada de l'AppImage com a artefacte
+      uses: actions/upload-artifact@v4
+      with:
+        name: GestorEsdeveniments-Linux-AppImage
+        path: dist/*.AppImage

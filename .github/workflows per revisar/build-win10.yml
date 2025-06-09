@@ -1,10 +1,8 @@
 name: Compilar EXE per a Windows (Projecte Electron)
 
 on:
-  push:
-    branches:
-      - main
-
+  workflow_dispatch:
+    
 jobs:
   build:
     runs-on: windows-latest

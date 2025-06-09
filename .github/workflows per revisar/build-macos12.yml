@@ -1,9 +1,7 @@
 name: Compilar per a macOS
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
 
 jobs:
   build:
