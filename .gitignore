@@ -1,0 +1,43 @@
+### INICI FITXER: .gitignore ###
+#carpetes i fitxers personals
+gestor-d'esdeveniments_react_vite_gemini BUILD.code-workspace
+0 CONTEXT i eines/
+chekpoints/
+
+# Dependències de Node.js
+# Aquesta carpeta es regenera amb 'npm install'
+node_modules/
+
+# Sortida de la compilació (build)
+# Aquesta carpeta es genera amb 'npm run build' o 'npm run build:electron'
+dist/
+
+# Fitxers de variables d'entorn locals
+# ¡MOLT IMPORTANT! Contenen claus secretes i no han de ser a GitHub.
+.env
+.env.local
+.env.*.local
+
+# Fitxers de log
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Fitxers de l'editor de codi i IDE
+.vscode/
+*.code-workspace
+.idea/
+
+# Fitxers del sistema operatiu
+.DS_Store
+Thumbs.db
+
+# Cache de Python (pels teus scripts auxiliars)
+__pycache__/
+*.pyc
+### FINAL FITXER: .gitignore ###
+
+

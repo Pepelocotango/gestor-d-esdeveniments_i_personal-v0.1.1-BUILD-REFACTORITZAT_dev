@@ -1,0 +1,6 @@
+{
+  "name": "Gestor d'Esdeveniments React",
+  "description": "Una aplicació React per gestionar esdeveniments, assignacions i persones, amb funcionalitats de calendari, filtratge, i exportació de dades.",
+  "requestFramePermissions": [],
+  "prompt": ""
+}
