@@ -1,0 +1,35 @@
+name: Compilar EXE portable per a Windows
+
+on:
+  push:
+    branches:
+      - main  # O la branca que vulguis utilitzar per activar la compilació
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: 1. Checkout del codi
+      uses: actions/checkout@v2
+
+    - name: 2. Configuració de Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x' # Utilitza la versió de Python que necessiti el teu projecte
+
+    - name: 3. Instal·lació de dependències
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pyinstaller
+
+    - name: 4. Compilació de l'aplicació amb PyInstaller
+      run: |
+        pyinstaller --onefile --windowed --name "GestorEsdeveniments" main.py
+
+    - name: 5. Pujada de l'executable com a artefacte
+      uses: actions/upload-artifact@v2
+      with:
+        name: GestorEsdeveniments-Windows-Portable
+        path: dist/GestorEsdeveniments.exe
