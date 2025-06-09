@@ -1,4 +1,4 @@
-name: Compilar EXE portable per a Windows
+name: Compilar EXE per a Windows (Projecte Electron)
 
 on:
   push:
@@ -10,36 +10,31 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    # Soluciona el problema del nom d'arxiu llarg
-    - name: 1. Activar suport per a rutes llargues a Git
-      run: git config --system core.longpaths true
-
-    # Descàrrega estàndard del codi
-    - name: 2. Checkout del codi
+    # 1. Descarrega el codi del teu repositori
+    - name: Checkout del codi
       uses: actions/checkout@v4
 
-    - name: 3. Configuració de Python
-      uses: actions/setup-python@v5
+    # 2. Configura l'entorn de Node.js per poder utilitzar npm
+    - name: Configuració de Node.js
+      uses: actions/setup-node@v4
       with:
-        python-version: '3.x'
+        node-version: '20' # Utilitzem una versió recent de Node.js
 
-    # PASSA CLAU: Executem les comandes DINS de la carpeta del projecte
-    - name: 4. Instal·lació de dependències
-      working-directory: ./gestor-d-esdeveniments_i_personal-v0.1.1-BUILD-REFACTORITZAT_dev
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install pyinstaller
+    # 3. Instal·la totes les dependències del package.json
+    - name: Instal·lació de dependències del projecte
+      run: npm install
 
-    # PASSA CLAU: La compilació també es fa DINS de la carpeta del projecte
-    - name: 5. Compilació de l'aplicació amb PyInstaller
-      working-directory: ./gestor-d-esdeveniments_i_personal-v0.1.1-BUILD-REFACTORITZAT_dev
-      run: |
-        pyinstaller --onefile --windowed --name "GestorEsdeveniments" main.py
+    # 4. PAS CLAU: Executa el teu script "build:electron"
+    # Aquesta única comanda s'encarrega de compilar el teu codi React i empaquetar-lo amb Electron.
+    # Els paràmetres --win --x64 asseguren que es construeixi per a Windows 64-bit.
+    - name: Compilació i empaquetat de l'aplicació
+      run: npm run build:electron -- --win --x64
 
-    # La ruta a l'artefacte ha d'incloure la carpeta del projecte
-    - name: 6. Pujada de l'executable com a artefacte
+    # 5. Puja l'arxiu .exe que es genera a la carpeta 'dist' com a resultat
+    - name: Pujada de l'executable com a artefacte
       uses: actions/upload-artifact@v4
       with:
-        name: GestorEsdeveniments-Windows-Portable
-        path: gestor-d-esdeveniments_i_personal-v0.1.1-BUILD-REFACTORITZAT_dev/dist/GestorEsdeveniments.exe
+        name: GestorEsdeveniments-Windows-Installer
+        # El teu package.json confirma que la sortida és a la carpeta 'dist'.
+        # L'asterisc (*) ajuda a trobar l'arxiu encara que el nom complet variï.
+        path: dist/*.exe
