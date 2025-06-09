@@ -1,12 +1,10 @@
 name: Compilar per a Linux (AppImage)
 
 on:
-  # El deixem amb activació manual per no molestar. El pots executar quan vulguis.
   workflow_dispatch:
 
 jobs:
   build:
-    # LÍNIA CLAU: Forcem a GitHub a utilitzar la mateixa base que tu (Ubuntu 20.04)
     runs-on: ubuntu-20.04
 
     steps:
