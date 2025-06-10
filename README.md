@@ -2,6 +2,7 @@
 
 # Gestor d'Esdeveniments i Personal v0.1.1_dev
 
+Aplicació d'escriptori multiplataforma (construïda amb Electron, React i Vite) per a la gestió integral d'esdeveniments, personal i les seves assignacions. El projecte està actualment en fase de desenvolupament actiu.
 
 ## 💾 Descàrrega i Instal·lació
 
