@@ -1,0 +1,54 @@
+{
+  "peopleGroups": [
+    {
+      "id": "person-3",
+      "name": "Carles Vidal Exemple",
+      "role": "Ajudant de Producció",
+      "tel1": "600555666",
+      "tel2": "",
+      "email": "exemplecarles.vidal@email.com",
+      "web": "",
+      "notes": "Estudiant en pràctiques. Molt proactiu."
+    },
+    {
+      "id": "person-4",
+      "name": "Equip de Muntatge Pro",
+      "role": "Proveïdor Extern",
+      "tel1": "937891234",
+      "tel2": "600777888",
+      "email": "exemplecontacte@muntatgepro.com",
+      "web": "https://exemplemuntatgepro.com",
+      "notes": "Especialistes en estructures i escenaris. Cal avisar amb 2 setmanes d'antelació."
+    },
+    {
+      "id": "person-1",
+      "name": "Joan Soler Exemple",
+      "role": "Tècnic de So Principal",
+      "tel1": "600111222",
+      "tel2": "931112233",
+      "email": "joan.solerexemple@tecnicsevent.com",
+      "web": "https://www.exemplejoansoler.cat",
+      "notes": "Expert en consoles digitals Yamaha. Requereix cafè."
+    },
+    {
+      "id": "person-2",
+      "name": "Maria Exemple Puig",
+      "role": "Coordinadora de Logística",
+      "tel1": "600333444",
+      "tel2": "",
+      "email": "mariaexemple.puig@logisticafest.es",
+      "web": "",
+      "notes": "Responsable de voluntaris i acreditacions."
+    },
+    {
+      "id": "mbqhi5b18zbi24cf5jb",
+      "name": "Nom personaA",
+      "role": "RolA",
+      "tel1": "telèfon 123456 A",
+      "tel2": "telèfon2 123456 A",
+      "email": "correuA@mail.com",
+      "web": "",
+      "notes": "notes A"
+    }
+  ]
+}

@@ -1,32 +1,12 @@
 {
   "peopleGroups": [
     {
-      "id": "person-1",
-      "name": "Joan Soler",
-      "role": "Tècnic de So Principal",
-      "tel1": "600111222",
-      "tel2": "931112233",
-      "email": "joan.soler@tecnicsevent.com",
-      "web": "https://www.joansoler.cat",
-      "notes": "Expert en consoles digitals Yamaha. Requereix cafè."
-    },
-    {
-      "id": "person-2",
-      "name": "Maria Puig",
-      "role": "Coordinadora de Logística",
-      "tel1": "600333444",
-      "tel2": "",
-      "email": "maria.puig@logisticafest.es",
-      "web": "",
-      "notes": "Responsable de voluntaris i acreditacions."
-    },
-    {
       "id": "person-3",
-      "name": "Carles Vidal",
+      "name": "Carles Vidal Exemple",
       "role": "Ajudant de Producció",
       "tel1": "600555666",
       "tel2": "",
-      "email": "carles.vidal@email.com",
+      "email": "exemplecarles.vidal@email.com",
       "web": "",
       "notes": "Estudiant en pràctiques. Molt proactiu."
     },
@@ -36,19 +16,49 @@
       "role": "Proveïdor Extern",
       "tel1": "937891234",
       "tel2": "600777888",
-      "email": "contacte@muntatgepro.com",
-      "web": "https://muntatgepro.com",
+      "email": "exemplecontacte@muntatgepro.com",
+      "web": "https://exemplemuntatgepro.com",
       "notes": "Especialistes en estructures i escenaris. Cal avisar amb 2 setmanes d'antelació."
+    },
+    {
+      "id": "person-1",
+      "name": "Joan Soler Exemple",
+      "role": "Tècnic de So Principal",
+      "tel1": "600111222",
+      "tel2": "931112233",
+      "email": "joan.solerexemple@tecnicsevent.com",
+      "web": "https://www.exemplejoansoler.cat",
+      "notes": "Expert en consoles digitals Yamaha. Requereix cafè."
+    },
+    {
+      "id": "person-2",
+      "name": "Maria Exemple Puig",
+      "role": "Coordinadora de Logística",
+      "tel1": "600333444",
+      "tel2": "",
+      "email": "mariaexemple.puig@logisticafest.es",
+      "web": "",
+      "notes": "Responsable de voluntaris i acreditacions."
+    },
+    {
+      "id": "mbqhi5b18zbi24cf5jb",
+      "name": "Nom personaA",
+      "role": "RolA",
+      "tel1": "telèfon 123456 A",
+      "tel2": "telèfon2 123456 A",
+      "email": "correuA@mail.com",
+      "web": "",
+      "notes": "notes A"
     }
   ],
   "eventFrames": [
     {
-      "id": "event-1",
-      "name": "Festival de Jazz de Terrassa",
-      "place": "Parc Vallparadís, Terrassa",
-      "startDate": "2025-07-10",
-      "endDate": "2025-07-13",
-      "generalNotes": "Edició 43 del festival. Cal revisar les necessitats tècniques d'il·luminació i so per a la tarima principal. Contactar amb l'ajuntament per permisos.",
+      "id": "event-3",
+      "name": "Reunió Planificació Anual",
+      "place": "Oficina Central",
+      "startDate": "2025-09-01",
+      "endDate": "2025-09-01",
+      "generalNotes": "Reunió per definir els objectius i pressupostos del pròxim any fiscal. Sala de juntes gran.",
       "personnelComplete": false
     },
     {
@@ -61,48 +71,24 @@
       "personnelComplete": true
     },
     {
-      "id": "event-3",
-      "name": "Reunió Planificació Anual",
-      "place": "Oficina Central",
-      "startDate": "2025-09-01",
-      "endDate": "2025-09-01",
-      "generalNotes": "Reunió per definir els objectius i pressupostos del pròxim any fiscal. Sala de juntes gran.",
+      "id": "event-1",
+      "name": "Festival de Jazz de Terrassa",
+      "place": "Parc Vallparadís, Terrassa",
+      "startDate": "2025-07-10",
+      "endDate": "2025-07-13",
+      "generalNotes": "Edició 43 del festival. Cal revisar les necessitats tècniques d'il·luminació i so per a la tarima principal. Contactar amb l'ajuntament per permisos.",
       "personnelComplete": false
     }
   ],
   "assignments": [
     {
-      "id": "assign-1",
-      "personGroupId": "person-1",
-      "eventFrameId": "event-1",
-      "startDate": "2025-07-10",
-      "endDate": "2025-07-13",
-      "status": "Mixt",
-      "notes": "Responsable de so els dos primers dies.",
-      "dailyStatuses": {
-        "2025-07-10": "Sí",
-        "2025-07-11": "Sí",
-        "2025-07-12": "Pendent",
-        "2025-07-13": "No"
-      }
-    },
-    {
-      "id": "assign-2",
+      "id": "assign-6",
       "personGroupId": "person-2",
-      "eventFrameId": "event-1",
-      "startDate": "2025-07-12",
-      "endDate": "2025-07-13",
+      "eventFrameId": "event-3",
+      "startDate": "2025-09-01",
+      "endDate": "2025-09-01",
       "status": "Sí",
-      "notes": "Coordinació de voluntaris el cap de setmana."
-    },
-    {
-      "id": "assign-3",
-      "personGroupId": "person-3",
-      "eventFrameId": "event-1",
-      "startDate": "2025-07-10",
-      "endDate": "2025-07-13",
-      "status": "No",
-      "notes": "Té exàmens finals durant aquestes dates."
+      "notes": ""
     },
     {
       "id": "assign-4",
@@ -123,13 +109,37 @@
       "notes": "Supervisió tècnica del muntatge audiovisual."
     },
     {
-      "id": "assign-6",
+      "id": "assign-1",
+      "personGroupId": "person-1",
+      "eventFrameId": "event-1",
+      "startDate": "2025-07-10",
+      "endDate": "2025-07-13",
+      "status": "Mixt",
+      "notes": "Responsable de so els dos primers dies.",
+      "dailyStatuses": {
+        "2025-07-10": "Sí",
+        "2025-07-11": "Sí",
+        "2025-07-12": "Pendent",
+        "2025-07-13": "No"
+      }
+    },
+    {
+      "id": "assign-3",
+      "personGroupId": "person-3",
+      "eventFrameId": "event-1",
+      "startDate": "2025-07-10",
+      "endDate": "2025-07-13",
+      "status": "No",
+      "notes": "Té exàmens finals durant aquestes dates."
+    },
+    {
+      "id": "assign-2",
       "personGroupId": "person-2",
-      "eventFrameId": "event-3",
-      "startDate": "2025-09-01",
-      "endDate": "2025-09-01",
+      "eventFrameId": "event-1",
+      "startDate": "2025-07-12",
+      "endDate": "2025-07-13",
       "status": "Sí",
-      "notes": ""
+      "notes": "Coordinació de voluntaris el cap de setmana."
     }
   ]
 }

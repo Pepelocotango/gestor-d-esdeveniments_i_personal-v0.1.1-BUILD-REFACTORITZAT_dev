@@ -2,7 +2,66 @@
 
 # Gestor d'Esdeveniments i Personal v0.1.1_dev
 
-Aplicació d'escriptori multiplataforma (construïda amb Electron, React i Vite) per a la gestió integral d'esdeveniments, personal i les seves assignacions. El projecte està actualment en fase de desenvolupament actiu.
+
+## 💾 Descàrrega i Instal·lació
+
+Pots descarregar l'última versió de l'aplicació directament des de la nostra secció de [**Releases a GitHub**](https://github.com/URL_AL_TEU_REPOSITORI/releases/latest).
+
+Cada versió inclou binaris compilats per a Windows, macOS i Linux. Assegura't de descarregar el fitxer correcte per al teu sistema operatiu.
+
+### Requisits Mínims del Sistema
+
+*   **Windows:** Windows 10 (64-bit) o superior.
+*   **macOS:** macOS 10.15 (Catalina) o superior.
+*   **Linux:** Ubuntu 18.04, Debian 10, Fedora 28 o qualsevol distribució equivalent o més recent.
+
+### Instruccions per Plataforma
+
+#### 🪟 **Windows**
+
+Oferim dues versions per a Windows:
+
+1.  **Instal·lador (`...-Installer.exe`):**
+    *   **Recomanat per a la majoria d'usuaris.**
+    *   Descarrega i executa el fitxer `.exe` que conté la paraula `Installer`.
+    *   Això instal·larà l'aplicació al teu sistema, creant una drecera a l'escriptori i una entrada al menú d'inici per a un accés fàcil.
+
+2.  **Versió Portable (`...-Portable.exe`):**
+    *   **Ideal per executar sense instal·lar, per exemple des d'un pen-drive.**
+    *   Descarrega el fitxer `.exe` que conté la paraula `Portable`.
+    *   Pots executar l'aplicació directament amb un doble clic sense que s'instal·li res al teu sistema.
+
+####  **macOS**
+
+Per a macOS, la distribució es fa a través d'un fitxer `.dmg`:
+
+*   Descarrega el fitxer `...-macOS-10.15+.dmg`.
+*   Fes-hi doble clic per obrir-lo. S'obrirà una finestra del Finder.
+*   Per instal·lar l'aplicació, simplement **arrossega la icona de l'aplicació a la drecera de la carpeta d'Aplicacions** que apareix a la mateixa finestra.
+*   Ja pots executar l'aplicació des de la teva carpeta d'Aplicacions o mitjançant Launchpad.
+
+> **Nota:** La primera vegada que obris l'aplicació, com que no està descarregada des de l'App Store, macOS podria mostrar un avís de seguretat. Per obrir-la, fes clic dret sobre la icona de l'aplicació, selecciona "Obrir" i confirma l'acció al diàleg que apareixerà.
+
+#### 🐧 **Linux**
+
+Per a Linux, utilitzem el format `AppImage`, que no requereix instal·lació:
+
+*   Descarrega el fitxer `...-Linux-Ubuntu18.04+.AppImage`.
+*   **Dona-li permisos d'execució.** La manera més fàcil és fent clic dret sobre el fitxer > Propietats > Permisos > i marcar la casella "Permet executar el fitxer com un programa".
+    *   Alternativament, des de la terminal: `chmod +x GestorEsdeveniments-*.AppImage`
+*   Fes doble clic sobre el fitxer per executar l'aplicació.
+
+---
+
+### 📂 Fitxers d'Exemple
+
+Per ajudar-te a començar, hem inclòs una carpeta anomenada `examples_json` amb fitxers de dades d'exemple que pots carregar a l'aplicació:
+
+*   **`example_all.json`**: Un fitxer complet amb esdeveniments, personal i assignacions per veure totes les funcionalitats de l'aplicació en acció.
+*   **`example_person.json`**: Un fitxer més senzill centrat en la gestió de la base de dades de persones.
+
+Pots carregar aquests fitxers des de l'aplicació utilitzant el botó "Carregar dades" per familiaritzar-te amb l'estructura de dades.
+
 
 ## 🚀 Funcionalitats Clau
 
@@ -101,7 +160,8 @@ Aquesta carpeta conté tota la lògica i la interfície de l'aplicació React.
     *   `AssignmentCard.tsx`: Component dedicat a renderitzar una única assignació, incloent la vista detallada per dies.
     *   `ui/Modal.tsx`: Component genèric i reutilitzable que serveix de base per a tots els diàlegs modals.
     *   `modals/`: Directori que conté cada modal en un fitxer separat, millorant l'organització.
-## 🚀 Començar (Getting Started)
+
+## 🚀 Començar (Getting Started) MODE DEVELOPER
 
 ### Prerequisits
 
@@ -125,11 +185,28 @@ npm run electron-dev
 ```
 
 ## 📦 Compilació (Build)
+### Compilar per a Linux
 
 Per crear una versió de producció de l'aplicació (p. ex., un fitxer `.AppImage` per a Linux):
 
 ```sh
-npm run build:electron
+npm run build:linux
+```
+
+### Compilar per a Windows
+
+Aquest comandament crearà tant l'instal·lador (-Setup.exe) com la versió portable (.exe).
+
+```sh
+npm run build:win
+```
+
+### Compilar per a macOS
+
+Aquest comandament crearà els fitxers `.dmg` i `.zip` per a macOS.
+
+```sh
+npm run build:mac
 ```
 
 El resultat es desarà al directori `dist`.
@@ -137,7 +214,7 @@ El resultat es desarà al directori `dist`.
 ## ✒️ Autoria
 
 -   **Autor Principal:** Pëp 
--   **Co-autoria i Suport Tècnic:** Gemini
+-   **Co-autoria i Suport Tècnic:** Gemini / Github Copilot / Perplexity / ChatGPT
 
 ## 📄 Llicència
 
