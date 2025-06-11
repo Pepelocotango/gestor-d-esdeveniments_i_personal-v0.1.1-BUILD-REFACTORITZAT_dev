@@ -1,31 +1,30 @@
-// START OF FILE: ./components/Controls.tsx
-import React, { ChangeEvent, useRef, useState } from 'react';
+import React, { ChangeEvent, useRef } from 'react';
 import { useEventData } from '../contexts/EventDataContext';
 import { PersonGroup, ModalType } from '../types';
-import { SaveIcon, LoadIcon, SunIcon, MoonIcon, UsersIcon } from '../constants';
+import { SaveIcon, LoadIcon, SunIcon, MoonIcon, UsersIcon, InfoIcon, TrashIcon } from '../constants';
 import { migrateData, validateMigratedData } from '../utils/dataMigration';
 
 interface ControlsProps {
   theme: string;
   toggleTheme: () => void;
-  onOpenModal: (type: ModalType) => void;
+  onOpenModal: (type: ModalType, data?: any) => void;
   peopleGroups: PersonGroup[];
   showToast: (message: string, type?: 'success' | 'error' | 'info' | 'warning') => void;
+  hasUnsavedChanges: boolean;
 }
 
 const Controls: React.FC<ControlsProps> = ({
     theme,
     toggleTheme,
     onOpenModal,
-    peopleGroups,
-    showToast
+    showToast,
+    hasUnsavedChanges,
 }) => {
   const { loadData, exportData, setHasUnsavedChanges } = useEventData();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const peopleFileInputRef = useRef<HTMLInputElement>(null);
-  const [showConfirmReset, setShowConfirmReset] = useState(false);
 
-  const handleLoadAllDataLikeInitial = (event: ChangeEvent<HTMLInputElement>) => {
+  const handleLoadAllData = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
@@ -40,7 +39,7 @@ const Controls: React.FC<ControlsProps> = ({
         if (jsonData.eventFrames && jsonData.peopleGroups && jsonData.assignments !== undefined) {
           loadData(jsonData);
           showToast("Totes les dades carregades correctament.", 'success');
-          setHasUnsavedChanges(true); // MODIFICAT: Sempre marcar com a canvis
+          setHasUnsavedChanges(true);
         } else if (jsonData.eventFrames || jsonData.people || jsonData.assignments) {
           const migratedData = migrateData(
             { people: jsonData.people || [] },
@@ -54,7 +53,7 @@ const Controls: React.FC<ControlsProps> = ({
           }
           loadData(migratedData);
           showToast("Dades antigues migrades i carregades correctament.", 'success');
-          setHasUnsavedChanges(true); // Es manté true
+          setHasUnsavedChanges(true);
         } else {
           showToast("Error: El format del fitxer JSON no és vàlid.", 'error');
         }
@@ -67,7 +66,7 @@ const Controls: React.FC<ControlsProps> = ({
     reader.readAsText(file);
   };
 
-  const handleLoadPeopleLikeInitial = (event: ChangeEvent<HTMLInputElement>) => {
+  const handleLoadPeopleData = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
@@ -83,7 +82,7 @@ const Controls: React.FC<ControlsProps> = ({
           const currentData = exportData();
           loadData({ ...currentData, peopleGroups: jsonData.peopleGroups });
           showToast("Dades de persones carregades correctament.", 'success');
-          setHasUnsavedChanges(true); // MODIFICAT: Marcar com a canvis
+          setHasUnsavedChanges(true);
         } else if (Array.isArray(jsonData.people)) {
           const migratedData = migrateData({ people: jsonData.people });
           const validation = validateMigratedData(migratedData);
@@ -94,7 +93,7 @@ const Controls: React.FC<ControlsProps> = ({
           const currentData = exportData();
           loadData({ ...currentData, peopleGroups: migratedData.peopleGroups });
           showToast("Dades de persones antigues migrades i carregades correctament.", 'success');
-          setHasUnsavedChanges(true); // Es manté true
+          setHasUnsavedChanges(true); 
         } else {
           showToast("Error: El format del fitxer JSON de persones no és vàlid.", 'error');
         }
@@ -110,148 +109,115 @@ const Controls: React.FC<ControlsProps> = ({
   const triggerLoadFile = () => fileInputRef.current?.click();
   const triggerLoadPeopleFile = () => peopleFileInputRef.current?.click();
 
-  const handleSaveData = () => {
+  const handleSaveData = (type: 'all' | 'people') => {
     try {
-      const data = exportData();
-      const jsonString = JSON.stringify(data, null, 2);
-      const blob = new Blob([jsonString], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'gestio_esdeveniments_dades.json';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      setHasUnsavedChanges(false);
-      showToast("Dades desades correctament.", 'success');
-    } catch (error) {
-      console.error("Error saving data:", error);
-      showToast(`Error en desar les dades: ${(error as Error).message}`, 'error');
-    }
-  };
-
-  const handleSavePeopleData = () => {
-    try {
-      const dataToSave = { peopleGroups: peopleGroups }; // Canviat de people a peopleGroups
+      const dataToSave = type === 'all' ? exportData() : { peopleGroups: exportData().peopleGroups };
+      const filename = type === 'all' ? 'gestio_esdeveniments_dades.json' : 'persones_grups_dades.json';
       const jsonString = JSON.stringify(dataToSave, null, 2);
       const blob = new Blob([jsonString], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'persones_grups_dades.json';
+      a.download = filename;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      showToast("Dades de persones desades correctament.", 'success');
+      
+      if (type === 'all') {
+        setHasUnsavedChanges(false);
+      }
+      showToast(`Dades de ${type === 'all' ? 'l\'aplicació' : 'persones'} desades correctament.`, 'success');
     } catch (error) {
-      console.error("Error saving people data:", error);
-      showToast(`Error en desar les dades de persones: ${(error as Error).message}`, 'error');
+      console.error(`Error saving ${type} data:`, error);
+      showToast(`Error en desar les dades: ${(error as Error).message}`, 'error');
     }
   };
 
   const handleStartEmpty = () => {
-    setShowConfirmReset(true);
-  };
-
-  const confirmStartEmpty = () => {
-    loadData({ eventFrames: [], peopleGroups: [], assignments: [] });
-    showToast('Dades esborrades. Comences de zero!', 'info');
-    setHasUnsavedChanges(false); // Després de començar de zero, no hi ha canvis no desats
-    setShowConfirmReset(false);
-  };
-
-  const cancelStartEmpty = () => {
-    setShowConfirmReset(false);
+    onOpenModal('confirmDeleteEventFrame', {
+      itemType: "Acció destructiva",
+      itemName: "Aquesta acció esborrarà <b>TOTES</b> les dades de l'aplicació que no estiguin desades. Estàs segur que vols continuar?",
+      onConfirmSpecial: () => {
+        loadData({ eventFrames: [], peopleGroups: [], assignments: [] });
+        showToast('Dades esborrades. Comences de zero!', 'info');
+        setHasUnsavedChanges(false);
+      },
+      titleOverride: "Confirmar Esborrat Total",
+      confirmButtonText: "Sí, esborrar tot",
+      cancelButtonText: "No, cancel·lar"
+    });
   };
 
   return (
-    <React.Fragment>
-      {showConfirmReset && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 min-w-[320px]">
-            <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-100">Confirmar esborrat de dades</h2>
-            <p className="mb-6 text-gray-700 dark:text-gray-300">Aquesta acció esborrarà <b>TOTES</b> les dades de l'aplicació. Estàs segur que vols continuar?</p>
-            <div className="flex justify-end gap-3">
-              <button onClick={cancelStartEmpty} className="px-4 py-2 rounded bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-500">Cancel·lar</button>
-              <button onClick={confirmStartEmpty} className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700">Sí, esborrar tot</button>
-            </div>
-          </div>
-        </div>
-      )}
-      <div className="flex flex-col items-center gap-2">
-        <button
-          onClick={handleStartEmpty}
-          className="mb-2 px-4 py-2 rounded bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 font-semibold border border-red-300 dark:border-red-700 hover:bg-red-200 dark:hover:bg-red-800 transition"
-          title="Començar de zero (esborra totes les dades)"
-        >
-          Començar de zero
-        </button>
-        <div className="p-4 bg-gray-50 dark:bg-gray-800 shadow rounded-lg w-full">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
-            <div className="space-y-2">
-              <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Gestió de Dades Globals</h3>
-              <button
+    <div className="p-2 bg-gray-100 dark:bg-gray-800 shadow-md rounded-lg w-full flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+            <button
                 onClick={triggerLoadFile}
-                className="w-full flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-md transition-colors"
-                aria-label="Carregar totes les dades des d'un fitxer JSON"
-              >
-                <LoadIcon /> Carregar Tot (JSON)
-              </button>
-              <input type="file" ref={fileInputRef} onChange={handleLoadAllDataLikeInitial} accept=".json" className="hidden" aria-hidden="true" />
-              <button
-                onClick={handleSaveData}
-                className="w-full flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-md transition-colors"
-                aria-label="Guardar totes les dades a un fitxer JSON"
-              >
-                <SaveIcon /> Guardar Tot (JSON)
-              </button>
-            </div>
+                className="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-3 rounded-md transition-colors text-sm"
+                title="Carregar totes les dades des d'un fitxer JSON"
+            >
+                <LoadIcon /> Carregar Tot
+            </button>
+            <input type="file" ref={fileInputRef} onChange={handleLoadAllData} accept=".json" className="hidden" aria-hidden="true" />
+            <button
+                onClick={() => handleSaveData('all')}
+                className="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-3 rounded-md transition-colors text-sm"
+                title="Guardar totes les dades a un fitxer JSON"
+            >
+                <SaveIcon /> Guardar Tot
+            </button>
+             <button
+                onClick={handleStartEmpty}
+                className="flex items-center justify-center gap-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-3 rounded-md transition-colors text-sm"
+                title="Començar de zero (esborra totes les dades actuals)"
+            >
+                <TrashIcon className="w-4 h-4" /> Començar de Zero
+            </button>
+        </div>
 
-            <div className="flex flex-col items-center justify-center">
-              <button
+        {hasUnsavedChanges && (
+          <div className="text-sm text-yellow-600 dark:text-yellow-400 flex items-center gap-1 font-semibold animate-pulse">
+            <InfoIcon className="w-4 h-4" /> Canvis sense desar
+          </div>
+        )}
+
+        <div className="flex items-center gap-2">
+            <button
+                onClick={triggerLoadPeopleFile}
+                className="flex items-center justify-center gap-2 bg-sky-500 hover:bg-sky-600 text-white font-semibold py-2 px-3 rounded-md transition-colors text-sm"
+                title="Carregar només dades de persones des d'un fitxer JSON"
+            >
+                <LoadIcon /> Carregar Persones
+            </button>
+            <input type="file" ref={peopleFileInputRef} onChange={handleLoadPeopleData} accept=".json" className="hidden" aria-hidden="true" />
+            
+            <button
+                onClick={() => handleSaveData('people')}
+                className="flex items-center justify-center gap-2 bg-teal-500 hover:bg-teal-600 text-white font-semibold py-2 px-3 rounded-md transition-colors text-sm"
+                title="Guardar només les dades de persones a un fitxer JSON"
+            >
+                <SaveIcon /> Guardar Persones
+            </button>
+
+            <button
+                onClick={() => onOpenModal('managePeople')}
+                className="flex items-center justify-center gap-2 bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-3 rounded-md transition-colors text-sm"
+                title="Gestionar la llista de persones i grups"
+            >
+                <UsersIcon /> Gestionar Persones
+            </button>
+            <button
                 onClick={toggleTheme}
-                className="rounded-full p-3 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="rounded-full p-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 aria-label={theme === 'dark' ? 'Canviar a tema clar' : 'Canviar a tema fosc'}
                 title={theme === 'dark' ? 'Canviar a tema clar' : 'Canviar a tema fosc'}
-              >
-                {theme === 'dark' ? <SunIcon className="w-7 h-7 text-yellow-400" /> : <MoonIcon className="w-7 h-7 text-gray-700" />}
-              </button>
-              <span className="mt-2 text-xs text-gray-500 dark:text-gray-400">Tema {theme === 'dark' ? 'fosc' : 'clar'}</span>
-            </div>
-
-            <div className="space-y-2">
-              <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Persones / Grups</h3>
-              <button
-                onClick={triggerLoadPeopleFile}
-                className="w-full flex items-center justify-center gap-2 bg-sky-500 hover:bg-sky-600 text-white font-semibold py-2 px-4 rounded-md transition-colors"
-                aria-label="Carregar dades de persones des d'un fitxer JSON"
-              >
-                <LoadIcon /> Carregar Persones (JSON)
-              </button>
-              <input type="file" ref={peopleFileInputRef} onChange={handleLoadPeopleLikeInitial} accept=".json" className="hidden" aria-hidden="true" />
-              <button
-                onClick={handleSavePeopleData}
-                className="w-full flex items-center justify-center gap-2 bg-teal-500 hover:bg-teal-600 text-white font-semibold py-2 px-4 rounded-md transition-colors"
-                aria-label="Guardar dades de persones a un fitxer JSON"
-              >
-                <SaveIcon /> Guardar Persones (JSON)
-              </button>
-               <button
-                onClick={() => onOpenModal('managePeople')}
-                className="w-full flex items-center justify-center gap-2 bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded-md transition-colors"
-                aria-label="Gestionar persones i grups"
-              >
-                <UsersIcon /> Gestionar Persones/Grups
-              </button>
-            </div>
-          </div>
+            >
+                {theme === 'dark' ? <SunIcon className="w-5 h-5 text-yellow-400" /> : <MoonIcon className="w-5 h-5 text-gray-700" />}
+            </button>
         </div>
-      </div>
-    </React.Fragment>
+    </div>
   );
 };
 
 export default Controls;
-// END OF FILE: ./components/Controls.tsx

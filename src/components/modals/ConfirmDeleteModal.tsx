@@ -1,4 +1,3 @@
-// ruta: src/components/modals/ConfirmDeleteModal.tsx
 import React from 'react';
 
 interface CommonFormProps {
@@ -25,8 +24,10 @@ export const ConfirmDeleteModal: React.FC<ConfirmDeleteProps> = ({
     cancelButtonText = "Cancel·lar"
 }) => {
   const handleConfirm = () => {
-    onConfirm(); 
-    if (itemType !== "Actualització massiva") {
+    onConfirm();
+    // CANVI: Es mostra un missatge de toast només si no és una acció especial (com "començar de zero").
+    // Aquestes accions especials gestionen el seu propi missatge de toast.
+    if (itemType !== "Acció destructiva" && itemType !== "Actualització massiva") {
         showToast(`${itemType} "${itemName}" eliminat/da correctament.`, 'success');
     }
     onClose();
@@ -44,7 +45,9 @@ export const ConfirmDeleteModal: React.FC<ConfirmDeleteProps> = ({
         <button 
           onClick={handleConfirm} 
           className={`px-4 py-2 text-sm font-medium text-white rounded-md ${
-            confirmButtonText.includes('Eliminar') ? "bg-red-600 hover:bg-red-700" : "bg-orange-500 hover:bg-orange-600"
+            confirmButtonText.toLowerCase().includes('esborrar') || confirmButtonText.toLowerCase().includes('eliminar') 
+              ? "bg-red-600 hover:bg-red-700" 
+              : "bg-orange-500 hover:bg-orange-600"
           }`}
         >
           {confirmButtonText}

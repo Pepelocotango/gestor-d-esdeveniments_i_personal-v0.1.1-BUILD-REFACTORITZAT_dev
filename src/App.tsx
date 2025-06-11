@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useCallback, useMemo, Suspense, lazy } from 'react';
+
+
 import { EventDataProvider } from './contexts/EventDataContext';
 import { useEventDataManager } from './hooks/useEventDataManager';
-import { APP_TITLE, THEME_STORAGE_KEY, InfoIcon } from './constants';
+import { THEME_STORAGE_KEY } from './constants';
 import Modal from './components/ui/Modal';
-import { ModalState, ModalType, InitialEventFrameData, ModalData, EventDataConteImplicits, EventFrame, SummaryRow, AppData, Assignment } from './types';
+import { ModalState, ModalType, InitialEventFrameData, ModalData, EventDataConteImplicits, EventFrame, SummaryRow, AppData, Assignment, AssignmentStatus } from './types';
 import { formatDateDMY } from './utils/dateFormat';
 
 // Lazy load components
@@ -37,7 +39,7 @@ const App: React.FC = () => {
   const eventDataManagerHookResult = useEventDataManager();
   const { loadData: loadDataFromManager, exportData: exportDataFromManager, setHasUnsavedChanges, hasUnsavedChanges } = eventDataManagerHookResult;
 
-  const [theme, setTheme] = useState(() => localStorage.getItem(THEME_STORAGE_KEY) || 'dark');
+  const [theme, setTheme] = useState(() => localStorage.getItem(THEME_STORAGE_KEY) || 'light');
   const [modalState, setModalState] = useState<ModalState>({ type: null, data: null });
   const [toastState, setToastState] = useState<ToastState | null>(null);
   const [currentFilterHighlight, setCurrentFilterHighlight] = useState<string>('');
@@ -46,8 +48,10 @@ const App: React.FC = () => {
   const [filterToShowEventFrameId, setFilterToShowEventFrameId] = useState<string | null>(null);
   const [currentlyDisplayedFrames, setCurrentlyDisplayedFrames] = useState<EventFrame[]>([]);
   const [filterUIPerson, setFilterUIPerson] = useState<string>('');
+  console.log('App.tsx - RE-RENDER. modalState:', modalState.type, modalState.data);
 
   useEffect(() => {
+    console.log('App.tsx - useEffect [theme] executant-se. Nou tema:', theme);
     if (theme === 'dark') {
       document.documentElement.classList.add('dark');
     } else {
@@ -117,10 +121,12 @@ const App: React.FC = () => {
   );
 
   const openModal = useCallback((type: ModalType, data?: ModalData | InitialEventFrameData) => {
+    console.log('App.tsx - openModal CRIDAT. Tipus:', type, 'Dades:', data);
     setModalState({ type, data: data as ModalData | null });
   }, []);
 
   const closeModal = () => {
+    console.log('App.tsx - closeModal CRIDAT. Estat anterior del modal:', modalState.type);
     setModalState({ type: null, data: null });
   };
 
@@ -137,24 +143,28 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const attemptInitialLoad = async () => {
+      console.log('App.tsx - useEffect [initialLoadAttempted, loadDataFromManager, showToast, setHasUnsavedChanges] executant-se.');
       if (window.electronAPI && typeof window.electronAPI.loadAppData === 'function') {
         try {
+          console.log("Intentant carregar dades de l'aplicació via Electron...");
           const data = await window.electronAPI.loadAppData();
           loadDataFromManager(data);
-          setHasUnsavedChanges(false);
+          setHasUnsavedChanges(false); // Important: la càrrega inicial no són "canvis no desats"
           if (data) {
             showToast('Dades de l\'aplicació carregades automàticament.', 'info');
           } else {
             showToast('No s\'han trobat dades anteriors de l\'aplicació per carregar (Electron). Començant buit.', 'info');
           }
         } catch (error) {
+          console.error('Error carregant dades de l\'aplicació via Electron:', error);
           showToast(`Error carregant dades (Electron): ${(error as Error).message}`, 'error');
           loadDataFromManager(null);
-          setHasUnsavedChanges(false);
+          setHasUnsavedChanges(false); // Fins i tot si hi ha error, comencem "nets"
         }
       } else {
+        console.log("Mode navegador detectat o API d'Electron no disponible. Començant buit.");
         loadDataFromManager(null);
-        setHasUnsavedChanges(false);
+        setHasUnsavedChanges(false); // Comencem "nets"
       }
       setInitialLoadAttempted(true);
     };
@@ -165,21 +175,29 @@ const App: React.FC = () => {
   }, [initialLoadAttempted, loadDataFromManager, showToast, setHasUnsavedChanges]);
 
   useEffect(() => {
+    console.log('App.tsx - useEffect [hasUnsavedChanges, exportDataFromManager, setHasUnsavedChanges, showToast] per onConfirmQuit executant-se.');
     let unsubscribe: (() => void) | undefined;
     if (window.electronAPI?.onConfirmQuit) {
       unsubscribe = window.electronAPI.onConfirmQuit(async () => {
+        console.log("Renderer va rebre el senyal 'confirm-quit-signal'");
         if (hasUnsavedChanges) {
           try {
             const dataToSave = exportDataFromManager();
+            console.log("Renderer: Desant dades abans de sortir...", dataToSave);
             const success = await window.electronAPI?.saveAppData?.(dataToSave);
             if (success) {
+              console.log("Renderer: Dades desades correctament.");
               setHasUnsavedChanges(false);
             } else {
+              console.error("Renderer: Error desant les dades.");
               showToast("Error crític: No s'han pogut desar les dades abans de sortir.", 'error', true);
             }
           } catch (error) {
+            console.error("Renderer: Excepció desant dades:", error);
             showToast(`Error crític desant: ${(error as Error).message}`, 'error', true);
           }
+        } else {
+          console.log("Renderer: No hi ha canvis per desar.");
         }
         window.electronAPI?.sendQuitConfirmedByRenderer?.();
       });
@@ -252,6 +270,15 @@ const App: React.FC = () => {
         });
       } else {
         if (!filterUIPerson) {
+          const placeholderAssignment: Assignment = {
+              id: `placeholder-no-assignment-${ef.id}`,
+              personGroupId: '',
+              eventFrameId: ef.id,
+              startDate: '',
+              endDate: '',
+              status: AssignmentStatus.Pending,
+              notes: '',
+          };
           dataToExport.push({
             id: ef.id,
             primaryGrouping: ef.name,
@@ -266,7 +293,7 @@ const App: React.FC = () => {
             assignmentStatus: '',
             assignmentNotes: '',
             eventFrameGeneralNotes: ef.generalNotes,
-            assignmentObject: {} as Assignment,
+            assignmentObject: placeholderAssignment
           });
         }
       }
@@ -425,29 +452,24 @@ const App: React.FC = () => {
 
   return (
     <EventDataProvider value={contextValue}>
-      <div className="min-h-screen flex flex-col bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-300">
-        <header className="bg-white dark:bg-gray-800 shadow-md sticky top-0 z-40">
-          <div className="container mx-auto px-4 py-3 flex justify-between items-center">
-            <h1 className="text-2xl font-bold text-blue-600 dark:text-blue-400 text-center w-full">{APP_TITLE}</h1>
-            {hasUnsavedChanges && (
-              <span className="text-sm text-yellow-600 dark:text-yellow-400 flex items-center gap-1">
-                <InfoIcon className="w-4 h-4" /> Canvis sense desar
-              </span>
-            )}
-          </div>
+      <div className="min-h-screen flex flex-col bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+        <header className="sticky top-5 z-40 bg-gray-100/80 dark:bg-gray-900/80 backdrop-blur-sm shadow-sm py-2">
+            <div className="container mx-auto px-4">
+                <Suspense fallback={<div className="text-center p-4">Carregant controls...</div>}>
+                    <Controls
+                    theme={theme}
+                    toggleTheme={toggleTheme}
+                    onOpenModal={openModal}
+                    peopleGroups={eventDataManagerHookResult.peopleGroups}
+                    showToast={showToast}
+                    hasUnsavedChanges={hasUnsavedChanges}
+                    />
+                </Suspense>
+            </div>
         </header>
-
-        <main className="container mx-auto p-4 flex-grow">
-          <Suspense fallback={<div className="text-center p-4">Carregant controls...</div>}>
-            <Controls
-              theme={theme}
-              toggleTheme={toggleTheme}
-              onOpenModal={openModal}
-              peopleGroups={eventDataManagerHookResult.peopleGroups}
-              showToast={showToast}
-            />
-          </Suspense>
-          <div className="mt-6">
+        
+        <main className="container mx-auto px-4 pt-2 pb-4 flex-grow">
+          <div>
             <Suspense fallback={<div className="text-center p-8">Carregant vista principal...</div>}>
               <MainDisplay
                 openModal={openModal}

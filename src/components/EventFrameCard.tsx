@@ -1,9 +1,9 @@
 import { useRef, forwardRef } from 'react';
-import { useEventData } from '../contexts/EventDataContext';
-import { EventFrame, Assignment, AssignmentStatus, ModalType, ModalData } from '../types';
-import { PlusIcon, EditIcon, TrashIcon, ChevronDownIcon, ChevronUpIcon } from '../constants';
+import { useEventData } from '@/contexts/EventDataContext';
+import { EventFrame, Assignment, AssignmentStatus, ModalType, ModalData } from '@/types';
+import { PlusIcon, EditIcon, TrashIcon, ChevronDownIcon, ChevronUpIcon } from '@/constants';
 import { CheckCircleIcon } from '@heroicons/react/24/solid';
-import { formatDateRangeDMY } from '../utils/dateFormat';
+import { formatDateRangeDMY } from '@/utils/dateFormat';
 import AssignmentCard from './AssignmentCard';
 
 interface EventFrameCardProps {
@@ -12,7 +12,7 @@ interface EventFrameCardProps {
   expandedDailyViewAssignmentIds: Set<string>;
   filters: { person: string; status: AssignmentStatus | ''; };
   onToggleExpand: (id: string) => void;
-  onToggleDailyView: (assignmentId: string) => void;
+  onToggleDailyView: (id: string) => void;
   onUpdateEventFrame: (eventFrame: EventFrame) => void;
   onOpenModal: (type: ModalType, data?: ModalData) => void;
   onGeneralStatusChange: (eventFrameId: string, assignmentId: string, newStatus: AssignmentStatus) => void;
@@ -37,15 +37,10 @@ const EventFrameCard = forwardRef<HTMLDivElement, EventFrameCardProps>(({
     )
     .sort((a, b) => (getPersonGroupById(a.personGroupId)?.name || '').localeCompare(getPersonGroupById(b.personGroupId)?.name || ''));
 
-  // Lògica per determinar la classe del contenidor principal
-  const cardContainerClass = eventFrame.personnelComplete
-    ? 'event-card-complete'
-    : 'bg-white dark:bg-gray-800';
-
   return (
-    <div ref={ref} className={`mb-4 rounded-lg shadow-sm overflow-hidden transition-colors duration-300 ${cardContainerClass}`} aria-labelledby={`event-frame-title-${eventFrame.id}`}>
+    <div ref={ref} className="mb-4 rounded-lg shadow-sm overflow-hidden bg-white dark:bg-gray-800 border-2 border-black" aria-labelledby={`event-frame-title-${eventFrame.id}`}>
       <div
-        className="p-4 bg-transparent border-b-2 border-slate-200 dark:border-slate-700 cursor-pointer"
+        className="p-4 bg-slate-100 dark:bg-slate-800 cursor-pointer border-b-2 border-slate-200 dark:border-slate-700"
         onClick={(e) => {
           if ((e.target as HTMLElement).closest('button, input, select, a')) {
             skipNextCollapse.current = true;
@@ -94,7 +89,7 @@ const EventFrameCard = forwardRef<HTMLDivElement, EventFrameCardProps>(({
       </div>
 
       {isExpanded && (
-        <div className="p-4">
+        <div className="p-4 bg-white dark:bg-gray-800">
           {eventFrame.generalNotes && (
             <div className="mb-4">
               <h5 className="font-medium">Notes Generals</h5>
