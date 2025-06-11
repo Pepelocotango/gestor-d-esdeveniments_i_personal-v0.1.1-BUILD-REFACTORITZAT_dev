@@ -1,4 +1,3 @@
-// START OF FILE: ./main.js
 const { app, BrowserWindow, ipcMain, dialog, Menu } = require('electron');
 const path = require('path');
 const fs = require('fs');
@@ -146,6 +145,48 @@ async function createBackup() {
   }
   return false;
 }
+async function cleanupOldBackups() {
+  const MAX_BACKUPS_TO_KEEP = 5;
+  if (!fs.existsSync(BACKUP_DIR)) {
+    return;
+  }
+  
+  try {
+    console.log("Netejant backups antics...");
+    const backupFiles = fs.readdirSync(BACKUP_DIR)
+      .filter(file => file.startsWith('backup-events_data-') && file.endsWith('.json'))
+      .map(file => {
+        const filePath = path.join(BACKUP_DIR, file);
+        try {
+          const stats = fs.statSync(filePath);
+          return { name: file, time: stats.mtime.getTime() };
+        } catch (statError) {
+          console.error(`No s'ha pogut obtenir informació del fitxer ${file}:`, statError);
+          return null;
+        }
+      })
+      .filter(Boolean)
+      .sort((a, b) => b.time - a.time);
+
+    if (backupFiles.length > MAX_BACKUPS_TO_KEEP) {
+      console.log(`Trobats ${backupFiles.length} backups. Conservant els ${MAX_BACKUPS_TO_KEEP} més recents.`);
+      const backupsToDelete = backupFiles.slice(MAX_BACKUPS_TO_KEEP);
+      
+      backupsToDelete.forEach(backup => {
+        try {
+          fs.unlinkSync(path.join(BACKUP_DIR, backup.name));
+          console.log(`Backup eliminat: ${backup.name}`);
+        } catch (unlinkError) {
+          console.error(`Error eliminant el backup ${backup.name}:`, unlinkError);
+        }
+      });
+    } else {
+      console.log(`Trobats ${backupFiles.length} backups. No cal neteja.`);
+    }
+  } catch (error) {
+    console.error('Error durant la neteja de backups:', error);
+  }
+}
 // --- Fi de funcions de gestió de dades ---
 
 function createWindow() {
@@ -244,6 +285,7 @@ app.on('before-quit', async (event) => {
 
     // Primer, fem la còpia de seguretat.
     await createBackup();
+    await cleanupOldBackups();
 
     // Després, notifiquem al renderer que desi les seves dades.
     // Això es fa de forma asíncrona, no esperem resposta.
