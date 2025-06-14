@@ -1,7 +1,7 @@
 {
   "name": "gestor-esdeveniments-personal",
   "productName": "Gestor de Esdeveniments i Personal",
-  "version": "0.1.1-dev",
+  "version": "0.1.2-dev",
   "description": "Una aplicació per gestionar esdeveniments i personal",
   "author": "Pep",
   "main": "main.cjs",
@@ -50,7 +50,7 @@
   },
   "build": {
     "appId": "com.gestorevents.app",
-    "productName": "Gestor-de-Esdeveniments-i-Personal",
+    "productName": "Gestor-de-Esdeveniments-i-Personal v.0.1.2",
     "directories": {
       "output": "dist"
     },
