@@ -6,7 +6,7 @@ Aplicació d'escriptori multiplataforma (construïda amb Electron, React i Vite)
 
 ## 💾 Descàrrega i Instal·lació
 
-Pots descarregar l'última versió de l'aplicació directament des de la nostra secció de [**Releases a GitHub**](https://github.com/Pepelocotango/gestor-d-esdeveniments_i_personal-v0.1.2-BUILD-REFACTORITZAT_dev/releases).
+Pots descarregar l'última versió de l'aplicació directament des de la nostra secció de [**Releases a GitHub**](https://github.com/Pepelocotango/Gestor-Events_i_Personal/releases).
 
 Cada versió inclou binaris compilats per a Windows, macOS i Linux. Assegura't de descarregar el fitxer correcte per al teu sistema operatiu.
 
