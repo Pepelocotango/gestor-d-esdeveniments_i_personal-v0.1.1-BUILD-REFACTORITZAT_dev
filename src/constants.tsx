@@ -125,3 +125,9 @@ export const InformationCircleIcon = ({ className = "w-5 h-5" } : {className?: s
     <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
   </svg>
 );
+export const PersonAddIcon = ({ className = "w-5 h-5" } : {className?: string}) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16" className={className}>
+    <path d="M12.5 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7m.5-5v1h1a.5.5 0 0 1 0 1h-1v1a.5.5 0 0 1-1 0v-1h-1a.5.5 0 0 1 0-1h1v-1a.5.5 0 0 1 1 0m-2-6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
+    <path d="M2 13c0-1 1-2 3-2h5.259a4.5 4.5 0 0 1 .254-.834H5a2 2 0 0 0-2 2v2h4a4.5 4.5 0 0 1 .502-1z"/>
+  </svg>
+);

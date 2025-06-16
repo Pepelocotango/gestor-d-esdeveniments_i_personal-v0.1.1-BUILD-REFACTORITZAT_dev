@@ -1,7 +1,7 @@
 import { useRef, forwardRef } from 'react';
 import { useEventData } from '@/contexts/EventDataContext';
 import { EventFrame, Assignment, AssignmentStatus, ModalType, ModalData } from '@/types';
-import { PlusIcon, EditIcon, TrashIcon, ChevronDownIcon, ChevronUpIcon } from '@/constants';
+import { PersonAddIcon, EditIcon, TrashIcon, ChevronDownIcon, ChevronUpIcon } from '@/constants';
 import { CheckCircleIcon } from '@heroicons/react/24/solid';
 import { formatDateRangeDMY } from '@/utils/dateFormat';
 import AssignmentCard from './AssignmentCard';
@@ -78,11 +78,11 @@ const EventFrameCard = forwardRef<HTMLDivElement, EventFrameCardProps>(({
             <p className="text-sm text-gray-500 dark:text-gray-400">{formatDateRangeDMY(eventFrame.startDate, eventFrame.endDate)}</p>
           </div>
           <div className="flex items-center space-x-1 sm:space-x-2 flex-wrap">
-            <button onClick={(e) => { e.stopPropagation(); skipNextCollapse.current = true; onOpenModal('editEventFrame', { eventFrameToEdit: eventFrame }); }} className="p-1.5 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 rounded-md hover:bg-blue-100 dark:hover:bg-gray-700"><EditIcon className="w-4 h-4" /></button>
-            <button onClick={(e) => { e.stopPropagation(); skipNextCollapse.current = true; onOpenModal('confirmDeleteEventFrame', { itemType: "Marc d'Esdeveniment", itemName: eventFrame.name, itemId: eventFrame.id }); }} className="p-1.5 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 rounded-md hover:bg-red-100 dark:hover:bg-gray-700"><TrashIcon className="w-4 h-4" /></button>
-            <button onClick={(e) => { e.stopPropagation(); skipNextCollapse.current = true; onOpenModal('addAssignment', { eventFrame }); }} className="p-1.5 text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300 rounded-md hover:bg-green-100 dark:hover:bg-gray-700"><PlusIcon className="w-4 h-4" /></button>
+            <button onClick={(e) => { e.stopPropagation(); skipNextCollapse.current = true; onOpenModal('editEventFrame', { eventFrameToEdit: eventFrame }); }} className="p-1.5 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 rounded-md hover:bg-blue-100 dark:hover:bg-gray-700"><EditIcon className="w-6 h-6" /></button>
+            <button onClick={(e) => { e.stopPropagation(); skipNextCollapse.current = true; onOpenModal('confirmDeleteEventFrame', { itemType: "Marc d'Esdeveniment", itemName: eventFrame.name, itemId: eventFrame.id }); }} className="p-1.5 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 rounded-md hover:bg-red-100 dark:hover:bg-gray-700"><TrashIcon className="w-6 h-6" /></button>
+            <button onClick={(e) => { e.stopPropagation(); skipNextCollapse.current = true; onOpenModal('addAssignment', { eventFrame }); }} className="p-1.5 text-green-600 ..."><PersonAddIcon className="w-6 h-6" /></button>
             <button onClick={(e) => { e.stopPropagation(); onToggleExpand(eventFrame.id); }} className="p-1.5 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600">
-              {isExpanded ? <ChevronUpIcon className="w-4 h-4" /> : <ChevronDownIcon className="w-4 h-4" />}
+              {isExpanded ? <ChevronUpIcon className="w-6 h-6" /> : <ChevronDownIcon className="w-6 h-6" />}
             </button>
           </div>
         </div>

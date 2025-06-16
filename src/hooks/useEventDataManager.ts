@@ -15,7 +15,7 @@ export const useEventDataManager = (): EventDataManagerReturn => {
     setHasUnsavedChanges(true);
   }, []);
 
-  const addEventFrame = useCallback((newEventFrameData: Omit<EventFrame, 'id' | 'assignments' | 'personnelComplete'>) => {
+  const addEventFrame = useCallback((newEventFrameData: Omit<EventFrame, 'id' | 'assignments' | 'personnelComplete'>): EventFrame => {
     const newEventFrame: EventFrame = {
       ...newEventFrameData,
       id: generateId(),
@@ -24,8 +24,9 @@ export const useEventDataManager = (): EventDataManagerReturn => {
     };
     setEventFrames(prev => [...prev, newEventFrame].sort((a,b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime() || a.name.localeCompare(b.name)));
     markUnsaved();
+    return newEventFrame; // <<< LÍNIA CLAU: Retornem l'objecte creat
   }, [markUnsaved]);
-
+  
   const updateEventFrame = useCallback((updatedEventFrame: EventFrame) => {
     setEventFrames(prev => prev.map(ef => ef.id === updatedEventFrame.id ? updatedEventFrame : ef)
       .sort((a,b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime() || a.name.localeCompare(b.name))

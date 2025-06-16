@@ -95,10 +95,10 @@ const AssignmentCard: React.FC<AssignmentCardProps> = ({
           </div>
           <div className="flex items-center justify-end space-x-1">
             <button onClick={() => onEdit(eventFrame.id, assignment.id)} className="p-2 rounded-full hover:bg-black/10 dark:hover:bg-white/10">
-              <EditIcon className="w-4 h-4" />
+              <EditIcon className="w-6 h-6" />
             </button>
             <button onClick={() => onDelete(eventFrame.id, assignment.id)} className="p-2 rounded-full hover:bg-black/10 dark:hover:bg-white/10">
-              <TrashIcon className="w-4 h-4" />
+              <TrashIcon className="w-6 h-6" />
             </button>
           </div>
         </div>
