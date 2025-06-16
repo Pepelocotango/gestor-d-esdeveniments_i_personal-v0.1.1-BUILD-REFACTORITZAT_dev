@@ -217,7 +217,9 @@ El resultat es desarà al directori `dist`.
 ## ✒️ Autoria
 
 -   **Autor Principal:** Pëp 
--   **Co-autoria i Suport Tècnic:** Isaac ;) / Gemini / Github Copilot / Perplexity / ChatGPT    
+-   **Co-autoria i Suport Tècnic:** Isaac ;) / Gemini / Github Copilot / Perplexity / ChatGPT
+
+### Captures de pantalla:    
 ![Captura de pantalla del gestor d'events i personal](imatges%20i%20recursos/screenshot1mac.jpeg)
 
 
