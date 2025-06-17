@@ -84,8 +84,8 @@ export const EventFrameFormModal: React.FC<EventFrameFormProps> = ({ onClose, ev
       const eventData = { name, place, startDate, endDate, generalNotes };
       const newEventFrame = addEventFrame(eventData);
       showToast("Marc d'esdeveniment afegit.", 'success');
-      onClose();
-      openModal('addAssignment', { eventFrame: newEventFrame });
+      onClose(); // Tanquem el modal actual
+      openModal('addAssignment', { eventFrame: newEventFrame }); // Obrim el nou modal amb les dades
     }
   };
   const commonInputClass = "mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm disabled:opacity-50";

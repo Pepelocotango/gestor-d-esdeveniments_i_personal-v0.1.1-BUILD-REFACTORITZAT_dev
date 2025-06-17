@@ -34,6 +34,9 @@ jobs:
       - name: 4. Instal·lació de dependències del projecte (npm)
         run: npm install
 
+      - name: 4.5 Create google-credentials.json from secret - crearà el fitxer google-credentials.json dinàmicament durant l'execució del workflow utilitzant el secret 
+        run: echo "${{ secrets.GOOGLE_CREDENTIALS_JSON }}" > google-credentials.json
+      
       - name: 5. Compilació de l'aplicació per a Linux
         run: npm run build:electron -- --linux --x64 --publish never
 

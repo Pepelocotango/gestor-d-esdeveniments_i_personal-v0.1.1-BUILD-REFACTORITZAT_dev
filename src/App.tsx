@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo, Suspense, lazy } from 'react';
 const { ipcRenderer } = window.require ? window.require('electron') : { ipcRenderer: null };
+import { ipcRenderer } from 'electron';
 
 import { EventDataProvider } from './contexts/EventDataContext';
 import { useEventDataManager } from './hooks/useEventDataManager';
@@ -24,6 +25,10 @@ declare global {
       saveAppData?: (data: AppData) => Promise<boolean>;
       onConfirmQuit?: (callback: () => Promise<void>) => () => void;
       sendQuitConfirmedByRenderer?: () => void;
+      // <<< LÍNIES NOVES >>>
+      startGoogleAuth: () => Promise<{ success: boolean; message?: string }>;
+      onGoogleAuthSuccess: (callback: () => void) => void;
+      onGoogleAuthError: (callback: (event: any, message: string) => void) => void;
     };
   }
 }
@@ -212,19 +217,20 @@ const App: React.FC = () => {
   useEffect(() => {
     if (window.electronAPI) {
       const onSuccess = () => showToast('Connectat a Google Calendar amb èxit!', 'success');
-      const onError = (_event, message) => showToast(`Error d'autenticació: ${message}`, 'error');
+      // <<< LÍNIA MODIFICADA: AFEGIR TIPUS >>>
+      const onError = (_event: any, message: string) => showToast(`Error d'autenticació: ${message}`, 'error');
 
       window.electronAPI.onGoogleAuthSuccess(onSuccess);
       window.electronAPI.onGoogleAuthError(onError);
 
-      // Neteja dels listeners quan el component es desmunta
       return () => {
-        ipcRenderer.removeListener('google-auth-success', onSuccess);
-        ipcRenderer.removeListener('google-auth-error', onError);
+        if (ipcRenderer) {
+          ipcRenderer.removeListener('google-auth-success', onSuccess);
+          ipcRenderer.removeListener('google-auth-error', onError);
+        }
       };
     }
   }, [showToast]);
-
   const escapeCsvCell = (cellData: string | number | undefined | null): string => {
     if (cellData === undefined || cellData === null) return '';
     const stringData = String(cellData);

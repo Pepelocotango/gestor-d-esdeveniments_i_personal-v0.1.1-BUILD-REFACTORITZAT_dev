@@ -58,7 +58,7 @@
       "dist/**/*",
       "main.cjs",
       "preload.cjs",
-      "LICENSE"
+      "LICENSE",
       "google-credentials.json"
     ],
     "linux": {
