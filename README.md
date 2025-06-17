@@ -203,7 +203,7 @@ Aquest comandament crearà tant l'instal·lador (-Setup.exe) com la versió port
 ```sh
 npm run build:win
 ```
-
+###### BRANCA NOVA DE DESENVOLUPAMENT _ sincronitzacio_google_calendar
 ### Compilar per a macOS
 
 Aquest comandament crearà els fitxers `.dmg` i `.zip` per a macOS.
