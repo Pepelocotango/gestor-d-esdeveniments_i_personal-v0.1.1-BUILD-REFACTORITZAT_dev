@@ -13,5 +13,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   },
   // Funció perquè el renderer notifiqui que ha acabat
   sendQuitConfirmedByRenderer: () => ipcRenderer.send('quit-confirmed-by-renderer-signal'), // Canviat el nom del canal
+  startGoogleAuth: () => ipcRenderer.invoke('google-auth-start'),
+  onGoogleAuthSuccess: (callback) => ipcRenderer.on('google-auth-success', callback),
+  onGoogleAuthError: (callback) => ipcRenderer.on('google-auth-error', callback)
 });
+
 // END OF FILE: ./preload.js

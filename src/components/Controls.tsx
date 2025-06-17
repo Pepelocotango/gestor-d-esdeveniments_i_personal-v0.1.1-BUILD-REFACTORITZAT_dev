@@ -1,7 +1,7 @@
 import React, { ChangeEvent, useRef } from 'react';
 import { useEventData } from '../contexts/EventDataContext';
 import { PersonGroup, ModalType } from '../types';
-import { SaveIcon, LoadIcon, SunIcon, MoonIcon, UsersIcon, InfoIcon, TrashIcon } from '../constants';
+import { SaveIcon, LoadIcon, SunIcon, MoonIcon, UsersIcon, InfoIcon, TrashIcon, GoogleIcon } from '../constants';
 import { migrateData, validateMigratedData } from '../utils/dataMigration';
 
 interface ControlsProps {
@@ -214,6 +214,25 @@ const Controls: React.FC<ControlsProps> = ({
                 title={theme === 'dark' ? 'Canviar a tema clar' : 'Canviar a tema fosc'}
             >
                 {theme === 'dark' ? <SunIcon className="w-5 h-5 text-yellow-400" /> : <MoonIcon className="w-5 h-5 text-gray-700" />}
+            </button>
+            <button
+                onClick={async () => {
+                  if (window.electronAPI) {
+                    const result = await window.electronAPI.startGoogleAuth();
+                    if (result.success) {
+                      showToast('Obrint el navegador per autenticar-se amb Google...', 'info');
+                    } else {
+                      showToast(result.message || 'No s\'ha pogut iniciar l\'autenticació.', 'error');
+                    }
+                  } else {
+                    showToast('Aquesta funcionalitat només està disponible a l\'aplicació d\'escriptori.', 'warning');
+                  }
+                }}
+                className="flex items-center justify-center gap-2 bg-white hover:bg-gray-200 text-gray-800 font-semibold py-2 px-3 rounded-md transition-colors text-sm border border-gray-300"
+                title="Connectar amb Google Calendar"
+            >
+                <GoogleIcon />
+                <span>Connectar Google</span>
             </button>
         </div>
     </div>

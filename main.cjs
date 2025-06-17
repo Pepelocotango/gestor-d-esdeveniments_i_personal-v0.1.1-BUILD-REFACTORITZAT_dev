@@ -3,6 +3,10 @@ const path = require('path');
 const fs = require('fs');
 const os = require('os');
 
+const { google } = require('googleapis');
+const url = require('url');
+const http = require('http');
+
 const APP_NAME = 'gestor-esdeveniments';
 const DEFAULT_CONFIG_DIR = path.join(os.homedir(), '.config', APP_NAME);
 const DEFAULT_DATA_DIR = path.join(os.homedir(), '.local', 'share', APP_NAME);
@@ -15,6 +19,24 @@ let CACHE_DIR = DEFAULT_CACHE_DIR;
 let SESSION_FILE;
 let DATA_FILE;
 let BACKUP_DIR;
+
+let googleAuthClient;
+let googleCredentials;
+
+const GOOGLE_TOKENS_PATH = path.join(CONFIG_DIR, 'google-tokens.json');
+
+function loadGoogleCredentials() {
+  try {
+    const credentialsPath = path.join(app.getAppPath(), 'google-credentials.json');
+    const content = fs.readFileSync(credentialsPath);
+    googleCredentials = JSON.parse(content).installed;
+  } catch (err) {
+    console.error('Error carregant les credencials de Google:', err);
+    dialog.showErrorBox('Error de Configuració', 'No s\'ha trobat o no s\'ha pogut llegir el fitxer google-credentials.json. La funcionalitat de Google Calendar no estarà disponible.');
+    return false;
+  }
+  return true;
+}
 
 // --- Funcions de gestió de directoris (sense canvis) ---
 function checkWritePermissions(dir) {
@@ -317,6 +339,62 @@ ipcMain.handle('load-app-data', async () => {
 });
 
 ipcMain.handle('save-app-data', (event, data) => saveDataWithErrorHandling(DATA_FILE, data));
+
+ipcMain.handle('google-auth-start', async () => {
+  if (!googleCredentials) {
+    if (!loadGoogleCredentials()) return { success: false, message: "Falta el fitxer de credencials." };
+  }
+
+  return new Promise((resolve, reject) => {
+    const server = http.createServer(async (req, res) => {
+      try {
+        const qs = new url.URL(req.url, 'http://localhost').searchParams;
+        const code = qs.get('code');
+
+        res.end('<h1>Autenticació completada!</h1><p>Pots tancar aquesta pestanya.</p>');
+        server.close();
+
+        if (code) {
+          const { tokens } = await googleAuthClient.getToken(code);
+          googleAuthClient.setCredentials(tokens);
+          fs.writeFileSync(GOOGLE_TOKENS_PATH, JSON.stringify(tokens));
+          console.log('Tokens de Google guardats correctament.');
+          mainWindow.webContents.send('google-auth-success');
+          resolve({ success: true });
+        } else {
+          throw new Error('No s\'ha rebut cap codi d\'autorització de Google.');
+        }
+      } catch (e) {
+        console.error('Error obtenint el token de Google:', e);
+        mainWindow.webContents.send('google-auth-error', e.message);
+        reject(e);
+      }
+    }).listen(80, () => { // Utilitzem el port 80 perquè és l'estàndard per a http://localhost
+      googleAuthClient = new google.auth.OAuth2(
+        googleCredentials.client_id,
+        googleCredentials.client_secret,
+        'http://localhost' // Assegurem que la URI de redirecció és la correcta
+      );
+
+      const authUrl = googleAuthClient.generateAuthUrl({
+        access_type: 'offline',
+        prompt: 'consent',
+        scope: ['https://www.googleapis.com/auth/calendar'],
+      });
+      require('electron').shell.openExternal(authUrl);
+    });
+
+    server.on('error', (err) => {
+      if (err.code === 'EADDRINUSE') {
+        dialog.showErrorBox('Error de Xarxa', 'El port 80 ja està en ús per una altra aplicació. Tanca l\'altra aplicació i torna a intentar-ho.');
+        resolve({ success: false, message: 'Port 80 en ús.' });
+      } else {
+        console.error('Error del servidor d\'autenticació:', err);
+        reject(err);
+      }
+    });
+  });
+});
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {

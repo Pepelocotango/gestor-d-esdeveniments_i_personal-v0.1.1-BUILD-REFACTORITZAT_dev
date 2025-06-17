@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo, Suspense, lazy } from 'react';
-
+const { ipcRenderer } = window.require ? window.require('electron') : { ipcRenderer: null };
 
 import { EventDataProvider } from './contexts/EventDataContext';
 import { useEventDataManager } from './hooks/useEventDataManager';
@@ -209,6 +209,21 @@ const App: React.FC = () => {
     };
   }, [hasUnsavedChanges, exportDataFromManager, setHasUnsavedChanges, showToast]);
 
+  useEffect(() => {
+    if (window.electronAPI) {
+      const onSuccess = () => showToast('Connectat a Google Calendar amb èxit!', 'success');
+      const onError = (_event, message) => showToast(`Error d'autenticació: ${message}`, 'error');
+
+      window.electronAPI.onGoogleAuthSuccess(onSuccess);
+      window.electronAPI.onGoogleAuthError(onError);
+
+      // Neteja dels listeners quan el component es desmunta
+      return () => {
+        ipcRenderer.removeListener('google-auth-success', onSuccess);
+        ipcRenderer.removeListener('google-auth-error', onError);
+      };
+    }
+  }, [showToast]);
 
   const escapeCsvCell = (cellData: string | number | undefined | null): string => {
     if (cellData === undefined || cellData === null) return '';

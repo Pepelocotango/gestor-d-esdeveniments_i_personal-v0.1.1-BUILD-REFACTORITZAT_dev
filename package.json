@@ -14,7 +14,6 @@
     "electron-dev": "concurrently \"npm run dev\" \"npm run electron\"",
     "build:electron": "npm run build && electron-builder",
     "dist": "electron-builder",
-
     "build:mac": "npm run build && electron-builder --mac --x64 --publish never",
     "build:linux": "npm run build && electron-builder --linux --x64 --publish never",
     "build:win": "npm run build && electron-builder --win --x64 --publish never"
@@ -29,6 +28,7 @@
     "@fullcalendar/timegrid": "^6.1.17",
     "@heroicons/react": "^2.2.0",
     "file-saver": "^2.0.5",
+    "googleapis": "^150.0.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
@@ -59,6 +59,7 @@
       "main.cjs",
       "preload.cjs",
       "LICENSE"
+      "google-credentials.json"
     ],
     "linux": {
       "target": [
@@ -69,8 +70,8 @@
     },
     "win": {
       "target": [
-        "nsis",      
-        "portable"   
+        "nsis",
+        "portable"
       ],
       "icon": "public/icon.ico"
     },
