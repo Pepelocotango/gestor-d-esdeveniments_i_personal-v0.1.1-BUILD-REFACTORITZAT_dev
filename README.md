@@ -1,9 +1,9 @@
-###### BRANCA NOVA DE DESENVOLUPAMENT _ sincronitzacio_google_calendar
+###### BRANCA NOVA DE DESENVOLUPAMENT _ sincronitzacio_google_calendar ( fase 1 i 2 )
 
 
 ### `README.md`**
 
-# Gestor d'Esdeveniments i Personal v0.1.2_dev
+# Gestor d'Esdeveniments i Personal v0.1.x_dev
 
 Aplicació d'escriptori multiplataforma (construïda amb Electron, React i Vite) per a la gestió integral d'esdeveniments, personal i les seves assignacions. El projecte està actualment en fase de desenvolupament actiu.
 
@@ -69,9 +69,9 @@ Per ajudar-te a començar, hem inclòs una carpeta anomenada `examples_json` amb
 Pots carregar aquests fitxers des de l'aplicació utilitzant el botó "Carregar dades" per familiaritzar-te amb l'estructura de dades.
 
 
-## 🚀 Funcionalitats Clau
+### **## 🚀 Funcionalitats Clau**
 
-Aquesta eina està dissenyada per centralitzar la planificació i el seguiment de personal en múltiples esdeveniments, amb un enfocament en la claredat visual i la flexibilitat.
+*(S'afegeix una nova secció a la llista de funcionalitats)*
 
 -   **Gestió d'Esdeveniments Marc:** Crear, editar i eliminar esdeveniments amb dates, lloc i notes generals.
 -   **Gestió de Persones/Grups:** Base de dades centralitzada de contactes amb els seus detalls.
@@ -88,11 +88,17 @@ Aquesta eina està dissenyada per centralitzar la planificació i el seguiment d
     -   Càrrega i desat de totes les dades en format JSON.
     -   Exportació de la vista filtrada actual a CSV.
     -   **Exportació Granular:** Exportació de resums específics (per persona, data o esdeveniment) a CSV des de cada grup de resum.
+-   **✨ [NOU] Integració amb Google Calendar (Només Lectura):**
+    -   **Autenticació Segura:** Connexió amb el compte de Google de l'usuari mitjançant el protocol OAuth 2.0.
+    -   **Visualització de Calendaris Externs:** L'aplicació pot llegir els esdeveniments dels calendaris de Google que l'usuari seleccioni (personal, de l'empresa, etc.).
+    -   **Vista Unificada:** Els esdeveniments de Google s'integren visualment al calendari principal, amb un estil diferenciat per distingir-los dels esdeveniments locals.
+    -   **Funcionament Offline Garantit:** La integració és una capa addicional. L'aplicació manté el 100% de la seva funcionalitat local si no hi ha connexió a internet o si l'usuari no es connecta a Google.
 -   **Interfície d'Usuari:**
     -   Suport per a tema clar i fosc.
     -   Notificacions (toasts) per a les accions de l'usuari.
     -   Visualització detallada d'estats mixts, amb un desglossament per dia i colors representatius.
 
+---
 ## 🛠️ Pila Tecnològica (Tech Stack)
 
 -   **Electron:** `^29.4.6`
@@ -104,25 +110,33 @@ Aquesta eina està dissenyada per centralitzar la planificació i el seguiment d
 -   **Electron Builder:** `^24.13.3`
 
 ## 🏗️ Arquitectura i Estructura del Projecte
+*(S'afegeixen referències a la nova lògica de Google a la descripció dels processos)*
 
 El projecte segueix una arquitectura moderna de tres capes i una organització de fitxers clara per separar responsabilitats.
 
 #### 1. Arquitectura General
--   **Procés Principal (Backend - Electron):** `main.cjs` s'encarrega de la lògica de l'aplicació nativa: gestió de finestres, menús, cicle de vida (amb desat segur abans de tancar) i accés segur al sistema de fitxers.
--   **Procés de Preload (Pont):** `preload.cjs` actua com un pont segur entre el món de Node.js (procés principal) i el món del navegador (frontend), exposant funcions controlades mitjançant `contextBridge`.
+-   **Procés Principal (Backend - Electron):** `main.cjs` s'encarrega de la lògica de l'aplicació nativa: gestió de finestres, menús, cicle de vida (amb desat segur abans de tancar) i accés segur al sistema de fitxers. **[NOU]** També gestiona el flux complet d'autenticació OAuth 2.0 amb Google i actua com a intermediari per a totes les crides a l'API de Google Calendar.
+-   **Procés de Preload (Pont):** `preload.cjs` actua com un pont segur entre el món de Node.js (procés principal) i el món del navegador (frontend), exposant funcions controlades mitjançant `contextBridge`. **[NOU]** S'ha ampliat per exposar les funcions necessàries per a la interacció amb Google Calendar (iniciar autenticació, obtenir llistes, etc.).
 -   **Procés de Renderització (Frontend - React):** La interfície d'usuari, construïda amb React i Vite.
-    -   **Gestió d'Estat Centralitzada:** El hook `useEventDataManager` actua com a única font de veritat per a les dades. `EventDataContext` distribueix aquest estat a tota l'aplicació.
+    -   **Gestió d'Estat Centralitzada:** El hook `useEventDataManager` actua com a única font de veritat per a les dades. **[NOU]** Ara també gestiona l'estat dels esdeveniments externs provinents de Google i proporciona funcions per refrescar-los. `EventDataContext` distribueix aquest estat a tota l'aplicació.
     -   **Code Splitting:** `App.tsx` utilitza `React.lazy` per carregar components de manera asíncrona, optimitzant la càrrega inicial.
 
 ---
 
-### 📁 Estructura i Responsabilitat dels Fitxers
+### **### 📁 Estructura i Responsabilitat dels Fitxers**
+
+*(S'afegeixen els fitxers nous i es detallen les modificacions als existents)*
 
 #### 1. Fitxers de Configuració i Arrel del Projecte
 
 Aquests fitxers defineixen el projecte, les seves dependències i com es construeix i s'executa.
 
-*   **`package.json`**: El manifest del projecte. Defineix el nom, la versió, els scripts (`npm run dev`, `npm run build:electron`) i totes les dependències.
+*   **`package.json`**: El manifest del projecte. Defineix el nom, la versió, els scripts (`npm run dev`, `npm run build:electron`) i totes les dependències.**[MODIFICAT]** S'ha afegit `googleapis` com a dependència. S'ha afegit `google-credentials.json` a la secció `build.files` per incloure'l a les compilacions.
+
+*   **[NOU] `google-credentials.json`**: Fitxer local (ignorat per Git) que conté les claus secretes `client_id` i `client_secret` per a l'autenticació amb l'API de Google.
+
+*   **`.gitignore`**: **[MODIFICAT]** S'ha afegit una entrada per ignorar `google-credentials.json` i protegir les claus secretes.
+
 *   **`vite.config.ts`**: Configuració de **Vite**. Defineix com es compila i s'empaqueta el codi React per al *renderer* d'Electron.
 *   **`tailwind.config.cjs`**: El cor de l'estètica de l'aplicació. Configura **TailwindCSS**, defineix quins fitxers escanejar i conté el **plugin personalitzat** per aplicar els estils del tema fosc a FullCalendar.
 *   **`postcss.config.cjs`**: Fitxer de configuració auxiliar per a **PostCSS**, utilitzat per Tailwind.
@@ -134,38 +148,72 @@ Aquests fitxers defineixen el projecte, les seves dependències i com es constru
 Aquests fitxers converteixen l'aplicació web de React en una aplicació d'escriptori.
 
 *   **`main.cjs`**: El **procés principal** d'Electron. És el backend de l'aplicació, responsable de crear la finestra, gestionar el menú nadiu, controlar el cicle de vida de l'app (incloent-hi el desat segur de dades en tancar) i gestionar la comunicació amb el sistema de fitxers.
+**[MODIFICAT SIGNIFICATIVAMENT]** A més de les seves tasques habituals, ara conté:
+    *   La lògica per llegir les credencials de Google de manera segura.
+    *   Un servidor HTTP temporal per gestionar la redirecció del flux OAuth 2.0.
+    *   Manejadors d'IPC (`ipcMain.handle`) per a totes les operacions relacionades amb Google: iniciar autenticació, obtenir la llista de calendaris, i obtenir els esdeveniments d'aquests calendaris.
 *   **`preload.cjs`**: El **pont de comunicació segur** que exposa funcions del backend (com `saveAppData`) al frontend de manera controlada, utilitzant `contextBridge`.
+**[MODIFICAT]** S'ha ampliat per exposar totes les noves funcions de Google al procés de renderització de manera segura.
+
 
 #### 3. Codi Font de l'Aplicació (`src/`)
 
 Aquesta carpeta conté tota la lògica i la interfície de l'aplicació React.
 
 *   **Punt d'Entrada i Component Arrel:**
+    
     *   `src/index.tsx`: Inicia l'aplicació React renderitzant el component `App` a l'element `#root` de l'`index.html`.
-    *   `src/App.tsx`: Component pare de tota l'aplicació. Munta l'estructura general, gestiona el tema (clar/fosc), controla els modals, mostra notificacions i carrega dinàmicament (`React.lazy`) els components pesats.
+    
+    *   `src/App.tsx`: Component pare de tota l'aplicació. Munta l'estructura general, gestiona el tema (clar/fosc), controla els modals, mostra notificacions i carrega dinàmicament (`React.lazy`) els components pesats.**[MODIFICAT]** Ara inclou la definició de tipus global per a `window.electronAPI` amb les noves funcions de Google i un `useEffect` per escoltar els resultats del procés d'autenticació i mostrar notificacions a l'usuari.
+
     *   `src/index.css`: Full d'estils principal que importa les capes de Tailwind i defineix els estils personalitzats de l'aplicació.
 
 *   **Dades i Lògica de Negoci:**
-    *   `src/hooks/useEventDataManager.ts`: El "cervell" de l'aplicació. Hook personalitzat que centralitza tota la lògica per gestionar dades, incloent la **detecció de conflictes per dia**.
+    *   `src/hooks/useEventDataManager.ts`: El "cervell" de l'aplicació. Hook personalitzat que centralitza tota la lògica per gestionar dades, incloent la **detecció de conflictes per dia**.**[MODIFICAT SIGNIFICATIVAMENT]**
+        *   Manté un nou estat (`googleEvents`) per als esdeveniments importats.
+        *   Conté una nova funció `refreshGoogleEvents()` que, de manera centralitzada, demana al backend les dades actualitzades de Google i refresca l'estat.
+        *   Carrega inicialment els esdeveniments de Google quan s'inicia l'aplicació.
+
     *   `src/contexts/EventDataContext.tsx`: Proporciona accés a les dades i funcions del hook anterior a tota l'aplicació mitjançant el context de React.
 
 *   **Definicions i Utilitats:**
+
     *   `src/types.ts`: Defineix totes les interfícies de dades (`EventFrame`, `Assignment`, etc.) amb TypeScript.
-    *   `src/constants.tsx`: Lloc centralitzat per a valors constants i components d'icones SVG.
+    **[MODIFICAT]**
+        *   S'han afegit camps opcionals (`googleEventId`, `googleCalendarId`) a la interfície `EventFrame`.
+        *   S'ha creat una nova interfície `GoogleCalendar` per tipar les dades rebudes de l'API.
+        *   S'ha actualitzat `EventDataConteImplicits` per incloure el nou estat `googleEvents` i la funció `refreshGoogleEvents`.
+   
+    *   `src/constants.tsx`: Lloc centralitzat per a valors constants i components d'icones SVG. **[MODIFICAT]** S'han afegit les icones `PersonAddIcon` i `GoogleIcon` com a components SVG.
+   
     *   `src/utils/`: Carpeta amb funcions d'ajuda genèriques:
+   
         *   `dateFormat.ts`: Per a formatar dates.
+   
         *   `dataMigration.ts`: Per a migrar dades de formats antics.
+   
         *   `statusUtils.ts`: Lògica per generar el text descriptiu dels estats mixts.
+   
         *   `dateRangeFormatter.ts`: Utilitat per agrupar llistes de dates en rangs compactes.
 
 *   **Components de la Interfície (`src/components/`)**
-    *   `Controls.tsx`: Panell de control superior amb botons per a la gestió de dades i configuració.
+
+    *   `Controls.tsx`: Panell de control superior amb botons per a la gestió de dades i configuració.**[MODIFICAT]** S'ha afegit el botó "Connectar Google" i el botó de "Configuració de Google" (engranatge) que obre el nou modal.
+
     *   `MainDisplay.tsx`: Orquestra la vista principal, gestionant filtres i l'**estat d'expansió automàtica** de la llista.
-    *   `SummaryReports.tsx`: Component que genera i mostra els resums de dades, permetent l'**exportació granular** de cada grup a CSV.
-    *   `EventFrameCard.tsx`: Component dedicat a renderitzar una única targeta d'esdeveniment marc.
+    **[MODIFICAT]** Ara obté `googleEvents` del context, els combina amb els esdeveniments locals i els passa al component `FullCalendar`. També gestiona que els esdeveniments de Google no siguin clicables.
+
+    *   `SummaryReports.tsx`: Component que genera i mostra els resums de dades, permetent l'**exportació granular** de cada grup 
+    a CSV.
+    
+    *   `EventFrameCard.tsx`: Component dedicat a renderitzar una única targeta d'esdeveniment marc. **[MODIFICAT]** S'ha actualitzat la icona d'afegir assignació.
+    
     *   `AssignmentCard.tsx`: Component dedicat a renderitzar una única assignació, incloent la vista detallada per dies.
+    
     *   `ui/Modal.tsx`: Component genèric i reutilitzable que serveix de base per a tots els diàlegs modals.
+    
     *   `modals/`: Directori que conté cada modal en un fitxer separat, millorant l'organització.
+    *   **[NOU] `GoogleSettingsModal.tsx`**: Un nou component de modal que permet a l'usuari veure els seus calendaris, seleccionar quins sincronitzar i desar aquesta preferència.
 
 ## 🚀 Començar (Getting Started) MODE DEVELOPER
 
