@@ -138,10 +138,17 @@ Aquests fitxers defineixen el projecte, les seves dependències i com es constru
 *   **`.gitignore`**: **[MODIFICAT]** S'ha afegit una entrada per ignorar `google-credentials.json` i protegir les claus secretes.
 
 *   **`vite.config.ts`**: Configuració de **Vite**. Defineix com es compila i s'empaqueta el codi React per al *renderer* d'Electron.
-*   **`tailwind.config.cjs`**: El cor de l'estètica de l'aplicació. Configura **TailwindCSS**, defineix quins fitxers escanejar i conté el **plugin personalitzat** per aplicar els estils del tema fosc a FullCalendar.
+
+*   **`tailwind.config.cjs`**: El cor de l'estètica de l'aplicació. Configura **TailwindCSS**, defineix quins fitxers escanejar i conté el **plugin 
+personalitzat** per aplicar els estils del tema fosc a FullCalendar.
+
 *   **`postcss.config.cjs`**: Fitxer de configuració auxiliar per a **PostCSS**, utilitzat per Tailwind.
+
 *   **`tsconfig.json`**: Configuració de **TypeScript**. Defineix les regles del llenguatge i la resolució de mòduls.
+
 *   **`index.html`**: El punt d'entrada HTML de l'aplicació, una closca simple que carrega el CSS i el JS principals.
+
+
 
 #### 2. Fitxers Principals d'Electron
 
@@ -180,6 +187,7 @@ Aquesta carpeta conté tota la lògica i la interfície de l'aplicació React.
 
     *   `src/types.ts`: Defineix totes les interfícies de dades (`EventFrame`, `Assignment`, etc.) amb TypeScript.
     **[MODIFICAT]**
+    Ara inclou els tipus per a la integració amb Google Calendar.
         *   S'han afegit camps opcionals (`googleEventId`, `googleCalendarId`) a la interfície `EventFrame`.
         *   S'ha creat una nova interfície `GoogleCalendar` per tipar les dades rebudes de l'API.
         *   S'ha actualitzat `EventDataConteImplicits` per incloure el nou estat `googleEvents` i la funció `refreshGoogleEvents`.
@@ -196,24 +204,32 @@ Aquesta carpeta conté tota la lògica i la interfície de l'aplicació React.
    
         *   `dateRangeFormatter.ts`: Utilitat per agrupar llistes de dates en rangs compactes.
 
+
+
 *   **Components de la Interfície (`src/components/`)**
 
-    *   `Controls.tsx`: Panell de control superior amb botons per a la gestió de dades i configuració.**[MODIFICAT]** S'ha afegit el botó "Connectar Google" i el botó de "Configuració de Google" (engranatge) que obre el nou modal.
+    *   `Controls.tsx`: Panell de control superior amb botons per a la gestió de dades i configuració.**[MODIFICAT]** S'ha afegit el botó "Connectar Google" i el botó de "Configuració de Google" (engranatge) que obre el nou modal.Ara és una barra d'eines horitzontal i compacta que inclou els botons per a la gestió de dades, el tema i la nova connexió amb Google.
 
-    *   `MainDisplay.tsx`: Orquestra la vista principal, gestionant filtres i l'**estat d'expansió automàtica** de la llista.
-    **[MODIFICAT]** Ara obté `googleEvents` del context, els combina amb els esdeveniments locals i els passa al component `FullCalendar`. També gestiona que els esdeveniments de Google no siguin clicables.
+    *   `MainDisplay.tsx`: Orquestra la vista principal, gestionant filtres i l'estat d'expansió automàtica de la llista.
+    **[MODIFICAT]** Ara obté `googleEvents` del context, els combina amb els esdeveniments locals i els passa al component `FullCalendar`. També gestiona que els esdeveniments de Google no siguin clicables.també gestiona la visualització dels esdeveniments de Google Calendar.
 
-    *   `SummaryReports.tsx`: Component que genera i mostra els resums de dades, permetent l'**exportació granular** de cada grup 
+    *   `SummaryReports.tsx`: Component que genera i mostra els resums de dades, permetent l'exportació granular de cada grup 
     a CSV.
     
     *   `EventFrameCard.tsx`: Component dedicat a renderitzar una única targeta d'esdeveniment marc. **[MODIFICAT]** S'ha actualitzat la icona d'afegir assignació.
     
     *   `AssignmentCard.tsx`: Component dedicat a renderitzar una única assignació, incloent la vista detallada per dies.
     
-    *   `ui/Modal.tsx`: Component genèric i reutilitzable que serveix de base per a tots els diàlegs modals.
+ 
     
     *   `modals/`: Directori que conté cada modal en un fitxer separat, millorant l'organització.
-    *   **[NOU] `GoogleSettingsModal.tsx`**: Un nou component de modal que permet a l'usuari veure els seus calendaris, seleccionar quins sincronitzar i desar aquesta preferència.
+    * EventFrameFormModal.tsx: Formulari per crear o editar un "Marc d'Esdeveniment".
+    * AssignmentFormModal.tsx: Formulari per crear o editar una assignació de personal a un esdeveniment.
+    * PeopleGroupManagerModal.tsx: Interfície completa per gestionar la base de dades de persones i grups (crear, editar, eliminar).
+    * EventFrameDetailsModal.tsx: Mostra un resum detallat d'un esdeveniment i les seves assignacions.
+    * ConfirmDeleteModal.tsx: Un diàleg de confirmació genèric utilitzat abans d'eliminar qualsevol element important.
+
+    *   **[NOU] `GoogleSettingsModal.tsx`**: Un nou component de modal que permet a l'usuari veure els seus calendaris, seleccionar quins sincronitzar i desar aquesta preferència.gestionar la connexió amb Google Calendar, seleccionar calendaris i sincronitzar.
 
 ## 🚀 Començar (Getting Started) MODE DEVELOPER
 
