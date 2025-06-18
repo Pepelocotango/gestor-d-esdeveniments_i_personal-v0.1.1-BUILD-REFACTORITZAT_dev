@@ -2,43 +2,52 @@ const { app, BrowserWindow, ipcMain, dialog, Menu } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
-
 const { google } = require('googleapis');
 const url = require('url');
 const http = require('http');
 
 const APP_NAME = 'gestor-esdeveniments';
-const DEFAULT_CONFIG_DIR = path.join(os.homedir(), '.config', APP_NAME);
-const DEFAULT_DATA_DIR = path.join(os.homedir(), '.local', 'share', APP_NAME);
-const DEFAULT_CACHE_DIR = path.join(os.homedir(), '.cache', APP_NAME);
+const CONFIG_DIR = path.join(os.homedir(), '.config', APP_NAME);
+const DATA_DIR = path.join(os.homedir(), '.local', 'share', APP_NAME);
+const SESSION_FILE = path.join(CONFIG_DIR, 'session.json');
+const DATA_FILE = path.join(DATA_DIR, 'events_data.json');
+const BACKUP_DIR = path.join(DATA_DIR, 'backups');
+const GOOGLE_TOKENS_PATH = path.join(CONFIG_DIR, 'google-tokens.json');
+const GOOGLE_CONFIG_PATH = path.join(CONFIG_DIR, 'google-config.json');
 
-let CONFIG_DIR = DEFAULT_CONFIG_DIR;
-let DATA_DIR = DEFAULT_DATA_DIR;
-let CACHE_DIR = DEFAULT_CACHE_DIR;
-
-let SESSION_FILE;
-let DATA_FILE;
-let BACKUP_DIR;
-
+let mainWindow;
+let isQuitting = false;
 let googleAuthClient;
 let googleCredentials;
 
-const GOOGLE_TOKENS_PATH = path.join(CONFIG_DIR, 'google-tokens.json');
+function ensureDirectoriesExist() {
+  [CONFIG_DIR, DATA_DIR, BACKUP_DIR].forEach(dir => {
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+  });
+}
 
 function loadGoogleCredentials() {
   try {
-    const credentialsPath = path.join(app.getAppPath(), 'google-credentials.json');
+    const credentialsPath = path.join(__dirname, 'google-credentials.json');
+    if (!fs.existsSync(credentialsPath)) return false;
+
     const content = fs.readFileSync(credentialsPath);
     googleCredentials = JSON.parse(content).installed;
+    googleAuthClient = new google.auth.OAuth2(googleCredentials.client_id, googleCredentials.client_secret);
+    
+    if (fs.existsSync(GOOGLE_TOKENS_PATH)) {
+      const tokens = JSON.parse(fs.readFileSync(GOOGLE_TOKENS_PATH));
+      googleAuthClient.setCredentials(tokens);
+    }
   } catch (err) {
-    console.error('Error carregant les credencials de Google:', err);
-    dialog.showErrorBox('Error de Configuració', 'No s\'ha trobat o no s\'ha pogut llegir el fitxer google-credentials.json. La funcionalitat de Google Calendar no estarà disponible.');
+    console.error('Error carregant credencials de Google:', err);
     return false;
   }
   return true;
 }
 
-// --- Funcions de gestió de directoris (sense canvis) ---
 function checkWritePermissions(dir) {
   try {
     const testFile = path.join(dir, '.write-test');
@@ -54,67 +63,9 @@ function getAlternativeDirectory(baseDir) {
   return path.join(app.getPath('userData'), baseDir);
 }
 
-function ensureDirectoriesExist() {
-  const dirs = [
-    { name: 'CONFIG_DIR', currentVal: CONFIG_DIR, defaultPath: DEFAULT_CONFIG_DIR, altBaseName: 'config' },
-    { name: 'DATA_DIR', currentVal: DATA_DIR, defaultPath: DEFAULT_DATA_DIR, altBaseName: 'data' },
-    { name: 'CACHE_DIR', currentVal: CACHE_DIR, defaultPath: DEFAULT_CACHE_DIR, altBaseName: 'cache' }
-  ];
-
-  dirs.forEach(dirInfo => {
-    let chosenPath = dirInfo.defaultPath;
-    try {
-      if (!fs.existsSync(chosenPath)) {
-        fs.mkdirSync(chosenPath, { recursive: true });
-      }
-      if (!checkWritePermissions(chosenPath)) {
-        chosenPath = getAlternativeDirectory(dirInfo.altBaseName);
-        if (!fs.existsSync(chosenPath)) {
-          fs.mkdirSync(chosenPath, { recursive: true });
-        }
-        if (!checkWritePermissions(chosenPath)) {
-             console.error(`FATAL: No s'han pogut establir permisos d'escriptura ni a ${dirInfo.defaultPath} ni a ${chosenPath}`);
-             dialog.showErrorBox('Error Crític de Permisos', `No s'han pogut establir permisos d'escriptura per a ${dirInfo.name}. L'aplicació podria no funcionar correctament.`);
-        } else {
-          dialog.showMessageBoxSync({
-            type: 'warning',
-            title: 'Canvi de directori',
-            message: `No hi ha permisos per escriure a ${dirInfo.defaultPath}.\nS'utilitzarà ${chosenPath} per a ${dirInfo.name}.`
-          });
-        }
-      }
-    } catch (error) {
-      console.error(`Error gestionant el directori ${dirInfo.name} (${chosenPath}):`, error);
-      chosenPath = getAlternativeDirectory(dirInfo.altBaseName);
-      try {
-        if (!fs.existsSync(chosenPath)) {
-          fs.mkdirSync(chosenPath, { recursive: true });
-        }
-         if (!checkWritePermissions(chosenPath)) {
-            console.error(`FATAL: No s'han pogut establir permisos d'escriptura ni a ${dirInfo.defaultPath} ni a ${chosenPath} (fallback)`);
-            dialog.showErrorBox('Error Crític de Permisos', `No s'han pogut establir permisos d'escriptura per a ${dirInfo.name} (fallback). L'aplicació podria no funcionar correctament.`);
-        }
-      } catch (fallbackError) {
-         console.error(`Error crític creant directori alternatiu ${dirInfo.name}:`, fallbackError);
-         dialog.showErrorBox('Error Crític de Directoris', `No s'ha pogut crear un directori funcional per a ${dirInfo.name}.`);
-      }
-    }
-    if (dirInfo.name === 'CONFIG_DIR') CONFIG_DIR = chosenPath;
-    if (dirInfo.name === 'DATA_DIR') DATA_DIR = chosenPath;
-    if (dirInfo.name === 'CACHE_DIR') CACHE_DIR = chosenPath;
-  });
-
-  SESSION_FILE = path.join(CONFIG_DIR, 'session.json');
-  DATA_FILE = path.join(DATA_DIR, 'events_data.json');
-  BACKUP_DIR = path.join(DATA_DIR, 'backups');
-}
-// --- Fi de funcions de gestió de directoris ---
 
 
-let mainWindow;
-let isQuitting = false;
 
-// --- Funcions de gestió de dades (sense canvis) ---
 function loadSessionData() {
   if (!SESSION_FILE) return {};
   try {
@@ -209,10 +160,20 @@ async function cleanupOldBackups() {
     console.error('Error durant la neteja de backups:', error);
   }
 }
-// --- Fi de funcions de gestió de dades ---
+
+function loadGoogleConfigFromFile() {
+    if (!fs.existsSync(GOOGLE_CONFIG_PATH)) return null;
+    try {
+        return JSON.parse(fs.readFileSync(GOOGLE_CONFIG_PATH, 'utf8'));
+    } catch(err) {
+        console.error('Error llegint el fitxer de configuració de Google:', err);
+        return null;
+    }
+}
 
 function createWindow() {
   ensureDirectoriesExist();
+  loadGoogleCredentials(); 
   const sessionData = loadSessionData();
 
   mainWindow = new BrowserWindow({
@@ -277,12 +238,9 @@ function createWindow() {
 
 app.on('before-quit', async (event) => {
   if (isQuitting) {
-    return; // Si ja estem sortint, no fem res i deixem que es tanqui
+    return;
   }
-
-  event.preventDefault(); // Aturem el primer intent de sortida
-
-  // Desa la sessió de la finestra abans de mostrar el diàleg
+  event.preventDefault();
   if (mainWindow && !mainWindow.isDestroyed()) {
     const windowBounds = mainWindow.getBounds();
     await saveSessionWindowData({
@@ -292,7 +250,6 @@ app.on('before-quit', async (event) => {
       y: windowBounds.y
     });
   }
-
   const choice = await dialog.showMessageBox(mainWindow, {
     type: 'question',
     buttons: ['Sí, sortir', 'No, cancel·lar'],
@@ -301,29 +258,20 @@ app.on('before-quit', async (event) => {
     message: 'Estàs segur que vols sortir?',
     cancelId: 1,
   });
-
-  if (choice.response === 0) { // Si l'usuari confirma la sortida
+  if (choice.response === 0) {
     isQuitting = true;
-
-    // Primer, fem la còpia de seguretat.
     await createBackup();
     await cleanupOldBackups();
-
-    // Després, notifiquem al renderer que desi les seves dades.
-    // Això es fa de forma asíncrona, no esperem resposta.
     if (mainWindow && !mainWindow.isDestroyed()) {
       mainWindow.webContents.send('confirm-quit-signal');
     }
-    
-    // Donem un petit marge de temps al renderer per desar i després tanquem.
-    // Això és més robust que esperar un senyal de tornada.
     setTimeout(() => {
-      app.exit(); // Usem app.exit() per a un tancament més directe
-    }, 1500); // 1.5 segons hauria de ser suficient per a l'escriptura a disc.
+      app.exit();
+    }, 1500);
   }
 });
 
-// --- Gestors IPC i esdeveniments de l'App (sense canvis funcionals) ---
+
 ipcMain.handle('load-app-data', async () => {
   if (!DATA_FILE) return null;
   try {
@@ -331,74 +279,240 @@ ipcMain.handle('load-app-data', async () => {
       const fileContent = fs.readFileSync(DATA_FILE, 'utf8');
       return fileContent.trim() ? JSON.parse(fileContent) : null;
     }
-  } catch (error) {
-    console.error('Error carregant les dades de l\'aplicació:', error);
-    dialog.showErrorBox("Error de Càrrega", `No s'han pogut carregar les dades des de ${DATA_FILE}.\nError: ${error.message}`);
-  }
+  } catch (error) { console.error('Error carregant dades:', error); }
   return null;
 });
 
 ipcMain.handle('save-app-data', (event, data) => saveDataWithErrorHandling(DATA_FILE, data));
 
+
 ipcMain.handle('google-auth-start', async () => {
-  if (!googleCredentials) {
-    if (!loadGoogleCredentials()) return { success: false, message: "Falta el fitxer de credencials." };
+  if (!googleAuthClient) {
+    return { success: false, message: "El client d'autenticació de Google no s'ha iniciat correctament." };
   }
 
   return new Promise((resolve) => {
-    // Creem un servidor en un port aleatori per evitar conflictes
-    const server = http.createServer(async (req, res) => {
-      const { searchParams } = new url.URL(req.url, `http://localhost:${server.address().port}`);
-      const code = searchParams.get('code');
+    const server = http.createServer();
+
+    const closeServer = () => {
+        if (server.listening) {
+            server.close();
+        }
+    };
+
+    server.listen(0, '127.0.0.1', () => {
+      const { port } = server.address();
+      const redirectUri = `http://localhost:${port}`;
+      googleAuthClient.redirectUri = redirectUri;
+
+      const authUrl = googleAuthClient.generateAuthUrl({
+        access_type: 'offline', prompt: 'consent',
+        scope: ['https://www.googleapis.com/auth/calendar'],
+      });
+      require('electron').shell.openExternal(authUrl);
+    });
+
+    server.on('request', async (req, res) => {
+      const qs = new url.URL(req.url, 'http://localhost').searchParams;
+      const code = qs.get('code');
       
       if (!code) {
-        res.end('<h1>Esperant resposta de Google...</h1><p>Si veus aquest missatge, pot ser que hagis de reintentar la connexió.</p>');
+        res.end('<h1>Esperant codi...</h1>');
         return;
       }
-      
-      res.end('<h1>Autenticació completada!</h1><p>Pots tancar aquesta pestanya del navegador.</p>');
-      server.close();
 
       try {
         const { tokens } = await googleAuthClient.getToken(code);
         googleAuthClient.setCredentials(tokens);
         fs.writeFileSync(GOOGLE_TOKENS_PATH, JSON.stringify(tokens));
-        console.log('Tokens de Google guardats correctament.');
+        
+        mainWindow.webContents.send('google-auth-success');
+        res.end('<h1>Autenticació completada!</h1><p>Pots tancar aquesta pestanya.</p>');
+        resolve({ success: true });
+
+      } catch (e) {
+        console.error("Error en el callback d'autenticació:", e);
+        mainWindow.webContents.send('google-auth-error', e.message);
+        res.writeHead(500);
+        res.end('<h1>Error d\'autenticació</h1>');
+        resolve({ success: false, message: e.message });
+      } finally {
+        closeServer();
+      }
+    });
+
+    server.on('error', (err) => {
+      dialog.showErrorBox('Error de Servidor', `No s'ha pogut iniciar el servidor d'autenticació: ${err.message}`);
+      resolve({ success: false, message: err.message });
+    });
+  });
+ if (!googleAuthClient) {
+    return { success: false, message: "El client d'autenticació de Google no s'ha iniciat correctament." };
+  }
+  return new Promise((resolve) => {
+    const server = http.createServer();
+    
+    server.on('request', async (req, res) => {
+      try {
+        const port = server.address()?.port;
+        if (!port) throw new Error("El servidor d'autenticació ja no està actiu.");
+
+        const qs = new url.URL(req.url, `http://localhost:${port}`).searchParams;
+        const code = qs.get('code');
+        
+        if (!code) {
+          res.end('<h1>Esperant resposta...</h1>');
+          return;
+        }
+
+        res.end('<h1>Autenticació completada!</h1><p>Pots tancar aquesta pestanya.</p>');
+        server.close();
+
+        const { tokens } = await googleAuthClient.getToken(code);
+        googleAuthClient.setCredentials(tokens);
+        fs.writeFileSync(GOOGLE_TOKENS_PATH, JSON.stringify(tokens));
         mainWindow.webContents.send('google-auth-success');
         resolve({ success: true });
+
       } catch (e) {
-        console.error('Error obtenint el token de Google:', e);
+        console.error("Error en el callback d'autenticació:", e);
         mainWindow.webContents.send('google-auth-error', e.message);
+        if (server.listening) server.close();
         resolve({ success: false, message: e.message });
       }
-    }).listen(0, '127.0.0.1', () => { // `listen(0)` fa que el sistema operatiu triï un port lliure
-      const port = server.address().port;
+    });
+    
+    server.listen(0, '127.0.0.1', () => {
+      const port = server.address()?.port;
+      if (!port) {
+        const msg = "No s'ha pogut assignar un port per a l'autenticació.";
+        dialog.showErrorBox('Error de Xarxa', msg);
+        resolve({ success: false, message: msg });
+        return;
+      }
+
       const redirectUri = `http://localhost:${port}`;
-      
-      googleAuthClient = new google.auth.OAuth2(
-        googleCredentials.client_id,
-        googleCredentials.client_secret,
-        redirectUri
-      );
+      googleAuthClient.redirectUri = redirectUri;
 
       const authUrl = googleAuthClient.generateAuthUrl({
-        access_type: 'offline',
-        prompt: 'consent',
+        access_type: 'offline', prompt: 'consent',
         scope: ['https://www.googleapis.com/auth/calendar.readonly', 'https://www.googleapis.com/auth/calendar.events.owned'],
       });
       require('electron').shell.openExternal(authUrl);
     });
 
     server.on('error', (err) => {
-      console.error('Error del servidor d\'autenticació:', err);
+      dialog.showErrorBox('Error de Servidor', `No s'ha pogut iniciar el servidor d'autenticació: ${err.message}`);
+      resolve({ success: false, message: err.message });
+    });
+  });
+  
+  if (!googleAuthClient) {
+    return { success: false, message: "El client d'autenticació de Google no s'ha iniciat correctament." };
+  }
+  return new Promise((resolve) => {
+    const server = http.createServer(async (req, res) => {
+      try {
+        const port = server.address()?.port;
+        if (!port) throw new Error("No s'ha pogut obtenir el port del servidor d'autenticació.");
+        const qs = new url.URL(req.url, `http://localhost:${port}`).searchParams;
+        const code = qs.get('code');
+        if (!code) { res.end('<h1>Esperant resposta de Google...</h1>'); return; }
+        res.end('<h1>Autenticació completada!</h1><p>Pots tancar aquesta pestanya.</p>');
+        server.close();
+        const { tokens } = await googleAuthClient.getToken(code);
+        googleAuthClient.setCredentials(tokens);
+        fs.writeFileSync(GOOGLE_TOKENS_PATH, JSON.stringify(tokens));
+        mainWindow.webContents.send('google-auth-success');
+        resolve({ success: true });
+      } catch (e) {
+        console.error("Error en el callback d'autenticació:", e);
+        mainWindow.webContents.send('google-auth-error', e.message);
+        server.close();
+        resolve({ success: false, message: e.message });
+      }
+    }).listen(0, '127.0.0.1', () => {
+      const port = server.address().port;
+      const redirectUri = `http://localhost:${port}`;
+      googleAuthClient.redirectUri = redirectUri;
+      const authUrl = googleAuthClient.generateAuthUrl({
+        access_type: 'offline', prompt: 'consent',
+        scope: ['https://www.googleapis.com/auth/calendar'],
+      });
+      require('electron').shell.openExternal(authUrl);
+    });
+    server.on('error', (err) => {
+      dialog.showErrorBox('Error de Xarxa', `No s'ha pogut iniciar el servidor d'autenticació: ${err.message}`);
       resolve({ success: false, message: err.message });
     });
   });
 });
 
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit();
+ipcMain.handle('load-google-config', async () => {
+  return loadGoogleConfigFromFile();
+});
+
+ipcMain.handle('save-google-config', (event, config) => {
+  try {
+    fs.writeFileSync(GOOGLE_CONFIG_PATH, JSON.stringify(config, null, 2));
+    return { success: true };
+  } catch (err) {
+    console.error('Error desant configuració de Google:', err);
+    return { success: false, message: err.message };
+  }
+});
+
+ipcMain.handle('google-get-calendar-list', async () => {
+  try {
+    if (!googleAuthClient || !googleAuthClient.credentials.access_token) {
+        throw new Error('No autenticat. Si us plau, connecta\'t a Google primer.');
+    }
+    const calendar = google.calendar({ version: 'v3', auth: googleAuthClient });
+    const res = await calendar.calendarList.list();
+    return {
+      success: true,
+      calendars: res.data.items?.map(cal => ({
+        id: cal.id,
+        summary: cal.summary,
+        backgroundColor: cal.backgroundColor,
+        primary: cal.primary,
+      })) || [],
+    };
+  } catch (error) {
+    console.error('Error obtenint la llista de calendaris:', error);
+    return { success: false, message: error.message };
+  }
+});
+
+ipcMain.handle('google-get-events', async () => {
+  try {
+    const config = loadGoogleConfigFromFile(); // <<< CANVI CLAU: Crida a la funció directa
+    if (!config?.selectedCalendarIds?.length) return { success: true, events: [] };
+    if (!googleAuthClient?.credentials?.access_token) throw new Error('No autenticat.');
+    
+    const calendar = google.calendar({ version: 'v3', auth: googleAuthClient });
+    const timeMin = new Date(); timeMin.setMonth(timeMin.getMonth() - 6);
+    const timeMax = new Date(); timeMax.setMonth(timeMax.getMonth() + 6);
+    const allEvents = [];
+
+    for (const calendarId of config.selectedCalendarIds) {
+      const res = await calendar.events.list({
+        calendarId, timeMin: timeMin.toISOString(), timeMax: timeMax.toISOString(),
+        singleEvents: true, orderBy: 'startTime',
+      });
+      const events = res.data.items?.map(event => ({
+        id: event.id, title: event.summary,
+        start: event.start.dateTime || event.start.date,
+        end: event.end.dateTime || event.end.date,
+        allDay: !!event.start.date, backgroundColor: '#D32F2F', borderColor: '#D32F2F',
+        extendedProps: { type: 'google' }
+      })) || [];
+      allEvents.push(...events);
+    }
+    return { success: true, events: allEvents };
+  } catch (error) {
+    console.error('Error obtenint esdeveniments de Google:', error);
+    return { success: false, message: error.message };
   }
 });
 
@@ -415,4 +529,3 @@ process.on('uncaughtException', (error) => {
 });
 
 app.whenReady().then(createWindow);
-// END OF FILE: ./main.js

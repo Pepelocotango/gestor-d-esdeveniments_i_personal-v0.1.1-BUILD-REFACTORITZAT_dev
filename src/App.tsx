@@ -5,7 +5,7 @@ import { EventDataProvider } from './contexts/EventDataContext';
 import { useEventDataManager } from './hooks/useEventDataManager';
 import { THEME_STORAGE_KEY } from './constants';
 import Modal from './components/ui/Modal';
-import { ModalState, ModalType, InitialEventFrameData, ModalData, EventDataConteImplicits, EventFrame, SummaryRow, AppData, Assignment, AssignmentStatus } from './types';
+import { ModalState, ModalType, InitialEventFrameData, ModalData, EventDataConteImplicits, EventFrame, SummaryRow, AppData, Assignment, AssignmentStatus, GoogleCalendar } from './types';
 import { formatDateDMY } from './utils/dateFormat';
 
 const MainDisplay = lazy(() => import('./components/MainDisplay'));
@@ -28,6 +28,10 @@ declare global {
       startGoogleAuth: () => Promise<{ success: boolean; message?: string }>;
       onGoogleAuthSuccess: (callback: () => void) => void;
       onGoogleAuthError: (callback: (event: any, message: string) => void) => void;
+      getCalendarList: () => Promise<{ success: boolean; calendars?: GoogleCalendar[]; message?: string }>;
+      saveGoogleConfig: (config: { selectedCalendarIds: string[] }) => Promise<{ success: boolean }>;
+      loadGoogleConfig: () => Promise<{ selectedCalendarIds: string[] } | null>;
+      getGoogleEvents: () => Promise<{ success: boolean, events?: any[], message?: string }>;
     };
   }
 }

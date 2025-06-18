@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { GoogleCalendar } from '@/types';
 
 interface GoogleSettingsModalProps {
   onClose: () => void;
@@ -6,8 +7,65 @@ interface GoogleSettingsModalProps {
 }
 
 const GoogleSettingsModal: React.FC<GoogleSettingsModalProps> = ({ onClose, showToast }) => {
-  // En futurs passos, aquí afegirem la lògica per carregar l'estat,
-  // llistar calendaris i gestionar la desconnexió.
+  const [calendars, setCalendars] = useState<GoogleCalendar[]>([]);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchAndLoadConfig = async () => {
+      if (window.electronAPI?.loadGoogleConfig && window.electronAPI?.getCalendarList) {
+        try {
+          const [configResult, calendarsResult] = await Promise.all([
+            window.electronAPI.loadGoogleConfig(),
+            window.electronAPI.getCalendarList()
+          ]);
+
+          if (configResult?.selectedCalendarIds) {
+            setSelectedIds(new Set(configResult.selectedCalendarIds));
+          }
+
+          if (calendarsResult.success) {
+            setCalendars(calendarsResult.calendars || []);
+          } else {
+            setError(calendarsResult.message || 'Error desconegut obtenint calendaris.');
+          }
+        } catch (err) {
+          setError((err as Error).message);
+        } finally {
+          setLoading(false);
+        }
+      } else {
+          setError("Les funcions de l'API d'Electron no estan disponibles.");
+          setLoading(false);
+      }
+    };
+    fetchAndLoadConfig();
+  }, []);
+
+  const handleToggle = (calendarId: string) => {
+    setSelectedIds(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(calendarId)) {
+        newSet.delete(calendarId);
+      } else {
+        newSet.add(calendarId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleSave = async () => {
+    if (window.electronAPI?.saveGoogleConfig) {
+      const result = await window.electronAPI.saveGoogleConfig({ selectedCalendarIds: Array.from(selectedIds) });
+      if (result.success) {
+        showToast('Configuració de calendaris desada.', 'success');
+        onClose();
+      } else {
+        showToast('No s\'ha pogut desar la configuració.', 'error');
+      }
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -18,23 +76,33 @@ const GoogleSettingsModal: React.FC<GoogleSettingsModalProps> = ({ onClose, show
         </p>
       </div>
 
-      {/* Aquí anirà la llista de calendaris */}
-      <div className="p-4 border rounded-md">
-        <p className="text-center text-gray-500">La llista de calendaris apareixerà aquí.</p>
+      <div className="p-4 border rounded-md min-h-[200px]">
+        {loading && <p className="text-center text-gray-500">Carregant calendaris...</p>}
+        {error && <p className="text-center text-red-500">{error}</p>}
+        {!loading && !error && (
+          <ul className="space-y-2">
+            {calendars.map(cal => (
+              <li key={cal.id} className="flex items-center">
+                <input
+                  type="checkbox"
+                  id={cal.id}
+                  checked={selectedIds.has(cal.id)}
+                  onChange={() => handleToggle(cal.id)}
+                  className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                  style={{ accentColor: cal.backgroundColor }}
+                />
+                <label htmlFor={cal.id} className="ml-3 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  {cal.summary} {cal.primary && '(Principal)'}
+                </label>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
       
-      <div className="flex justify-between items-center pt-4 border-t dark:border-gray-700">
-        <button
-          onClick={() => { /* Lògica de desconnexió */ showToast('Desconnectat de Google (funció no implementada).', 'info'); }}
-          className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md"
-        >
-          Desconnectar
-        </button>
-        <button
-          onClick={onClose}
-          className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md border border-gray-300 dark:text-gray-200 dark:bg-gray-600 dark:hover:bg-gray-500"
-        >
-          Tancar
+      <div className="flex justify-end pt-4 border-t dark:border-gray-700">
+        <button onClick={handleSave} className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md">
+          Desar i Tancar
         </button>
       </div>
     </div>

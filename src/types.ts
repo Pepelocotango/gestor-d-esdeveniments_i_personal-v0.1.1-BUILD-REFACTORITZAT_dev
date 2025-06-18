@@ -172,3 +172,9 @@ export interface CalendarEventFrameEvent extends BaseCalendarEvent {
 }
 
 export type CalendarEventType = CalendarAssignmentEvent | CalendarEventFrameEvent;
+export interface GoogleCalendar {
+  id: string;
+  summary: string;
+  backgroundColor: string;
+  primary?: boolean;
+}

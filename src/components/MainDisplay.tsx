@@ -67,7 +67,7 @@ const MainDisplay: React.FC<MainDisplayProps> = ({
     setFilterUIPerson
 }) => {
   const { eventFrames, peopleGroups, getPersonGroupById, getEventFrameById, getAssignmentById, updateAssignment, updateEventFrame } = useEventData();
-
+  const [googleEvents, setGoogleEvents] = useState<any[]>([]);
   const [conflictDialog, setConflictDialog] = useState<{ message: string; personName: string | null } | null>(null);
   
   const [expandedEventFrameIds, setExpandedEventFrameIds] = useState<Set<string>>(new Set());
@@ -231,6 +231,21 @@ useEffect(() => {
     prevIsAnyFilterActive.current = isAnyFilterActive;
 
   }, [filteredAndSortedEventFrames, filterText, filterPlace, filterStatus, filterDate, localFilterUIPerson, filterUIEventFrame]);
+    useEffect(() => {
+        const loadGoogleEvents = async () => {
+          if (window.electronAPI) {
+            const result = await window.electronAPI.getGoogleEvents();
+            if (result.success && result.events) {
+              setGoogleEvents(result.events);
+            } else if (result.message) {
+              // Podríem mostrar un toast aquí si volem ser més explícits
+              console.error("Error carregant esdeveniments de Google:", result.message);
+            }
+          }
+        }
+        loadGoogleEvents();
+      }, []); // Es carrega un cop en muntar el component
+
   useEffect(() => { setCurrentlyDisplayedFrames(filteredAndSortedEventFrames); }, [filteredAndSortedEventFrames, setCurrentlyDisplayedFrames]);  useEffect(() => { setFilterUIPerson(localFilterUIPerson); }, [localFilterUIPerson, setFilterUIPerson]);
 
   const handleEditAssignment = (eventFrameId: string, assignmentId: string) => {
@@ -275,17 +290,29 @@ useEffect(() => {
                 height="auto"
                 contentHeight="auto"
                 aspectRatio={1.5}
-                events={eventFrames.map(ef => ({
-                  id: ef.id,
-                  title: ef.name,
-                  start: ef.startDate,
-                  end: addDaysISO(ef.endDate, 1),
-                  allDay: true,
-                  className: ef.personnelComplete ? 'event-complete' : 'event-incomplete'
-                }))}
+                events={[
+                ...eventFrames.map(ef => ({
+                id: ef.id,
+                title: ef.name,
+                start: ef.startDate,
+                end: addDaysISO(ef.endDate, 1),
+                allDay: true,
+                className: ef.personnelComplete ? 'event-complete' : 'event-incomplete',
+                extendedProps: { type: 'local' } // Afegim tipus per diferenciar
+                })),
+                ...googleEvents
+                ]}
                 dateClick={(info) => openModal('addEventFrame', { startDate: info.dateStr })}
-                eventClick={(info) => { const ef = getEventFrameById(info.event.id); if (ef) openModal('eventFrameDetails', { eventFrame: ef }); }}
-              />
+                eventClick={(info) => {
+                if (info.event.extendedProps.type === 'google') {
+                // Si és de Google, de moment no fem res al clic
+                info.jsEvent.preventDefault(); // Evita qualsevol acció per defecte
+                return;
+                }
+                const ef = getEventFrameById(info.event.id);
+                if (ef) openModal('eventFrameDetails', { eventFrame: ef });
+                }}
+                />
         </div>
       </CollapsibleSection>
 
