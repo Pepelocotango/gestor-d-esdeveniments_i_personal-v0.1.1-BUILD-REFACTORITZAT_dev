@@ -9,10 +9,22 @@ type AssignmentOperationResult = { success: boolean; message?: string; warningMe
 export const useEventDataManager = (): EventDataManagerReturn => {
   const [eventFrames, setEventFrames] = useState<EventFrame[]>([]);
   const [peopleGroups, setPeopleGroups] = useState<PersonGroup[]>([]);
+  const [googleEvents, setGoogleEvents] = useState<any[]>([]);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   const markUnsaved = useCallback(() => {
     setHasUnsavedChanges(true);
+  }, []);
+
+  const refreshGoogleEvents = useCallback(async () => {
+    if (window.electronAPI?.getGoogleEvents) {
+        const result = await window.electronAPI.getGoogleEvents();
+        if (result.success && result.events) {
+            setGoogleEvents(result.events);
+        } else if (result.message) {
+            console.error("Error refrescant esdeveniments de Google:", result.message);
+        }
+    }
   }, []);
 
   const addEventFrame = useCallback((newEventFrameData: Omit<EventFrame, 'id' | 'assignments' | 'personnelComplete'>): EventFrame => {
@@ -277,6 +289,10 @@ export const useEventDataManager = (): EventDataManagerReturn => {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [hasUnsavedChanges]);
 
+  useEffect(() => {
+    refreshGoogleEvents();
+  }, [refreshGoogleEvents]);
+
   return {
     eventFrames,
     peopleGroups,
@@ -297,5 +313,8 @@ export const useEventDataManager = (): EventDataManagerReturn => {
     setPersonnelComplete,
     hasUnsavedChanges,
     setHasUnsavedChanges,
+    googleEvents,
+    refreshGoogleEvents,
   };
 };
+

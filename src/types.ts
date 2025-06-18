@@ -110,6 +110,8 @@ export interface EventDataConteImplicits {
   setPersonnelComplete: (eventFrameId: string, complete: boolean) => void;
   hasUnsavedChanges: boolean;
   setHasUnsavedChanges: (value: boolean) => void;
+  googleEvents: any[];
+  refreshGoogleEvents: () => Promise<void>;
 }
 
 export type EventDataManagerReturn = Omit<EventDataConteImplicits, 'openModal'>;

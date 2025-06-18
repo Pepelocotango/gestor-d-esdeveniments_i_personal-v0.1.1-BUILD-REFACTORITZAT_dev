@@ -66,8 +66,7 @@ const MainDisplay: React.FC<MainDisplayProps> = ({
     onExportCurrentViewToCsv,
     setFilterUIPerson
 }) => {
-  const { eventFrames, peopleGroups, getPersonGroupById, getEventFrameById, getAssignmentById, updateAssignment, updateEventFrame } = useEventData();
-  const [googleEvents, setGoogleEvents] = useState<any[]>([]);
+const { eventFrames, googleEvents, peopleGroups, getPersonGroupById, getEventFrameById, getAssignmentById, updateAssignment, updateEventFrame } = useEventData();
   const [conflictDialog, setConflictDialog] = useState<{ message: string; personName: string | null } | null>(null);
   
   const [expandedEventFrameIds, setExpandedEventFrameIds] = useState<Set<string>>(new Set());
@@ -231,20 +230,6 @@ useEffect(() => {
     prevIsAnyFilterActive.current = isAnyFilterActive;
 
   }, [filteredAndSortedEventFrames, filterText, filterPlace, filterStatus, filterDate, localFilterUIPerson, filterUIEventFrame]);
-    useEffect(() => {
-        const loadGoogleEvents = async () => {
-          if (window.electronAPI) {
-            const result = await window.electronAPI.getGoogleEvents();
-            if (result.success && result.events) {
-              setGoogleEvents(result.events);
-            } else if (result.message) {
-              // Podríem mostrar un toast aquí si volem ser més explícits
-              console.error("Error carregant esdeveniments de Google:", result.message);
-            }
-          }
-        }
-        loadGoogleEvents();
-      }, []); // Es carrega un cop en muntar el component
 
   useEffect(() => { setCurrentlyDisplayedFrames(filteredAndSortedEventFrames); }, [filteredAndSortedEventFrames, setCurrentlyDisplayedFrames]);  useEffect(() => { setFilterUIPerson(localFilterUIPerson); }, [localFilterUIPerson, setFilterUIPerson]);
 

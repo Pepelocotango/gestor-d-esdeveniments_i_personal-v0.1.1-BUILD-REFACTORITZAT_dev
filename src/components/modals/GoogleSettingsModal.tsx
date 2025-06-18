@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { GoogleCalendar } from '@/types';
+import { useEventData } from '@/contexts/EventDataContext';
 
 interface GoogleSettingsModalProps {
   onClose: () => void;
@@ -7,6 +8,7 @@ interface GoogleSettingsModalProps {
 }
 
 const GoogleSettingsModal: React.FC<GoogleSettingsModalProps> = ({ onClose, showToast }) => {
+  const { refreshGoogleEvents } = useEventData();
   const [calendars, setCalendars] = useState<GoogleCalendar[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
@@ -60,6 +62,7 @@ const GoogleSettingsModal: React.FC<GoogleSettingsModalProps> = ({ onClose, show
       const result = await window.electronAPI.saveGoogleConfig({ selectedCalendarIds: Array.from(selectedIds) });
       if (result.success) {
         showToast('Configuració de calendaris desada.', 'success');
+        await refreshGoogleEvents();
         onClose();
       } else {
         showToast('No s\'ha pogut desar la configuració.', 'error');
