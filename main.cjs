@@ -345,53 +345,53 @@ ipcMain.handle('google-auth-start', async () => {
     if (!loadGoogleCredentials()) return { success: false, message: "Falta el fitxer de credencials." };
   }
 
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
+    // Creem un servidor en un port aleatori per evitar conflictes
     const server = http.createServer(async (req, res) => {
+      const { searchParams } = new url.URL(req.url, `http://localhost:${server.address().port}`);
+      const code = searchParams.get('code');
+      
+      if (!code) {
+        res.end('<h1>Esperant resposta de Google...</h1><p>Si veus aquest missatge, pot ser que hagis de reintentar la connexió.</p>');
+        return;
+      }
+      
+      res.end('<h1>Autenticació completada!</h1><p>Pots tancar aquesta pestanya del navegador.</p>');
+      server.close();
+
       try {
-        const qs = new url.URL(req.url, 'http://localhost').searchParams;
-        const code = qs.get('code');
-
-        res.end('<h1>Autenticació completada!</h1><p>Pots tancar aquesta pestanya.</p>');
-        server.close();
-
-        if (code) {
-          const { tokens } = await googleAuthClient.getToken(code);
-          googleAuthClient.setCredentials(tokens);
-          fs.writeFileSync(GOOGLE_TOKENS_PATH, JSON.stringify(tokens));
-          console.log('Tokens de Google guardats correctament.');
-          mainWindow.webContents.send('google-auth-success');
-          resolve({ success: true });
-        } else {
-          throw new Error('No s\'ha rebut cap codi d\'autorització de Google.');
-        }
+        const { tokens } = await googleAuthClient.getToken(code);
+        googleAuthClient.setCredentials(tokens);
+        fs.writeFileSync(GOOGLE_TOKENS_PATH, JSON.stringify(tokens));
+        console.log('Tokens de Google guardats correctament.');
+        mainWindow.webContents.send('google-auth-success');
+        resolve({ success: true });
       } catch (e) {
         console.error('Error obtenint el token de Google:', e);
         mainWindow.webContents.send('google-auth-error', e.message);
-        reject(e);
+        resolve({ success: false, message: e.message });
       }
-    }).listen(80, () => { // Utilitzem el port 80 perquè és l'estàndard per a http://localhost
+    }).listen(0, '127.0.0.1', () => { // `listen(0)` fa que el sistema operatiu triï un port lliure
+      const port = server.address().port;
+      const redirectUri = `http://localhost:${port}`;
+      
       googleAuthClient = new google.auth.OAuth2(
         googleCredentials.client_id,
         googleCredentials.client_secret,
-        'http://localhost' // Assegurem que la URI de redirecció és la correcta
+        redirectUri
       );
 
       const authUrl = googleAuthClient.generateAuthUrl({
         access_type: 'offline',
         prompt: 'consent',
-        scope: ['https://www.googleapis.com/auth/calendar'],
+        scope: ['https://www.googleapis.com/auth/calendar.readonly', 'https://www.googleapis.com/auth/calendar.events.owned'],
       });
       require('electron').shell.openExternal(authUrl);
     });
 
     server.on('error', (err) => {
-      if (err.code === 'EADDRINUSE') {
-        dialog.showErrorBox('Error de Xarxa', 'El port 80 ja està en ús per una altra aplicació. Tanca l\'altra aplicació i torna a intentar-ho.');
-        resolve({ success: false, message: 'Port 80 en ús.' });
-      } else {
-        console.error('Error del servidor d\'autenticació:', err);
-        reject(err);
-      }
+      console.error('Error del servidor d\'autenticació:', err);
+      resolve({ success: false, message: err.message });
     });
   });
 });

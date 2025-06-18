@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo, Suspense, lazy } from 'react';
 const { ipcRenderer } = window.require ? window.require('electron') : { ipcRenderer: null };
-import { ipcRenderer } from 'electron';
 
 import { EventDataProvider } from './contexts/EventDataContext';
 import { useEventDataManager } from './hooks/useEventDataManager';
@@ -9,7 +8,6 @@ import Modal from './components/ui/Modal';
 import { ModalState, ModalType, InitialEventFrameData, ModalData, EventDataConteImplicits, EventFrame, SummaryRow, AppData, Assignment, AssignmentStatus } from './types';
 import { formatDateDMY } from './utils/dateFormat';
 
-// Lazy load components
 const MainDisplay = lazy(() => import('./components/MainDisplay'));
 const Controls = lazy(() => import('./components/Controls'));
 const EventFrameFormModal = lazy(() => import('./components/modals/EventFrameFormModal'));
@@ -17,6 +15,7 @@ const AssignmentFormModal = lazy(() => import('./components/modals/AssignmentFor
 const PeopleGroupManagerModal = lazy(() => import('./components/modals/PeopleGroupManagerModal'));
 const ConfirmDeleteModal = lazy(() => import('./components/modals/ConfirmDeleteModal'));
 const EventFrameDetailsModal = lazy(() => import('./components/modals/EventFrameDetailsModal'));
+const GoogleSettingsModal = lazy(() => import('./components/modals/GoogleSettingsModal'));
 
 declare global {
   interface Window {
@@ -428,8 +427,10 @@ const App: React.FC = () => {
                   }}
                   showToast={showToast}
                 />;
-      case 'confirmDeletePersonGroup':
-        return null;
+      
+      case 'googleSettings':
+        return <GoogleSettingsModal onClose={closeModal} showToast={showToast} />;
+      
       default:
         return null;
     }

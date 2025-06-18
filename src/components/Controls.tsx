@@ -234,6 +234,15 @@ const Controls: React.FC<ControlsProps> = ({
                 <GoogleIcon />
                 <span>Connectar Google</span>
             </button>
+            <button
+                onClick={() => onOpenModal('googleSettings')}
+                className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                title="Configuració de Google Calendar"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.982.54 2.258 0 3.24s-1.566 2.258-2.106 2.106c-1.372-.836-.836 2.942.534 2.106.982-.54 2.258-.54 3.24 0 .982.54 2.258 1.566 2.106 2.106-.836 1.372.734 2.942 2.106.534.54-.982.54-2.258 0-3.24s1.566-2.258 2.106-2.106c1.372.836.836-2.942-.534-2.106-.982.54-2.258.54-3.24 0a1.532 1.532 0 01-2.286-.948zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
+              </svg>
+            </button>
         </div>
     </div>
   );

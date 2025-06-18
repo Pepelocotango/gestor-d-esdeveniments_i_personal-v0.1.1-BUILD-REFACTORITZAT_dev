@@ -50,7 +50,7 @@
   },
   "build": {
     "appId": "com.gestorevents.app",
-    "productName": "Gestor-de-Esdeveniments-i-Personal v.0.1.2",
+    "productName": "gestor-esdeveniments",
     "directories": {
       "output": "dist"
     },

@@ -38,6 +38,8 @@ export interface EventFrame {
   generalNotes?: string;
   personnelComplete?: boolean;
   assignments: Assignment[];
+  googleEventId?: string;
+  googleCalendarId?: string;
 }
 
 export type EventFrameForExport = Omit<EventFrame, 'assignments'>;
@@ -62,7 +64,7 @@ export type ModalType =
   | 'eventFrameDetails'
   | 'confirmDeleteEventFrame'
   | 'confirmDeleteAssignment'
-  | 'confirmDeletePersonGroup'
+  | 'googleSettings'
   | null;
 
 export interface ModalData {
@@ -91,7 +93,7 @@ export interface ModalState {
 export interface EventDataConteImplicits {
   eventFrames: EventFrame[];
   peopleGroups: PersonGroup[];
-  addEventFrame: (eventFrame: Omit<EventFrame, 'id' | 'assignments' | 'personnelComplete'>) => void;
+  addEventFrame: (eventFrame: Omit<EventFrame, 'id' | 'assignments' | 'personnelComplete'>) => EventFrame;
   updateEventFrame: (eventFrame: EventFrame) => void;
   deleteEventFrame: (eventFrameId: string) => void;
   getEventFrameById: (eventFrameId: string) => EventFrame | undefined;
