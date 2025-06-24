@@ -54,6 +54,11 @@ module.exports = {
             color: theme('colors.gray.300'),
             textDecoration: 'none',
           },
+          
+          // <<< NOVA REGLA PER AL FONS DE LA CAPÇALERA >>>
+          '.fc-col-header': {
+            backgroundColor: theme('colors.gray.700'),
+          },
 
           // Números dels dies
           '.fc-daygrid-day-number': {
