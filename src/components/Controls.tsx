@@ -11,6 +11,8 @@ interface ControlsProps {
   peopleGroups: PersonGroup[];
   showToast: (message: string, type?: 'success' | 'error' | 'info' | 'warning') => void;
   hasUnsavedChanges: boolean;
+  onSyncWithGoogle: () => void; 
+  googleAuth: any; 
 }
 
 const Controls: React.FC<ControlsProps> = ({
@@ -19,6 +21,8 @@ const Controls: React.FC<ControlsProps> = ({
     onOpenModal,
     showToast,
     hasUnsavedChanges,
+    onSyncWithGoogle,
+    googleAuth, 
 }) => {
   const { loadData, exportData, setHasUnsavedChanges } = useEventData();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -193,7 +197,7 @@ const Controls: React.FC<ControlsProps> = ({
         </div>
         
         <div className="flex items-center gap-2">
-            <button onClick={() => { /* TODO */ }} className="flex items-center justify-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-3 rounded-md transition-colors text-sm" title="Sincronitzar manualment amb Google Calendar">
+            <button onClick={() => {onSyncWithGoogle}} className="flex items-center justify-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-3 rounded-md transition-colors text-sm" title="Sincronitzar manualment amb Google Calendar">
                 <SyncIcon /> Sincronitzar
             </button>
             <button onClick={() => onOpenModal('googleSettings')} className="flex items-center justify-center gap-2 bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-3 rounded-md transition-colors text-sm" title="Configurar la connexió amb Google">
