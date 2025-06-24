@@ -45,7 +45,7 @@ interface ToastState {
 
 const App: React.FC = () => {
   const eventDataManagerHookResult = useEventDataManager();
-  const { loadData: loadDataFromManager, exportData: exportDataFromManager, setHasUnsavedChanges, hasUnsavedChanges } = eventDataManagerHookResult;
+  const { loadData: loadDataFromManager, exportData: exportDataFromManager, setHasUnsavedChanges, hasUnsavedChanges, syncWithGoogle } = eventDataManagerHookResult;
 
   const [theme, setTheme] = useState(() => localStorage.getItem(THEME_STORAGE_KEY) || 'light');
   const [modalState, setModalState] = useState<ModalState>({ type: null, data: null });
@@ -489,6 +489,8 @@ const App: React.FC = () => {
                     peopleGroups={eventDataManagerHookResult.peopleGroups}
                     showToast={showToast}
                     hasUnsavedChanges={hasUnsavedChanges}
+                    onOpenGoogleSettings={() => openModal('googleSettings')}
+                    onSyncWithGoogle={syncWithGoogle}
                     />
                 </Suspense>
             </div>

@@ -1,7 +1,7 @@
 import React, { ChangeEvent, useRef } from 'react';
 import { useEventData } from '../contexts/EventDataContext';
 import { PersonGroup, ModalType } from '../types';
-import { SaveIcon, LoadIcon, SunIcon, MoonIcon, UsersIcon, InfoIcon, TrashIcon, GoogleIcon } from '../constants';
+import { SaveIcon, LoadIcon, SunIcon, MoonIcon, UsersIcon, InfoIcon, TrashIcon, GoogleIcon, SyncIcon } from '../constants';
 import { migrateData, validateMigratedData } from '../utils/dataMigration';
 
 interface ControlsProps {
@@ -150,28 +150,18 @@ const Controls: React.FC<ControlsProps> = ({
   };
 
   return (
-    <div className="p-2 bg-gray-100 dark:bg-gray-800 shadow-md rounded-lg w-full flex items-center justify-between gap-2">
+    <div className="p-2 bg-gray-100 dark:bg-gray-800 shadow-md rounded-lg w-full flex flex-col gap-2">
+      {/* Fila Superior */}
+      <div className="flex items-center justify-between w-full">
         <div className="flex items-center gap-2">
-            <button
-                onClick={triggerLoadFile}
-                className="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-3 rounded-md transition-colors text-sm"
-                title="Carregar totes les dades des d'un fitxer JSON"
-            >
+            <button onClick={triggerLoadFile} className="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-3 rounded-md transition-colors text-sm" title="Carregar totes les dades des d'un fitxer JSON">
                 <LoadIcon /> Carregar Tot
             </button>
             <input type="file" ref={fileInputRef} onChange={handleLoadAllData} accept=".json" className="hidden" aria-hidden="true" />
-            <button
-                onClick={() => handleSaveData('all')}
-                className="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-3 rounded-md transition-colors text-sm"
-                title="Guardar totes les dades a un fitxer JSON"
-            >
+            <button onClick={() => handleSaveData('all')} className="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-3 rounded-md transition-colors text-sm" title="Guardar totes les dades a un fitxer JSON">
                 <SaveIcon /> Guardar Tot
             </button>
-             <button
-                onClick={handleStartEmpty}
-                className="flex items-center justify-center gap-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-3 rounded-md transition-colors text-sm"
-                title="Començar de zero (esborra totes les dades actuals)"
-            >
+             <button onClick={handleStartEmpty} className="flex items-center justify-center gap-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-3 rounded-md transition-colors text-sm" title="Començar de zero (esborra totes les dades actuals)">
                 <TrashIcon className="w-4 h-4" /> Començar de Zero
             </button>
         </div>
@@ -181,39 +171,33 @@ const Controls: React.FC<ControlsProps> = ({
             <InfoIcon className="w-4 h-4" /> Canvis sense desar
           </div>
         )}
+        
+        <button onClick={toggleTheme} className="rounded-full p-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500" title={theme === 'dark' ? 'Canviar a tema clar' : 'Canviar a tema fosc'}>
+            {theme === 'dark' ? <SunIcon className="w-5 h-5 text-yellow-400" /> : <MoonIcon className="w-5 h-5 text-gray-700" />}
+        </button>
+      </div>
 
-        <div className="flex items-center gap-2">
-            <button
-                onClick={triggerLoadPeopleFile}
-                className="flex items-center justify-center gap-2 bg-sky-500 hover:bg-sky-600 text-white font-semibold py-2 px-3 rounded-md transition-colors text-sm"
-                title="Carregar només dades de persones des d'un fitxer JSON"
-            >
+      {/* Fila Inferior */}
+      <div className="flex items-center justify-between w-full">
+         <div className="flex items-center gap-2">
+            <button onClick={triggerLoadPeopleFile} className="flex items-center justify-center gap-2 bg-sky-500 hover:bg-sky-600 text-white font-semibold py-2 px-3 rounded-md transition-colors text-sm" title="Carregar només dades de persones">
                 <LoadIcon /> Carregar Persones
             </button>
-            <input type="file" ref={peopleFileInputRef} onChange={handleLoadPeopleData} accept=".json" className="hidden" aria-hidden="true" />
-            
-            <button
-                onClick={() => handleSaveData('people')}
-                className="flex items-center justify-center gap-2 bg-teal-500 hover:bg-teal-600 text-white font-semibold py-2 px-3 rounded-md transition-colors text-sm"
-                title="Guardar només les dades de persones a un fitxer JSON"
-            >
+            <input type="file" ref={peopleFileInputRef} onChange={handleLoadPeopleData} accept=".json" className="hidden" />
+            <button onClick={() => handleSaveData('people')} className="flex items-center justify-center gap-2 bg-teal-500 hover:bg-teal-600 text-white font-semibold py-2 px-3 rounded-md transition-colors text-sm" title="Guardar només les dades de persones">
                 <SaveIcon /> Guardar Persones
             </button>
-
-            <button
-                onClick={() => onOpenModal('managePeople')}
-                className="flex items-center justify-center gap-2 bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-3 rounded-md transition-colors text-sm"
-                title="Gestionar la llista de persones i grups"
-            >
+            <button onClick={() => onOpenModal('managePeople')} className="flex items-center justify-center gap-2 bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-3 rounded-md transition-colors text-sm" title="Gestionar la llista de persones i grups">
                 <UsersIcon /> Gestionar Persones
             </button>
-            <button
-                onClick={toggleTheme}
-                className="rounded-full p-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                aria-label={theme === 'dark' ? 'Canviar a tema clar' : 'Canviar a tema fosc'}
-                title={theme === 'dark' ? 'Canviar a tema clar' : 'Canviar a tema fosc'}
-            >
-                {theme === 'dark' ? <SunIcon className="w-5 h-5 text-yellow-400" /> : <MoonIcon className="w-5 h-5 text-gray-700" />}
+        </div>
+        
+        <div className="flex items-center gap-2">
+            <button onClick={() => { /* TODO */ }} className="flex items-center justify-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-3 rounded-md transition-colors text-sm" title="Sincronitzar manualment amb Google Calendar">
+                <SyncIcon /> Sincronitzar
+            </button>
+            <button onClick={() => onOpenModal('googleSettings')} className="flex items-center justify-center gap-2 bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-3 rounded-md transition-colors text-sm" title="Configurar la connexió amb Google">
+                <GoogleIcon /> Configurar
             </button>
             <button
                 onClick={async () => {
@@ -234,16 +218,8 @@ const Controls: React.FC<ControlsProps> = ({
                 <GoogleIcon />
                 <span>Connectar Google</span>
             </button>
-            <button
-                onClick={() => onOpenModal('googleSettings')}
-                className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
-                title="Configuració de Google Calendar"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.982.54 2.258 0 3.24s-1.566 2.258-2.106 2.106c-1.372-.836-.836 2.942.534 2.106.982-.54 2.258-.54 3.24 0 .982.54 2.258 1.566 2.106 2.106-.836 1.372.734 2.942 2.106.534.54-.982.54-2.258 0-3.24s1.566-2.258 2.106-2.106c1.372.836.836-2.942-.534-2.106-.982.54-2.258.54-3.24 0a1.532 1.532 0 01-2.286-.948zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
-              </svg>
-            </button>
         </div>
+      </div>
     </div>
   );
 };

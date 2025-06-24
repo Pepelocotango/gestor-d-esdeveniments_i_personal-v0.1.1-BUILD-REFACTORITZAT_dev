@@ -131,6 +131,13 @@ export const PersonAddIcon = ({ className = "w-5 h-5" } : {className?: string}) 
     <path d="M2 13c0-1 1-2 3-2h5.259a4.5 4.5 0 0 1 .254-.834H5a2 2 0 0 0-2 2v2h4a4.5 4.5 0 0 1 .502-1z"/>
   </svg>
 );
+
+export const SyncIcon = ({ className = "w-5 h-5" } : {className?: string}) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0011.664 0l3.181-3.183m-11.664 0l4.992-4.993m-4.993 0l-3.181 3.183a8.25 8.25 0 000 11.664l3.181 3.183" />
+  </svg>
+);
+
 export const GoogleIcon = ({ className = "w-5 h-5" }) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" className={className}>
     <path fill="#4285F4" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4C12.955 4 4 12.955 4 24s8.955 20 20 20s20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z" />

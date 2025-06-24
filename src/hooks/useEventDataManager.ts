@@ -278,6 +278,12 @@ export const useEventDataManager = (): EventDataManagerReturn => {
     markUnsaved();
   }, [markUnsaved]);
 
+  const syncWithGoogle = useCallback(async () => {
+    console.log("Iniciant la sincronització manual amb Google Calendar...");
+    // TODO: Implementar la lògica completa de sincronització aquí.
+    showToast("Funció de sincronització encara no implementada.", 'info');
+  }, []);
+
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
       if (hasUnsavedChanges) {
@@ -315,6 +321,7 @@ export const useEventDataManager = (): EventDataManagerReturn => {
     setHasUnsavedChanges,
     googleEvents,
     refreshGoogleEvents,
+    syncWithGoogle,
   };
 };
 
