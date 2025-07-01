@@ -6,12 +6,15 @@ const generateId = () => Date.now().toString(36) + Math.random().toString(36).su
 
 type AssignmentOperationResult = { success: boolean; message?: string; warningMessage?: string };
 
-export const useEventDataManager = (): EventDataManagerReturn => {
+export const useEventDataManager = (
+  showToast: (message: string, type?: 'success' | 'error' | 'info' | 'warning', persistent?: boolean) => void,
+  
+): EventDataManagerReturn => {
   const [eventFrames, setEventFrames] = useState<EventFrame[]>([]);
   const [peopleGroups, setPeopleGroups] = useState<PersonGroup[]>([]);
   const [googleEvents, setGoogleEvents] = useState<any[]>([]);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-
+  const [isSyncing, setIsSyncing] = useState(false);
   const markUnsaved = useCallback(() => {
     setHasUnsavedChanges(true);
   }, []);
@@ -46,10 +49,10 @@ export const useEventDataManager = (): EventDataManagerReturn => {
     markUnsaved();
   }, [markUnsaved]);
 
-  const deleteEventFrame = useCallback((eventFrameId: string) => {
+ const deleteEventFrame = useCallback((eventFrameId: string) => {
     setEventFrames(prev => prev.filter(ef => ef.id !== eventFrameId));
-    markUnsaved();
-  }, [markUnsaved]);
+markUnsaved();
+}, [markUnsaved]);
 
   const getEventFrameById = useCallback((eventFrameId: string): EventFrame | undefined => {
     return eventFrames.find(ef => ef.id === eventFrameId);
@@ -271,18 +274,33 @@ export const useEventDataManager = (): EventDataManagerReturn => {
       eventFrames: eventFramesForExport,
       assignments: allAssignmentsList,
     };
-  }, [eventFrames, peopleGroups]);
+   }, [eventFrames, peopleGroups]);
 
   const setPersonnelComplete = useCallback((eventFrameId: string, complete: boolean) => {
     setEventFrames(prev => prev.map(ef => ef.id === eventFrameId ? {...ef, personnelComplete: complete} : ef));
     markUnsaved();
   }, [markUnsaved]);
 
-  const syncWithGoogle = useCallback(async () => {
-    console.log("Iniciant la sincronització manual amb Google Calendar...");
-    // TODO: Implementar la lògica completa de sincronització aquí.
-    showToast("Funció de sincronització encara no implementada.", 'info');
-  }, []);
+const syncWithGoogle = useCallback(async () => {
+    setIsSyncing(true);
+    if (!window.electronAPI) {
+        showToast('La sincronització només està disponible a l\'aplicació d\'escriptori.', 'warning');
+        setIsSyncing(false);
+        return;
+    }
+
+    const localData = exportData();
+    const result = await window.electronAPI.syncWithGoogle(localData);
+
+    if (result.success && result.data) {
+        // Important: Recarreguem les dades del backend per obtenir els nous googleEventIds.
+        loadData(result.data);
+        showToast(result.message || 'Sincronització completada.', 'success');
+    } else {
+        showToast(result.message || 'Hi ha hagut un error durant la sincronització.', 'error');
+    }
+    setIsSyncing(false);
+}, [showToast, exportData, loadData]);
 
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -322,6 +340,7 @@ export const useEventDataManager = (): EventDataManagerReturn => {
     googleEvents,
     refreshGoogleEvents,
     syncWithGoogle,
+    isSyncing, 
   };
 };
 

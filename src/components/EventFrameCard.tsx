@@ -1,7 +1,7 @@
 import { useRef, forwardRef } from 'react';
 import { useEventData } from '@/contexts/EventDataContext';
 import { EventFrame, Assignment, AssignmentStatus, ModalType, ModalData } from '@/types';
-import { PersonAddIcon, EditIcon, TrashIcon, ChevronDownIcon, ChevronUpIcon } from '@/constants';
+import { PersonAddIcon, EditIcon, TrashIcon, ChevronDownIcon, ChevronUpIcon, GoogleIcon } from '@/constants';
 import { CheckCircleIcon } from '@heroicons/react/24/solid';
 import { formatDateRangeDMY } from '@/utils/dateFormat';
 import AssignmentCard from './AssignmentCard';
@@ -65,13 +65,19 @@ const EventFrameCard = forwardRef<HTMLDivElement, EventFrameCardProps>(({
             </button>
             <h4
               id={`event-frame-title-${eventFrame.id}`}
-              className="text-lg font-semibold hover:text-blue-600 dark:hover:text-blue-400"
+              className="text-lg font-semibold hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-2" // <<< Afegim classes flex
               onClick={(e) => {
                 e.stopPropagation();
                 skipNextCollapse.current = true;
                 onOpenModal('eventFrameDetails', { eventFrame });
               }}
             >
+              {eventFrame.googleEventId && (
+              <span title="Aquest esdeveniment està sincronitzat amb Google Calendar">
+                <GoogleIcon className="w-4 h-4" />
+              </span>
+            )}
+
               {eventFrame.name}
             </h4>
             {eventFrame.place && <p className="text-sm text-gray-500 dark:text-gray-400">{eventFrame.place}</p>}

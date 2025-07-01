@@ -17,5 +17,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onGoogleAuthError: (callback) => ipcRenderer.on('google-auth-error', callback),
   getCalendarList: () => ipcRenderer.invoke('google-get-calendar-list'),
   saveGoogleConfig: (config) => ipcRenderer.invoke('save-google-config', config),
-  getGoogleEvents: () => ipcRenderer.invoke('google-get-events'),
+  getGoogleEvents: () => ipcRenderer.invoke('get-google-events'),
+  syncWithGoogle: (localData) => ipcRenderer.invoke('sync-with-google', localData),
+  clearGoogleAppCalendar: () => ipcRenderer.invoke('clear-google-app-calendar'),
 });

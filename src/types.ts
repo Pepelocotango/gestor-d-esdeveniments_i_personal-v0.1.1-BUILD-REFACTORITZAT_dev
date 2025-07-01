@@ -40,6 +40,8 @@ export interface EventFrame {
   assignments: Assignment[];
   googleEventId?: string;
   googleCalendarId?: string;
+  lastModified?: string;
+  lastSync?: string;
 }
 
 export type EventFrameForExport = Omit<EventFrame, 'assignments'>;
@@ -48,6 +50,7 @@ export interface AppData {
   eventFrames: EventFrameForExport[];
   peopleGroups: PersonGroup[];
   assignments: Assignment[]; // Les assignacions aquí contindran la nova estructura si escau
+  
 }
 
 export interface InitialEventFrameData {
@@ -65,6 +68,7 @@ export type ModalType =
   | 'confirmDeleteEventFrame'
   | 'confirmDeleteAssignment'
   | 'googleSettings'
+
   | null;
 
 export interface ModalData {
@@ -81,7 +85,9 @@ export interface ModalData {
     onConfirmSpecial?: () => void;
     confirmButtonText?: string;
     cancelButtonText?: string;
+    onCloseModal?: () => void;
     titleOverride?: string;
+    
 }
 
 export interface ModalState {
@@ -112,6 +118,8 @@ export interface EventDataConteImplicits {
   setHasUnsavedChanges: (value: boolean) => void;
   googleEvents: any[];
   refreshGoogleEvents: () => Promise<void>;
+  syncWithGoogle: () => Promise<void>;
+  isSyncing: boolean;
 }
 
 export type EventDataManagerReturn = Omit<EventDataConteImplicits, 'openModal'>;
@@ -180,3 +188,4 @@ export interface GoogleCalendar {
   backgroundColor: string;
   primary?: boolean;
 }
+

@@ -17,6 +17,7 @@ const ConfirmDeleteModal = lazy(() => import('./components/modals/ConfirmDeleteM
 const EventFrameDetailsModal = lazy(() => import('./components/modals/EventFrameDetailsModal'));
 const GoogleSettingsModal = lazy(() => import('./components/modals/GoogleSettingsModal'));
 
+
 declare global {
   interface Window {
     electronAPI?: {
@@ -29,9 +30,14 @@ declare global {
       onGoogleAuthSuccess: (callback: () => void) => void;
       onGoogleAuthError: (callback: (event: any, message: string) => void) => void;
       getCalendarList: () => Promise<{ success: boolean; calendars?: GoogleCalendar[]; message?: string }>;
-      saveGoogleConfig: (config: { selectedCalendarIds: string[] }) => Promise<{ success: boolean }>;
-      loadGoogleConfig: () => Promise<{ selectedCalendarIds: string[] } | null>;
+      saveGoogleConfig: (config: { selectedCalendarIds: string[], appCalendarId?: string }) => Promise<{ success: boolean }>;
+      loadGoogleConfig: () => Promise<{ selectedCalendarIds: string[], appCalendarId?: string } | null>;
       getGoogleEvents: () => Promise<{ success: boolean, events?: any[], message?: string }>;
+      syncWithGoogle: (localData: AppData) => Promise<{ success: boolean, message?: string, data?: AppData }>;
+      resolveConflict: (resolutionData: { resolution: 'keep-local' | 'use-remote', localFrame: EventFrame, remoteEvent: any }) => Promise<{ success: boolean, message?: string, resolvedFrame?: EventFrame }>;
+      resolveOrphans: (orphanData: { action: 'delete' | 'unlink', orphanIds: string[] }) => Promise<{ success: boolean, message?: string, updatedData?: AppData }>;
+      clearGoogleAppCalendar: () => Promise<{ success: boolean, message?: string }>;
+    
     };
   }
 }
@@ -44,29 +50,53 @@ interface ToastState {
 }
 
 const App: React.FC = () => {
-  const eventDataManagerHookResult = useEventDataManager();
-  const { loadData: loadDataFromManager, exportData: exportDataFromManager, setHasUnsavedChanges, hasUnsavedChanges, syncWithGoogle } = eventDataManagerHookResult;
-
+  
+    // --- 1. DECLARACIONS D'ESTAT (useState) ---
   const [theme, setTheme] = useState(() => localStorage.getItem(THEME_STORAGE_KEY) || 'light');
   const [modalState, setModalState] = useState<ModalState>({ type: null, data: null });
   const [toastState, setToastState] = useState<ToastState | null>(null);
   const [currentFilterHighlight, setCurrentFilterHighlight] = useState<string>('');
   const [initialLoadAttempted, setInitialLoadAttempted] = useState<boolean>(false);
-
   const [filterToShowEventFrameId, setFilterToShowEventFrameId] = useState<string | null>(null);
   const [currentlyDisplayedFrames, setCurrentlyDisplayedFrames] = useState<EventFrame[]>([]);
   const [filterUIPerson, setFilterUIPerson] = useState<string>('');
+
+  // --- 2. FUNCIONS D'AJUDA (useCallback) ---
+  const clearToastMessage = (toastId: string) => {
+    setToastState(prevState => (prevState?.id === toastId ? null : prevState));
+  };
+  
+  const showToast = useCallback((message: string, type: 'success' | 'error' | 'info' | 'warning' = 'success', persistent: boolean = false) => {
+    const id = `${Date.now()}-${Math.random()}`;
+    setToastState({ id, message, type });
+    if (!persistent) {
+      setTimeout(() => clearToastMessage(id), 30000);
+    }
+  }, []);
+
+  const openModal = useCallback((type: ModalType, data?: ModalData | InitialEventFrameData) => {
+    setModalState({ type, data: data as ModalData | null });
+  }, []);
+
+  const closeModal = () => {
+    setModalState({ type: null, data: null });
+  };
+
+  // --- 3. INICIALITZACIÓ DEL HOOK DE DADES ---
+  const eventDataManagerHookResult = useEventDataManager(showToast);
+  
+  const { 
+    loadData: loadDataFromManager, 
+    exportData: exportDataFromManager, 
+    setHasUnsavedChanges, 
+    hasUnsavedChanges, 
+    syncWithGoogle,
+    isSyncing
+  } = eventDataManagerHookResult;
+  
+  // --- INICI DELS ALTRES EFECTES I FUNCIONS ---
   console.log('App.tsx - RE-RENDER. modalState:', modalState.type, modalState.data);
 
-  useEffect(() => {
-    console.log('App.tsx - useEffect [theme] executant-se. Nou tema:', theme);
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-    localStorage.setItem(THEME_STORAGE_KEY, theme);
-  }, [theme]);
 
   useEffect(() => {
     const body = document.body;
@@ -84,17 +114,15 @@ const App: React.FC = () => {
     setTheme(prevTheme => (prevTheme === 'light' ? 'dark' : 'light'));
   };
 
-  const clearToastMessage = (toastId: string) => {
-    setToastState(prevState => (prevState?.id === toastId ? null : prevState));
-  };
-
-  const showToast = useCallback((message: string, type: 'success' | 'error' | 'info' | 'warning' = 'success', persistent: boolean = false) => {
-    const id = `${Date.now()}-${Math.random()}`;
-    setToastState({ id, message, type });
-    if (!persistent) {
-      setTimeout(() => clearToastMessage(id), 30000);
+  useEffect(() => {
+    const root = window.document.documentElement;
+    if (theme === 'dark') {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
     }
-  }, [])
+    localStorage.setItem(THEME_STORAGE_KEY, theme);
+  }, [theme]);
 
   const Toast: React.FC<{ toast: ToastState }> = ({ toast }) => (
     <div
@@ -128,15 +156,7 @@ const App: React.FC = () => {
     </div>
   );
 
-  const openModal = useCallback((type: ModalType, data?: ModalData | InitialEventFrameData) => {
-    console.log('App.tsx - openModal CRIDAT. Tipus:', type, 'Dades:', data);
-    setModalState({ type, data: data as ModalData | null });
-  }, []);
-
-  const closeModal = () => {
-    console.log('App.tsx - closeModal CRIDAT. Estat anterior del modal:', modalState.type);
-    setModalState({ type: null, data: null });
-  };
+  
 
   const handleShowOnList = (eventFrameId: string) => {
       setFilterToShowEventFrameId(eventFrameId);
@@ -433,10 +453,9 @@ const App: React.FC = () => {
                 />;
       
       case 'googleSettings':
-        return <GoogleSettingsModal onClose={closeModal} showToast={showToast} />;
-      
-      default:
-        return null;
+  return <GoogleSettingsModal onClose={closeModal} showToast={showToast} />;
+default:
+  return null;
     }
   };
 
@@ -489,8 +508,8 @@ const App: React.FC = () => {
                     peopleGroups={eventDataManagerHookResult.peopleGroups}
                     showToast={showToast}
                     hasUnsavedChanges={hasUnsavedChanges}
-                    onOpenGoogleSettings={() => openModal('googleSettings')}
                     onSyncWithGoogle={syncWithGoogle}
+                    isSyncing={isSyncing}
                     />
                 </Suspense>
             </div>
