@@ -3,7 +3,7 @@
 
 ### `README.md`**
 
-# Gestor d'Esdeveniments i Personal v0.1.x_dev
+# Gestor d'Esdeveniments i Personal v0.2
 
 Aplicació d'escriptori multiplataforma (construïda amb Electron, React i Vite) per a la gestió integral d'esdeveniments, personal i les seves assignacions. El projecte està actualment en fase de desenvolupament actiu.
 
@@ -78,10 +78,10 @@ Pots carregar aquests fitxers des de l'aplicació utilitzant el botó "Carregar 
 -   **Importació i Exportació:** Càrrega/desat en JSON i exportació a CSV.
 
 -   **✨ [NOU] Integració Avançada amb Google Calendar:**
-    *   **Motor de Sincronització Bidireccional:**
+    *   **Motor de Sincronització unidireccional:**
         *   Escriu exclusivament en un calendari propi anomenat **"Gestor d'Esdeveniments (App)"**, creat automàticament per garantir la seguretat i aïllament de les dades.
         *   Puja i baixa canvis manualment amb el botó "Sincronitzar".
-        *   Detecta i permet resoldre **conflictes d'edició** mitjançant un diàleg interactiu.
+        
     *   **Visualització de Calendaris Addicionals:**
         *   Permet seleccionar altres calendaris del teu compte de Google (personal, feina, etc.) per a visualitzar-los com a només lectura, integrats a la vista principal.
     *   **Feedback Visual Clar:**
@@ -136,7 +136,6 @@ El projecte segueix una arquitectura de tres capes per separar responsabilitats,
 
 *   **Modals Interactius (`src/components/modals`):**
     *   **`GoogleSettingsModal.tsx`:** Permet a l'usuari configurar la connexió i seleccionar quins calendaris de només lectura vol visualitzar.
-    *   **`ConflictResolutionModal.tsx`:** Interfície crucial que s'activa per resoldre els conflictes d'edició detectats durant la sincronització.
 ---
 
 ### 📁 Estructura i Responsabilitat dels Fitxers
@@ -159,7 +158,7 @@ Aquests fitxers defineixen el projecte, les seves dependències i com es constru
 *   **`main.cjs` (Procés Principal)**: És el **backend central** de l'aplicació.
     *   **Gestió Nativa:** Controla el cicle de vida de l'aplicació, les finestres, els menús i l'accés segur al sistema de fitxers.
     *   **Autenticació OAuth 2.0:** Implementa el flux de connexió amb Google, aixecant un **servidor web temporal** per capturar la resposta.
-    *   **Motor de Sincronització:** Conté la lògica de `syncWithGoogle` (pujada/baixada), `findOrCreateAppCalendar` (gestió del calendari dedicat), i `resolve-conflict`.
+    *   **Motor de Sincronització:** Conté la lògica de `syncWithGoogle` (pujada/baixada), `findOrCreateAppCalendar` (gestió del calendari dedicat), 
 
 *   **`preload.cjs` (Pont de Comunicació Segur)**:
     *   Utilitza `contextBridge` per exposar de manera segura una llista blanca de funcions del backend (`syncWithGoogle`, `startGoogleAuth`, etc.) al frontend mitjançant l'objecte `window.electronAPI`.
@@ -184,7 +183,7 @@ Aquests fitxers defineixen el projecte, les seves dependències i com es constru
     *   **`AssignmentCard.tsx`**: Mostra la targeta de cada assignació amb la seva vista detallada per dies.
     *   **`SummaryReports.tsx`**: Component que genera els resums de dades i permet l'**exportació granular** de cada grup a CSV.
     *   **`ui/Modal.tsx`**: Component **genèric i reutilitzable** que serveix de base per a tots els diàlegs.
-    *   **`modals/`**: Directori que conté els modals específics, com `GoogleSettingsModal.tsx` i `ConflictResolutionModal.tsx`.
+    *   **`modals/`**: Directori que conté els modals específics, com `GoogleSettingsModal.tsx`.
 
 
 ## 🚀 Començar (Getting Started) MODE DEVELOPER

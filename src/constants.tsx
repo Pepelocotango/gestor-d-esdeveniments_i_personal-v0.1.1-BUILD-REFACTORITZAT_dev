@@ -2,7 +2,7 @@
 import React, { FC } from 'react';
 import { AssignmentStatus } from './types';
 
-export const APP_TITLE = "Gestor de Esdeveniments i Personal v0.1.2_dev";
+export const APP_TITLE = "Gestor de Esdeveniments i Personal v0.2";
 export const THEME_STORAGE_KEY = 'eventManagementAppTheme';
 
 export const ASSIGNMENT_STATUS_OPTIONS = [
