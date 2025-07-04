@@ -1,9 +1,9 @@
-###### BRANCA NOVA DE DESENVOLUPAMENT _ sincronitzacio_google_calendar 
+###### BRANCA NOVA DE DESENVOLUPAMENT -> fitxes_tecniques - 
 
 
 ### `README.md`**
 
-# Gestor d'Esdeveniments i Personal v0.2
+# Gestor d'Esdeveniments i Personal v0.3.0
 
 Aplicació d'escriptori multiplataforma (construïda amb Electron, React i Vite) per a la gestió integral d'esdeveniments, personal i les seves assignacions. El projecte està actualment en fase de desenvolupament actiu.
 

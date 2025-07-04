@@ -1,7 +1,7 @@
 {
   "name": "gestor-esdeveniments-personal",
   "productName": "Gestor de Esdeveniments i Personal",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Una aplicació per gestionar esdeveniments i personal",
   "author": "Pep",
   "main": "main.cjs",
@@ -27,10 +27,12 @@
     "@fullcalendar/react": "^6.1.17",
     "@fullcalendar/timegrid": "^6.1.17",
     "@heroicons/react": "^2.2.0",
+    "@types/react-router-dom": "^5.3.3",
     "file-saver": "^2.0.5",
     "googleapis": "^150.0.1",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^7.6.3"
   },
   "devDependencies": {
     "@types/file-saver": "^2.0.7",

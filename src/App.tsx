@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo, Suspense, lazy } from 'react';
+import { HashRouter, Routes, Route } from 'react-router-dom';
 const { ipcRenderer } = window.require ? window.require('electron') : { ipcRenderer: null };
 
 import { EventDataProvider } from './contexts/EventDataContext';
@@ -10,6 +11,8 @@ import { formatDateDMY } from './utils/dateFormat';
 
 const MainDisplay = lazy(() => import('./components/MainDisplay'));
 const Controls = lazy(() => import('./components/Controls'));
+const Navigation = lazy(() => import('./components/Navigation'));
+const TechSheetsDisplay = lazy(() => import('./components/TechSheetsDisplay'));
 const EventFrameFormModal = lazy(() => import('./components/modals/EventFrameFormModal'));
 const AssignmentFormModal = lazy(() => import('./components/modals/AssignmentFormModal'));
 const PeopleGroupManagerModal = lazy(() => import('./components/modals/PeopleGroupManagerModal'));
@@ -497,59 +500,70 @@ default:
 
   return (
     <EventDataProvider value={contextValue}>
-      <div className="min-h-screen flex flex-col bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-        <header className="sticky top-5 z-40 bg-gray-100/80 dark:bg-gray-900/80 backdrop-blur-sm shadow-sm py-2">
+      <HashRouter>
+        <div className="min-h-screen flex flex-col bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+          <header className="sticky top-0 z-40 bg-gray-100/80 dark:bg-gray-900/80 backdrop-blur-sm shadow-sm py-2">
             <div className="container mx-auto px-4">
-                <Suspense fallback={<div className="text-center p-4">Carregant controls...</div>}>
-                    <Controls
-                    theme={theme}
-                    toggleTheme={toggleTheme}
-                    onOpenModal={openModal}
-                    peopleGroups={eventDataManagerHookResult.peopleGroups}
-                    showToast={showToast}
-                    hasUnsavedChanges={hasUnsavedChanges}
-                    onSyncWithGoogle={syncWithGoogle}
-                    isSyncing={isSyncing}
-                    />
-                </Suspense>
+              <Suspense fallback={<div className="text-center p-4">Carregant controls...</div>}>
+                <Controls
+                  theme={theme}
+                  toggleTheme={toggleTheme}
+                  onOpenModal={openModal}
+                  peopleGroups={eventDataManagerHookResult.peopleGroups}
+                  showToast={showToast}
+                  hasUnsavedChanges={hasUnsavedChanges}
+                  onSyncWithGoogle={syncWithGoogle}
+                  isSyncing={isSyncing}
+                />
+              </Suspense>
+              <Suspense fallback={<div className="text-center p-2">Carregant navegació...</div>}>
+                <Navigation />
+              </Suspense>
             </div>
-        </header>
-        
-        <main className="container mx-auto px-4 pt-2 pb-4 flex-grow">
-          <div>
-            <Suspense fallback={<div className="text-center p-8">Carregant vista principal...</div>}>
-              <MainDisplay
-                openModal={openModal}
-                setToastMessage={showToast}
-                currentFilterHighlight={currentFilterHighlight}
-                setCurrentFilterHighlight={setCurrentFilterHighlight}
-                filterToShowEventFrameId={filterToShowEventFrameId}
-                setFilterToShowEventFrameId={setFilterToShowEventFrameId}
-                setCurrentlyDisplayedFrames={setCurrentlyDisplayedFrames}
-                onExportCurrentViewToCsv={handleExportCurrentViewToCsv}
-                setFilterUIPerson={setFilterUIPerson}
-              />
+          </header>
+
+          <main className="container mx-auto px-4 pt-2 pb-4 flex-grow">
+            <Suspense fallback={<div className="text-center p-8">Carregant vista...</div>}>
+              <Routes>
+                <Route
+                  path="/"
+                  element={
+                    <MainDisplay
+                      openModal={openModal}
+                      setToastMessage={showToast}
+                      currentFilterHighlight={currentFilterHighlight}
+                      setCurrentFilterHighlight={setCurrentFilterHighlight}
+                      filterToShowEventFrameId={filterToShowEventFrameId}
+                      setFilterToShowEventFrameId={setFilterToShowEventFrameId}
+                      setCurrentlyDisplayedFrames={setCurrentlyDisplayedFrames}
+                      onExportCurrentViewToCsv={handleExportCurrentViewToCsv}
+                      setFilterUIPerson={setFilterUIPerson}
+                    />
+                  }
+                />
+                <Route path="/tech-sheets" element={<TechSheetsDisplay />} />
+              </Routes>
             </Suspense>
-          </div>
-        </main>
+          </main>
 
-        <footer className="bg-white dark:bg-gray-800 p-4 text-center text-sm text-gray-600 dark:text-gray-400 border-t dark:border-gray-700">
-          © {new Date().getFullYear()} (Pëp) Gestor de Esdeveniments i Personal v0.0.0 DEV. Evolució Gestió Integral d'Esdeveniments v10.1.
-        </footer>
+          <footer className="bg-white dark:bg-gray-800 p-4 text-center text-sm text-gray-600 dark:text-gray-400 border-t dark:border-gray-700">
+            © {new Date().getFullYear()} (Pëp) Gestor de Esdeveniments i Personal v0.3.0 DEV. Evolució Gestió Integral d'Esdeveniments v10.1.
+          </footer>
 
-        <Modal
-          isOpen={modalState.type !== null}
-          onClose={closeModal}
-          title={getModalTitle()}
-          size={getModalSize()}
-        >
-          <Suspense fallback={<div className="p-8 text-center">Carregant...</div>}>
-            {renderModalContent()}
-          </Suspense>
-        </Modal>
+          <Modal
+            isOpen={modalState.type !== null}
+            onClose={closeModal}
+            title={getModalTitle()}
+            size={getModalSize()}
+          >
+            <Suspense fallback={<div className="p-8 text-center">Carregant...</div>}>
+              {renderModalContent()}
+            </Suspense>
+          </Modal>
 
-        {toastState && <Toast toast={toastState} />}
-      </div>
+          {toastState && <Toast toast={toastState} />}
+        </div>
+      </HashRouter>
     </EventDataProvider>
   );
 };
