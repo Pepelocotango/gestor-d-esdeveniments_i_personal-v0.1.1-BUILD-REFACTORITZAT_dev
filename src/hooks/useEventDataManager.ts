@@ -76,6 +76,13 @@ export const useEventDataManager = (
   }, [markUnsaved]);
   
   const updateEventFrame = useCallback((updatedEventFrame: EventFrame) => {
+    // Assegurem que la fitxa tècnica existeix en actualitzar.
+    // Això "cura" els EventFrames antics que es carreguen sense aquesta propietat.
+    if (!updatedEventFrame.techSheet) {
+      console.log(`Generant fitxa tècnica per a l'esdeveniment antic: ${updatedEventFrame.name}`);
+      updatedEventFrame.techSheet = createDefaultTechSheet(updatedEventFrame);
+    }
+
     setEventFrames(prev => prev.map(ef => ef.id === updatedEventFrame.id ? updatedEventFrame : ef)
       .sort((a,b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime() || a.name.localeCompare(b.name))
     );

@@ -169,6 +169,7 @@ export interface EventDataConteImplicits {
   deleteEventFrame: (eventFrameId: string) => void;
   getEventFrameById: (eventFrameId: string) => EventFrame | undefined;
   openModal: (type: ModalType, data?: ModalData) => void;
+  showToast: ShowToastFunction; // <<< LÍNIA AFEGIDA
   addPersonGroup: (personGroup: Omit<PersonGroup, 'id'>) => void;
   updatePersonGroup: (personGroup: PersonGroup) => void;
   deletePersonGroup: (personGroupId: string) => void;
@@ -188,7 +189,7 @@ export interface EventDataConteImplicits {
   addOrUpdateTechSheet: (eventFrameId: string, fitxaData: TechSheetData) => void;
 }
 
-export type EventDataManagerReturn = Omit<EventDataConteImplicits, 'openModal'>;
+export type EventDataManagerReturn = Omit<EventDataConteImplicits, 'openModal' | 'showToast'>;
 
 export interface SummaryRow {
   id: string;

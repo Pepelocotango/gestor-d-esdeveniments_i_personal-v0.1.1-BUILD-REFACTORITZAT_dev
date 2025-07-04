@@ -225,7 +225,8 @@ const App: React.FC = () => {
   const contextValue = useMemo((): EventDataConteImplicits => ({
     ...eventDataManagerHookResult,
     openModal,
-  }), [eventDataManagerHookResult, openModal]);
+    showToast, // <<< LÍNIA AFEGIDA
+  }), [eventDataManagerHookResult, openModal, showToast]);
 
   useEffect(() => {
     const attemptInitialLoad = async () => {
