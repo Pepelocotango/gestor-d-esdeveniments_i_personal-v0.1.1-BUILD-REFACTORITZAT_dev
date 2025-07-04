@@ -20,8 +20,6 @@ const ConfirmDeleteModal = lazy(() => import('./components/modals/ConfirmDeleteM
 const EventFrameDetailsModal = lazy(() => import('./components/modals/EventFrameDetailsModal'));
 const GoogleSettingsModal = lazy(() => import('./components/modals/GoogleSettingsModal'));
 
-
-
 // Millor posar-ho en un fitxer global.d.ts, però per compatibilitat ràpida:
 interface ElectronAPI {
   loadAppData?: () => Promise<AppData | null>;
@@ -40,6 +38,7 @@ interface ElectronAPI {
   resolveOrphans: (orphanData: { action: 'delete' | 'unlink', orphanIds: string[] }) => Promise<{ success: boolean, message?: string, updatedData?: AppData }>;
   clearGoogleAppCalendar: () => Promise<{ success: boolean, message?: string }>;
   performHardReset: () => Promise<{ success: boolean; message: string }>;
+  addOrUpdateTechSheet: (eventFrameId: string, fitxaData: any) => void;
   onAppWillRelaunchAfterReset: (callback: (event: any, messages: string) => void) => (() => void) | undefined;
   onDevModeQuitAfterReset: (callback: () => void) => (() => void) | undefined;
   showLoadingOverlay: (callback: (event: any, message: string) => void) => (() => void) | undefined;

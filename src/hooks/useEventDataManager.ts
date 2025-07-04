@@ -1,8 +1,33 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { EventFrame, PersonGroup, Assignment, AppData, EventFrameForExport, EventDataManagerReturn, AssignmentStatus, ShowToastFunction } from '../types';
+import { EventFrame, PersonGroup, Assignment, AppData, EventFrameForExport, EventDataManagerReturn, AssignmentStatus, ShowToastFunction, TechSheetData } from '../types';
 import { formatDateDMY } from '../utils/dateFormat';
 
 const generateId = () => Date.now().toString(36) + Math.random().toString(36).substring(2);
+
+const createDefaultTechSheet = (eventFrame: Omit<EventFrame, 'id' | 'assignments' | 'personnelComplete' | 'techSheet'>): TechSheetData => ({
+  eventName: eventFrame.name,
+  location: eventFrame.place || '',
+  date: formatDateDMY(eventFrame.startDate),
+  showTime: '',
+  showDuration: '',
+  parkingInfo: '',
+  technicalPersonnel: [],
+  preAssemblySchedule: '',
+  assemblySchedule: [],
+  dressingRooms: '',
+  actors: '',
+  companyTechnicians: '',
+  lightingNeeds: [],
+  soundNeeds: [],
+  videoNeeds: [],
+  machineryNeeds: [],
+  controlLocation: '',
+  otherEquipment: '',
+  rentals: '',
+  blueprints: '',
+  companyContact: '',
+  observations: '',
+});
 
 type AssignmentOperationResult = { success: boolean; message?: string; warningMessage?: string };
 
@@ -37,12 +62,13 @@ export const useEventDataManager = (
     }
   }, []);
 
-  const addEventFrame = useCallback((newEventFrameData: Omit<EventFrame, 'id' | 'assignments' | 'personnelComplete'>): EventFrame => {
+  const addEventFrame = useCallback((newEventFrameData: Omit<EventFrame, 'id' | 'assignments' | 'personnelComplete' | 'techSheet'>): EventFrame => {
     const newEventFrame: EventFrame = {
       ...newEventFrameData,
       id: generateId(),
       assignments: [],
       personnelComplete: false,
+      techSheet: createDefaultTechSheet(newEventFrameData),
     };
     setEventFrames(prev => [...prev, newEventFrame].sort((a,b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime() || a.name.localeCompare(b.name)));
     markUnsaved();
@@ -55,6 +81,19 @@ export const useEventDataManager = (
     );
     markUnsaved();
   }, [markUnsaved]);
+  
+  const addOrUpdateTechSheet = useCallback((eventFrameId: string, techSheetData: TechSheetData) => {
+    setEventFrames(prevFrames => 
+      prevFrames.map(ef => {
+        if (ef.id === eventFrameId) {
+          return { ...ef, techSheet: techSheetData };
+        }
+        return ef;
+      })
+    );
+    markUnsaved();
+  }, [markUnsaved]);
+
 
  const deleteEventFrame = useCallback((eventFrameId: string) => {
     setEventFrames(prev => prev.filter(ef => ef.id !== eventFrameId));
@@ -194,13 +233,10 @@ markUnsaved();
     
     let warningMessage: string | null = null;
     if (finalAssignment.status !== AssignmentStatus.No) {
-        // Lògica de conflicte depenent del context
         if (context?.changedDate) {
-            // Si es canvia un sol dia, només validem aquest dia
             const specificDate = new Date(context.changedDate);
             warningMessage = checkDateRange(specificDate, specificDate, finalAssignment.dailyStatuses || finalAssignment.status);
         } else {
-            // Si no hi ha context, validem el rang sencer (comportament anterior)
             warningMessage = checkDateRange(new Date(finalAssignment.startDate), new Date(finalAssignment.endDate), finalAssignment.dailyStatuses || finalAssignment.status);
         }
     }
@@ -320,11 +356,6 @@ markUnsaved();
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [hasUnsavedChanges]);
 
-  // <<< useEffect ELIMINAT PER EVITAR LA CÀRREGA AUTOMÀTICA >>>
-  // useEffect(() => {
-  //   refreshGoogleEvents();
-  // }, [refreshGoogleEvents]);
-
   return {
     eventFrames,
     peopleGroups,
@@ -348,6 +379,7 @@ markUnsaved();
     googleEvents,
     refreshGoogleEvents,
     syncWithGoogle,
-    isSyncing, 
+    isSyncing,
+    addOrUpdateTechSheet,
   };
 };

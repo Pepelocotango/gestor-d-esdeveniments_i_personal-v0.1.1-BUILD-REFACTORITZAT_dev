@@ -25,7 +25,7 @@ const Navigation: React.FC = () => {
         </NavLink>
         <NavLink to="/tech-sheets" className={getLinkClassName}>
           <DocumentTextIcon className="h-5 w-5" />
-          <span>Fitxes Tècniques</span>
+          <span>Fitxes de Bolo</span>
         </NavLink>
       </div>
     </nav>
