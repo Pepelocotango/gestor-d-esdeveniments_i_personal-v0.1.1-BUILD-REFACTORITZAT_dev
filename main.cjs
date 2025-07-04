@@ -300,14 +300,11 @@ app.on('before-quit', async (event) => {
   });
   if (choice.response === 0) {
     isQuitting = true;
-    await createBackup();
-    await cleanupOldBackups();
+    
     if (mainWindow && !mainWindow.isDestroyed()) {
       mainWindow.webContents.send('confirm-quit-signal');
     }
-    setTimeout(() => {
-      app.exit();
-    }, 1500);
+    
   }
 });
 
@@ -315,6 +312,17 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit();
   }
+});
+
+
+// NOU LISTENER: S'executa quan el frontend ha acabat de desar les dades.
+ipcMain.on('quit-confirmed-by-renderer-signal', async () => {
+  console.log("Backend rebut 'quit-confirmed'. Iniciant backup i sortida final.");
+  await createBackup();
+  await cleanupOldBackups();
+  setTimeout(() => {
+    app.exit();
+  }, 500); // Un petit temps de marge per si de cas
 });
 
 ipcMain.handle('load-app-data', async () => {

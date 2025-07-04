@@ -21,27 +21,29 @@ const EventFrameDetailsModal = lazy(() => import('./components/modals/EventFrame
 const GoogleSettingsModal = lazy(() => import('./components/modals/GoogleSettingsModal'));
 
 
+
+// Millor posar-ho en un fitxer global.d.ts, però per compatibilitat ràpida:
+interface ElectronAPI {
+  loadAppData?: () => Promise<AppData | null>;
+  saveAppData?: (data: AppData) => Promise<boolean>;
+  onConfirmQuit?: (callback: () => Promise<void>) => void;
+  sendQuitConfirmedByRenderer?: () => void;
+  startGoogleAuth: () => Promise<{ success: boolean; message?: string }>;
+  onGoogleAuthSuccess: (callback: () => void) => void;
+  onGoogleAuthError: (callback: (event: any, message: string) => void) => void;
+  getCalendarList: () => Promise<{ success: boolean; calendars?: GoogleCalendar[]; message?: string }>;
+  saveGoogleConfig: (config: { selectedCalendarIds: string[], appCalendarId?: string }) => Promise<{ success: boolean }>;
+  loadGoogleConfig: () => Promise<{ selectedCalendarIds: string[], appCalendarId?: string } | null>;
+  getGoogleEvents: () => Promise<{ success: boolean, events?: any[], message?: string }>;
+  syncWithGoogle: (localData: AppData) => Promise<{ success: boolean, message?: string, data?: AppData }>;
+  resolveConflict: (resolutionData: { resolution: 'keep-local' | 'use-remote', localFrame: EventFrame, remoteEvent: any }) => Promise<{ success: boolean, message?: string, resolvedFrame?: EventFrame }>;
+  resolveOrphans: (orphanData: { action: 'delete' | 'unlink', orphanIds: string[] }) => Promise<{ success: boolean, message?: string, updatedData?: AppData }>;
+  clearGoogleAppCalendar: () => Promise<{ success: boolean, message?: string }>;
+}
+
 declare global {
   interface Window {
-    electronAPI?: {
-      loadAppData?: () => Promise<AppData | null>;
-      saveAppData?: (data: AppData) => Promise<boolean>;
-      onConfirmQuit?: (callback: () => Promise<void>) => () => void;
-      sendQuitConfirmedByRenderer?: () => void;
-      // <<< LÍNIES NOVES >>>
-      startGoogleAuth: () => Promise<{ success: boolean; message?: string }>;
-      onGoogleAuthSuccess: (callback: () => void) => void;
-      onGoogleAuthError: (callback: (event: any, message: string) => void) => void;
-      getCalendarList: () => Promise<{ success: boolean; calendars?: GoogleCalendar[]; message?: string }>;
-      saveGoogleConfig: (config: { selectedCalendarIds: string[], appCalendarId?: string }) => Promise<{ success: boolean }>;
-      loadGoogleConfig: () => Promise<{ selectedCalendarIds: string[], appCalendarId?: string } | null>;
-      getGoogleEvents: () => Promise<{ success: boolean, events?: any[], message?: string }>;
-      syncWithGoogle: (localData: AppData) => Promise<{ success: boolean, message?: string, data?: AppData }>;
-      resolveConflict: (resolutionData: { resolution: 'keep-local' | 'use-remote', localFrame: EventFrame, remoteEvent: any }) => Promise<{ success: boolean, message?: string, resolvedFrame?: EventFrame }>;
-      resolveOrphans: (orphanData: { action: 'delete' | 'unlink', orphanIds: string[] }) => Promise<{ success: boolean, message?: string, updatedData?: AppData }>;
-      clearGoogleAppCalendar: () => Promise<{ success: boolean, message?: string }>;
-    
-    };
+    electronAPI?: ElectronAPI;
   }
 }
 
@@ -127,37 +129,39 @@ const App: React.FC = () => {
     localStorage.setItem(THEME_STORAGE_KEY, theme);
   }, [theme]);
 
-  const Toast: React.FC<{ toast: ToastState }> = ({ toast }) => (
-    <div
-      className={`toast toast-${toast.type}`}
-      style={{
-        position: 'fixed',
-        top: '1rem',
-        right: '1rem',
-        zIndex: 1000,
-        backgroundColor: toast.type === 'success' ? '#4caf50' : toast.type === 'error' ? '#f44336' : '#2196f3',
-        color: 'white',
-        padding: '1rem',
-        borderRadius: '0.5rem',
-        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-      }}
-    >
-      <span>{toast.message}</span>
-      <button
-        onClick={() => clearToastMessage(toast.id)}
+  const Toast: React.FC<{ toast: ToastState }> = ({ toast }) => {
+    return (
+      <div
+        className={`toast toast-${toast.type}`}
         style={{
-          marginLeft: '1rem',
-          background: 'none',
-          border: 'none',
+          position: 'fixed',
+          top: '1rem',
+          right: '1rem',
+          zIndex: 1000,
+          backgroundColor: toast.type === 'success' ? '#4caf50' : toast.type === 'error' ? '#f44336' : '#2196f3',
           color: 'white',
-          cursor: 'pointer',
-          fontWeight: 'bold',
+          padding: '1rem',
+          borderRadius: '0.5rem',
+          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
         }}
       >
-        ×
-      </button>
-    </div>
-  );
+        <span>{toast.message}</span>
+        <button
+          onClick={() => clearToastMessage(toast.id)}
+          style={{
+            marginLeft: '1rem',
+            background: 'none',
+            border: 'none',
+            color: 'white',
+            cursor: 'pointer',
+            fontWeight: 'bold',
+          }}
+        >
+          ×
+        </button>
+      </div>
+    );
+  };
 
   
 
@@ -207,12 +211,11 @@ const App: React.FC = () => {
 
   useEffect(() => {
     console.log('App.tsx - useEffect [hasUnsavedChanges, exportDataFromManager, setHasUnsavedChanges, showToast] per onConfirmQuit executant-se.');
-    let unsubscribe: (() => void) | undefined;
     if (window.electronAPI?.onConfirmQuit) {
-      unsubscribe = window.electronAPI.onConfirmQuit(async () => {
+      window.electronAPI.onConfirmQuit(async () => {
         console.log("Renderer va rebre el senyal 'confirm-quit-signal'");
-        if (hasUnsavedChanges) {
-          try {
+        try {
+          if (hasUnsavedChanges) {
             const dataToSave = exportDataFromManager();
             console.log("Renderer: Desant dades abans de sortir...", dataToSave);
             const success = await window.electronAPI?.saveAppData?.(dataToSave);
@@ -221,34 +224,28 @@ const App: React.FC = () => {
               setHasUnsavedChanges(false);
             } else {
               console.error("Renderer: Error desant les dades.");
-              showToast("Error crític: No s'han pogut desar les dades abans de sortir.", 'error', true);
             }
-          } catch (error) {
-            console.error("Renderer: Excepció desant dades:", error);
-            showToast(`Error crític desant: ${(error as Error).message}`, 'error', true);
+          } else {
+            console.log("Renderer: No hi ha canvis per desar.");
           }
-        } else {
-          console.log("Renderer: No hi ha canvis per desar.");
+        } catch (error) {
+          console.error("Renderer: Excepció durant el desat en sortir:", error);
+        } finally {
+          // Aquesta crida s'ha d'executar SEMPRE per tancar l'app
+          window.electronAPI?.sendQuitConfirmedByRenderer?.();
         }
-        window.electronAPI?.sendQuitConfirmedByRenderer?.();
       });
     }
-    return () => {
-      if (unsubscribe) {
-        unsubscribe();
-      }
-    };
+    // Com que onConfirmQuit només s'ha de registrar un cop, no retornem funció de neteja
+    // per evitar que es desregistri en re-renders.
+    // Si es fes amb addEventListener, sí que caldria netejar.
   }, [hasUnsavedChanges, exportDataFromManager, setHasUnsavedChanges, showToast]);
-
   useEffect(() => {
     if (window.electronAPI) {
       const onSuccess = () => showToast('Connectat a Google Calendar amb èxit!', 'success');
-      // <<< LÍNIA MODIFICADA: AFEGIR TIPUS >>>
       const onError = (_event: any, message: string) => showToast(`Error d'autenticació: ${message}`, 'error');
-
       window.electronAPI.onGoogleAuthSuccess(onSuccess);
       window.electronAPI.onGoogleAuthError(onError);
-
       return () => {
         if (ipcRenderer) {
           ipcRenderer.removeListener('google-auth-success', onSuccess);
