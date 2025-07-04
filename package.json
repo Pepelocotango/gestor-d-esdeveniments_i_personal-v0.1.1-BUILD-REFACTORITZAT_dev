@@ -65,8 +65,7 @@
       "target": [
         "AppImage"
       ],
-      "category": "Office",
-      "icon": "public/icon.png"
+      "category": "Office"
     },
     "win": {
       "target": [

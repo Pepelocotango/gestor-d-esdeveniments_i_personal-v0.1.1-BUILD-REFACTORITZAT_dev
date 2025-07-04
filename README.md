@@ -80,7 +80,7 @@ Pots carregar aquests fitxers des de l'aplicació utilitzant el botó "Carregar 
 -   **✨ [NOU] Integració Avançada amb Google Calendar:**
     *   **Motor de Sincronització unidireccional:**
         *   Escriu exclusivament en un calendari propi anomenat **"Gestor d'Esdeveniments (App)"**, creat automàticament per garantir la seguretat i aïllament de les dades.
-        *   Puja i baixa canvis manualment amb el botó "Sincronitzar".
+        *   Puja canvis manualment amb el botó "Sincronitzar". Els canvis dels events fets a Google Calendar, no es guarden a la app, es perdràn a la seguent sincronització manual. 
         
     *   **Visualització de Calendaris Addicionals:**
         *   Permet seleccionar altres calendaris del teu compte de Google (personal, feina, etc.) per a visualitzar-los com a només lectura, integrats a la vista principal.

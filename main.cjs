@@ -1,19 +1,23 @@
 const { app, BrowserWindow, ipcMain, dialog, Menu } = require('electron');
 const path = require('path');
 const fs = require('fs');
-const os = require('os');
+
 const { google } = require('googleapis');
 const url = require('url');
 const http = require('http');
 
-const APP_NAME = 'gestor-esdeveniments';
-const CONFIG_DIR = path.join(os.homedir(), '.config', APP_NAME);
-const DATA_DIR = path.join(os.homedir(), '.local', 'share', APP_NAME);
+const APP_ID = 'com.gestorevents.app';
+app.setAppUserModelId(APP_ID);
+
+
+const CONFIG_DIR = app.getPath('userData');
+const DATA_DIR = CONFIG_DIR; 
 const SESSION_FILE = path.join(CONFIG_DIR, 'session.json');
 const DATA_FILE = path.join(DATA_DIR, 'events_data.json');
 const BACKUP_DIR = path.join(DATA_DIR, 'backups');
 const GOOGLE_TOKENS_PATH = path.join(CONFIG_DIR, 'google-tokens.json');
 const GOOGLE_CONFIG_PATH = path.join(CONFIG_DIR, 'google-config.json');
+
 const APP_CALENDAR_NAME = "Gestor d'Esdeveniments (App)";
 
 let mainWindow;
