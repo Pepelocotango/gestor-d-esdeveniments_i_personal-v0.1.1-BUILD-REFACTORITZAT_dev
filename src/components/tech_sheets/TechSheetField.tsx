@@ -4,6 +4,7 @@ id: string;
 label: string;
 value: string | number;
 onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+onBlur?: (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => void; // Nova propietat onBlur
 type?: string;
 placeholder?: string;
 as?: 'input' | 'textarea';
@@ -15,6 +16,7 @@ id,
 label,
 value,
 onChange,
+onBlur, // Destructure onBlur
 type = 'text',
 placeholder = '',
 as = 'input',
@@ -34,6 +36,7 @@ id={id}
 name={id}
 value={value}
 onChange={onChange}
+onBlur={onBlur} // Afegeix onBlur aquí
 placeholder={placeholder}
 rows={rows}
 className={commonClasses}
@@ -46,6 +49,7 @@ id={id}
 name={id}
 value={value}
 onChange={onChange}
+onBlur={onBlur} // Afegeix onBlur aquí
 placeholder={placeholder}
 className={commonClasses}
 required={required}

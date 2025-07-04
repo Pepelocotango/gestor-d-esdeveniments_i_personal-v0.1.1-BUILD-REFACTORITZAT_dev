@@ -20,6 +20,7 @@ const createDefaultTechSheet = (eventFrame: Omit<EventFrame, 'id' | 'assignments
   lightingNeeds: [],
   soundNeeds: [],
   videoNeeds: [],
+  videoDetails: '', // Valor per defecte per al nou camp
   machineryNeeds: [],
   controlLocation: '',
   otherEquipment: '',
@@ -278,11 +279,18 @@ markUnsaved();
       return;
     }
 
-    const loadedEventFrames: EventFrame[] = (data.eventFrames || []).map((efExport: EventFrameForExport) => ({
-      ...efExport,
-      assignments: [],
-      personnelComplete: efExport.personnelComplete || false,
-    }));
+    const loadedEventFrames: EventFrame[] = (data.eventFrames || []).map((efExport: EventFrameForExport) => {
+      const defaultTechSheet = createDefaultTechSheet(efExport);
+      return {
+        ...efExport,
+        assignments: [],
+        personnelComplete: efExport.personnelComplete || false,
+        // Curació de TechSheet: si no existeix o li falten camps, es crea/completa.
+        techSheet: efExport.techSheet
+          ? { ...defaultTechSheet, ...efExport.techSheet }
+          : defaultTechSheet,
+      };
+    });
 
     if (data.assignments && data.assignments.length > 0) {
       data.assignments.forEach(assignmentFromFile => {

@@ -74,7 +74,8 @@ export interface TechSheetData {
   // Seccions de Necessitats Tècniques
   lightingNeeds: TechSheetNeed[];
   soundNeeds: TechSheetNeed[];
-  videoNeeds: TechSheetNeed[];
+  videoNeeds: TechSheetNeed[]; // Llista de necessitats específiques de vídeo
+  videoDetails?: string; // Camp de text per a notes generals de vídeo (ex: "NO", o descripció si no hi ha ítems)
   machineryNeeds: TechSheetNeed[];
   
   // Altres seccions
