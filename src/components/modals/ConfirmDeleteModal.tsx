@@ -1,8 +1,9 @@
 import React from 'react';
+import { ShowToastFunction } from '../../types';
 
 interface CommonFormProps {
   onClose: () => void;
-  showToast: (message: string, type?: 'success' | 'error' | 'info' | 'warning') => void;
+  showToast: ShowToastFunction;
 }
 
 interface ConfirmDeleteProps extends CommonFormProps {

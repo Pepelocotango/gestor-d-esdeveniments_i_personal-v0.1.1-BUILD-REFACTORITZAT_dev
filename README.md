@@ -1,3 +1,4 @@
+###### AIXÓ ES UNA PROVA EN LOCAL DE JULES I LA SEVA CAPACITAT EN LOCAL#####
 ###### BRANCA NOVA DE DESENVOLUPAMENT -> fitxes_tecniques - 
 
 
@@ -115,24 +116,27 @@ El projecte segueix una arquitectura de tres capes per separar responsabilitats,
 *   **`main.cjs`:** És el **cervell de l'aplicació**. Les seves responsabilitats principals són:
     *   **Gestió Nativa:** Controla el cicle de vida de l'aplicació, les finestres, els menús i l'accés segur al sistema de fitxers.
     *   **Autenticació OAuth 2.0:** Implementa el flux complet de connexió amb Google, aixecant un **servidor HTTP temporal** per capturar la resposta de l'usuari de forma segura.
-    *   **Gestió del Calendari Dedicat:** Conté la funció `findOrCreateAppCalendar`, que utilitza la constant `APP_CALENDAR_NAME` per crear i gestionar el calendari propi de l'app, garantint l'aïllament de les dades.
-    *   **Motor de Sincronització:** Allotja la lògica principal de `syncWithGoogle` i `resolve-conflict`, actuant com a backend per a totes les operacions pesades.
+    *   **Gestió del Calendari Dedicat:** Conté la funció `findOrCreateAppCalendar`, que utilitza la constant `APP_CALENDAR_NAME` per crear (si no existeix) o localitzar el calendari propi de l'app a Google, garantint l'aïllament de les dades gestionades per l'aplicació.
+    *   **Motor de Sincronització (`syncWithGoogle`):** Allotja la lògica principal per sincronitzar les dades locals amb Google Calendar. Aquest procés buida primer tots els esdeveniments del calendari dedicat de l'app a Google i després puja la versió actual dels esdeveniments locals. Això assegura que les dades locals siguin la font de veritat. Actualitza els esdeveniments locals amb els ID de Google després de la pujada.
+    *   **Recuperació d'Esdeveniments de Google (`getGoogleEvents`):** Obté esdeveniments dels calendaris de Google que l'usuari ha seleccionat per a visualització (a través de `GoogleSettingsModal.tsx`), incloent el calendari dedicat de l'app.
 
 ### 2. El Pont de Comunicació Segur
 
-*   **`preload.cjs`:** Actua com un **pont segur i controlat** entre el backend i el frontend. Exposa de manera explícita les funcions del procés principal (`startGoogleAuth`, `syncWithGoogle`, etc.) perquè el codi React les pugui invocar sense comprometre la seguretat.
+*   **`preload.cjs`:** Actua com un **pont segur i controlat** entre el backend (procés principal d'Electron) i el frontend (React). Exposa de manera explícita una llista blanca de funcions del procés principal (com `startGoogleAuth`, `syncWithGoogle`, `getGoogleEvents`, etc.) perquè el codi React les pugui invocar de forma segura mitjançant `window.electronAPI`.
 
 ### 3. La Interfície d'Usuari (Frontend - React)
 
-*   **Gestor d'Estat Central (`useEventDataManager.ts`):** És el **cor lògic del frontend**.
-    *   Centralitza totes les dades de l'aplicació (esdeveniments, persones, assignacions).
-    *   Actua com a **client** de les funcions exposades pel *preload script*, orquestrant les crides a `syncWithGoogle` i `resolveConflict`.
-    *   Gestiona l'estat de la interfície relacionat amb la sincronització, com la variable `isSyncing`.
+*   **Gestor d'Estat Central (`hooks/useEventDataManager.ts`):** És el **cor lògic del frontend**.
+    *   Centralitza totes les dades de l'aplicació: `eventFrames` (esdeveniments locals gestionats per l'app), `peopleGroups` (persones/grups), i `googleEvents` (esdeveniments recuperats de Google Calendar per a visualització).
+    *   Proporciona funcions CRUD per a les dades locals.
+    *   Orquestra les crides a les funcions del backend (exposades via `preload.cjs`) per a accions com l'autenticació (`startGoogleAuth`), la sincronització (`syncWithGoogle`), i la recuperació d'esdeveniments de Google (`refreshGoogleEvents` que internament crida `getGoogleEvents` del backend).
+    *   Després d'una sincronització amb Google reeixida, utilitza la funció `loadData` per actualitzar els `eventFrames` locals amb els `googleEventId` retornats pel backend.
+    *   Gestiona l'estat de la interfície relacionat amb la sincronització (p.ex., `isSyncing`).
 
 *   **Components Reutilitzables (`src/components`):**
-    *   **`Controls.tsx`:** La barra d'eines principal, que conté els botons d'acció, inclòs el de **"Sincronitzar"** amb el seu estat de càrrega.
-    *   **`MainDisplay.tsx`:** Orquestra la vista principal, combinant els esdeveniments locals i de Google per al calendari i gestionant la llista filtrable.
-    *   **`EventFrameCard.tsx`:** La targeta que representa cada esdeveniment, incloent l'**indicador visual** de Google.
+    *   **`Controls.tsx`:** La barra d'eines principal, que conté botons d'acció com "Guardar", "Carregar", "Gestionar Persones", i el botó "Sincronitzar" (que mostra un estat de càrrega durant l'operació).
+    *   **`MainDisplay.tsx`:** Orquestra la vista principal de l'aplicació. És responsable de combinar les dades dels `eventFrames` locals (editables) i els `googleEvents` (visualitzats des de Google, típicament de només lectura) per a la seva presentació al component `FullCalendar`. També gestiona la llista filtrable d'esdeveniments.
+    *   **`EventFrameCard.tsx`:** Representa visualment cada esdeveniment (`EventFrame`) a la llista, mostrant les seves assignacions i permetent accions com editar o eliminar. Inclou un indicador visual si l'esdeveniment està vinculat a Google Calendar.
 
 *   **Modals Interactius (`src/components/modals`):**
     *   **`GoogleSettingsModal.tsx`:** Permet a l'usuari configurar la connexió i seleccionar quins calendaris de només lectura vol visualitzar.

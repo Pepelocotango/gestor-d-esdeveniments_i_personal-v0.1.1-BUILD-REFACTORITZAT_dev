@@ -1,6 +1,6 @@
 import React, { ChangeEvent, useRef } from 'react';
 import { useEventData } from '../contexts/EventDataContext';
-import { PersonGroup, ModalType } from '../types';
+import { PersonGroup, ModalType, ShowToastFunction } from '../types';
 import { SaveIcon, LoadIcon, SunIcon, MoonIcon, UsersIcon, InfoIcon, TrashIcon, GoogleIcon, SyncIcon } from '../constants';
 import { migrateData, validateMigratedData } from '../utils/dataMigration';
 
@@ -9,7 +9,7 @@ interface ControlsProps {
   toggleTheme: () => void;
   onOpenModal: (type: ModalType, data?: any) => void;
   peopleGroups: PersonGroup[];
-  showToast: (message: string, type?: 'success' | 'error' | 'info' | 'warning') => void;
+  showToast: ShowToastFunction;
   hasUnsavedChanges: boolean;
   onSyncWithGoogle: () => void; 
   isSyncing: boolean;
@@ -139,26 +139,34 @@ const Controls: React.FC<ControlsProps> = ({
     }
   };
 
-  const handleStartEmpty = () => {
-    onOpenModal('confirmDeleteEventFrame', {
-      itemType: "Acció destructiva",
-      itemName: "Aquesta acció esborrarà <b>TOTES</b> les dades de l'aplicació que no estiguin desades. Estàs segur que vols continuar?",
+  // <<< NOU FLUX PER AL RESET >>>
+  const handleRequestHardReset = () => {
+    onOpenModal('confirmHardReset', {
+      titleOverride: "Confirmar Reset de Fàbrica",
+      itemType: "Reset de Fàbrica",
+      itemName: "Estàs segur que vols restablir l'aplicació? S'esborraran <b>TOTES</b> les dades locals de l'aplicació (esdeveniments, persones, assignacions) i la configuració de Google. <br><br><b>Aquesta acció és irreversible.</b>",
+      confirmButtonText: "Sí, Resetejar Ara",
+      cancelButtonText: "Cancel·lar",
       onConfirmSpecial: async () => {
-          if (window.electronAPI?.clearGoogleAppCalendar) {
-      const result = await window.electronAPI.clearGoogleAppCalendar();
-      if (result.success) {
-        showToast('Calendari de Google de l\'app buidat.', 'success');
-      } else {
-        showToast(result.message || "Error en netejar el calendari de l'app a Google.", 'error');
-      }
-    }
-        loadData({ eventFrames: [], peopleGroups: [], assignments: [] });
-        showToast('Dades esborrades. Comences de zero!', 'info');
-        setHasUnsavedChanges(false);
+        if (window.electronAPI?.performHardReset) {
+          try {
+            const result = await window.electronAPI.performHardReset();
+              if (result.success) {
+                // El backend ha esborrat els fitxers, ara el frontend neteja el seu estat.
+                loadData(null);
+                setHasUnsavedChanges(false);
+                showToast("L'aplicació s'ha restablert a l'estat de fàbrica.", 'success', true);
+              } else {
+                showToast(result.message || "Error durant el reset de fàbrica.", 'error', true);
+              }
+          } catch (error) {
+            console.error("Error cridant performHardReset:", error);
+            showToast(`Error greu durant el reset de fàbrica: ${(error as Error).message}`, 'error', true);
+          }
+        } else {
+          showToast("La funcionalitat de reset no està disponible.", 'error');
+        }
       },
-      titleOverride: "Confirmar Esborrat Total",
-      confirmButtonText: "Sí, esborrar tot",
-      cancelButtonText: "No, cancel·lar"
     });
   };
 
@@ -174,7 +182,7 @@ const Controls: React.FC<ControlsProps> = ({
             <button onClick={() => handleSaveData('all')} className="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-3 rounded-md transition-colors text-sm" title="Guardar totes les dades a un fitxer JSON">
                 <SaveIcon /> Guardar Tot
             </button>
-             <button onClick={handleStartEmpty} className="flex items-center justify-center gap-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-3 rounded-md transition-colors text-sm" title="Començar de zero (esborra totes les dades actuals)">
+             <button onClick={handleRequestHardReset} className="flex items-center justify-center gap-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-3 rounded-md transition-colors text-sm" title="Començar de zero (esborra totes les dades actuals)">
                 <TrashIcon className="w-4 h-4" /> Començar de Zero
             </button>
         </div>

@@ -1,13 +1,12 @@
-// ruta: src/components/modals/AssignmentFormModal.tsx
 import React, { useState, useEffect, FormEvent } from 'react';
 import { useEventData } from '../../contexts/EventDataContext';
-import { EventFrame, Assignment, AssignmentStatus } from '../../types';
+import { EventFrame, Assignment, AssignmentStatus, ShowToastFunction } from '../../types';
 import { ASSIGNMENT_STATUS_OPTIONS } from '../../constants';
 import { formatDateDMY } from '../../utils/dateFormat';
 
 interface AssignmentFormProps {
   onClose: () => void;
-  showToast: (message: string, type?: 'success' | 'error' | 'info' | 'warning') => void;
+  showToast: ShowToastFunction;
   eventFrame: EventFrame;
   assignmentToEdit?: Assignment;
   setExpandedEventFrameId?: (id: string) => void;

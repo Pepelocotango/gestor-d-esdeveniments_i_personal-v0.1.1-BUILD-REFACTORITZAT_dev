@@ -1,12 +1,12 @@
 import React, { useMemo } from 'react';
 import { useEventData } from '../contexts/EventDataContext';
-import { AssignmentStatus, SummaryRow } from '../types';
+import { AssignmentStatus, SummaryRow, ShowToastFunction } from '../types';
 import { CsvIcon } from '../constants';
 import { formatDateDMY, formatDateRangeDMY } from '../utils/dateFormat';
 import { getStatusSummaryText } from '../utils/statusUtils';
 
 interface SummaryReportsProps {
-  setToastMessage: (message: string, type?: 'success' | 'error' | 'info' | 'warning', persistent?: boolean) => void;
+  setToastMessage: ShowToastFunction;
 }
 
 const SummaryReports: React.FC<SummaryReportsProps> = ({ setToastMessage }) => {

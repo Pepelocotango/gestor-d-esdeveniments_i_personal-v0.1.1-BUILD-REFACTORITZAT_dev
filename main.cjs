@@ -542,26 +542,35 @@ ipcMain.handle('get-google-events', async () => {
     const timeMax = new Date(); timeMax.setMonth(timeMax.getMonth() + 6);
     const allEvents = [];
 
-    for (const calendarId of config.selectedCalendarIds) {
-      const res = await calendar.events.list({
-        calendarId,
-        timeMin: timeMin.toISOString(),
-        timeMax: timeMax.toISOString(),
-        singleEvents: true,
-        orderBy: 'startTime',
-      });
-      const events = res.data.items?.map(event => ({
-        id: event.id,
-        title: event.summary,
-        start: event.start.dateTime || event.start.date,
-        end: event.end.dateTime || event.end.date,
-        allDay: !!event.start.date,
-        backgroundColor: '#D32F2F', // Color per a esdeveniments de Google
-        borderColor: '#D32F2F',
-        extendedProps: { type: 'google' }
-      })) || [];
-      allEvents.push(...events);
+    // ASSEGUREM QUE appCalendarId EXISTEIXI A LA CONFIGURACIÓ
+    if (!config || !config.appCalendarId) {
+      console.warn('appCalendarId no trobat a la configuració de Google. Retornant llista d\'esdeveniments buida.');
+      return { success: true, events: [] };
     }
+
+    // OBTENIM ESDEVENIMENTS NOMÉS DEL CALENDARI DE L'APP
+    const appCalendarOnlyId = config.appCalendarId;
+    console.log(`Obtenint esdeveniments només del calendari de l'app: ${appCalendarOnlyId}`);
+
+    const res = await calendar.events.list({
+      calendarId: appCalendarOnlyId, // <<<< NOMÉS LLEGEIX DEL CALENDARI DE L'APP
+      timeMin: timeMin.toISOString(),
+      timeMax: timeMax.toISOString(),
+      singleEvents: true,
+      orderBy: 'startTime',
+    });
+    const events = res.data.items?.map(event => ({
+      id: event.id,
+      title: event.summary,
+      start: event.start.dateTime || event.start.date,
+      end: event.end.dateTime || event.end.date,
+      allDay: !!event.start.date,
+      backgroundColor: '#D32F2F', // Color per a esdeveniments de Google
+      borderColor: '#D32F2F',
+      extendedProps: { type: 'google' }
+    })) || [];
+    allEvents.push(...events);
+
     return { success: true, events: allEvents };
   } catch (error) {
     console.error('Error obtenint esdeveniments de Google:', error);
@@ -640,3 +649,46 @@ process.on('uncaughtException', (error) => {
 
 
 app.whenReady().then(createWindow);
+
+// <<< FUNCIÓ MODIFICADA >>>
+ipcMain.handle('perform-hard-reset', async () => {
+  console.log("Iniciant Reset de Fàbrica...");
+  
+  let success = true;
+  let messages = [];
+
+  const eliminarFitxerDeFormaSegura = (filePath, fileNameForMessage) => {
+    if (fs.existsSync(filePath)) {
+      try {
+        fs.unlinkSync(filePath);
+        messages.push(`${fileNameForMessage} eliminat.`);
+        console.log(`${fileNameForMessage} eliminat: ${filePath}`);
+      } catch (err) {
+        success = false;
+        messages.push(`Error eliminant ${fileNameForMessage}: ${err.message}`);
+        console.error(`Error eliminant ${fileNameForMessage} (${filePath}):`, err);
+      }
+    } else {
+      messages.push(`${fileNameForMessage} no existia.`);
+      console.log(`${fileNameForMessage} no existia: ${filePath}`);
+    }
+  };
+
+  eliminarFitxerDeFormaSegura(DATA_FILE, `Fitxer de dades (${path.basename(DATA_FILE)})`);
+  eliminarFitxerDeFormaSegura(GOOGLE_TOKENS_PATH, `Fitxer de tokens de Google (${path.basename(GOOGLE_TOKENS_PATH)})`);
+  eliminarFitxerDeFormaSegura(GOOGLE_CONFIG_PATH, `Fitxer de configuració de Google (${path.basename(GOOGLE_CONFIG_PATH)})`);
+
+  if (googleAuthClient) {
+    googleAuthClient.setCredentials(null);
+    console.log("Credencials de googleAuthClient en memòria netejades.");
+    messages.push("Credencials de Google en memòria netejades.");
+  }
+  
+  if (success) {
+    console.log("Reset de fàbrica del backend completat.");
+    return { success: true, message: `Reset completat:\n${messages.join('\n')}` };
+  } else {
+    console.error("El reset de fàbrica ha fallat en alguns passos.");
+    return { success: false, message: `El reset de fàbrica ha fallat:\n${messages.join('\n')}` };
+  }
+});

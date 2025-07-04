@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { GoogleCalendar } from '@/types';
+import { GoogleCalendar, ShowToastFunction } from '@/types';
 import { useEventData } from '@/contexts/EventDataContext';
 
 interface GoogleSettingsModalProps {
   onClose: () => void;
-  showToast: (message: string, type?: 'success' | 'error' | 'info' | 'warning') => void;
+  showToast: ShowToastFunction;
 }
 
 const GoogleSettingsModal: React.FC<GoogleSettingsModalProps> = ({ onClose, showToast }) => {

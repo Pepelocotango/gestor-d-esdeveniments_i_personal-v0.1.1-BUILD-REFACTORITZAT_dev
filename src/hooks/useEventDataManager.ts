@@ -1,5 +1,5 @@
-import { useState, useCallback, useEffect } from 'react';
-import { EventFrame, PersonGroup, Assignment, AppData, EventFrameForExport, EventDataManagerReturn, AssignmentStatus } from '../types';
+import { useState, useCallback, useEffect, useRef } from 'react';
+import { EventFrame, PersonGroup, Assignment, AppData, EventFrameForExport, EventDataManagerReturn, AssignmentStatus, ShowToastFunction } from '../types';
 import { formatDateDMY } from '../utils/dateFormat';
 
 const generateId = () => Date.now().toString(36) + Math.random().toString(36).substring(2);
@@ -7,14 +7,21 @@ const generateId = () => Date.now().toString(36) + Math.random().toString(36).su
 type AssignmentOperationResult = { success: boolean; message?: string; warningMessage?: string };
 
 export const useEventDataManager = (
-  showToast: (message: string, type?: 'success' | 'error' | 'info' | 'warning', persistent?: boolean) => void,
-  
+  showToast: ShowToastFunction,
 ): EventDataManagerReturn => {
   const [eventFrames, setEventFrames] = useState<EventFrame[]>([]);
   const [peopleGroups, setPeopleGroups] = useState<PersonGroup[]>([]);
   const [googleEvents, setGoogleEvents] = useState<any[]>([]);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
+  
+  const eventFramesRef = useRef(eventFrames);
+  const peopleGroupsRef = useRef(peopleGroups);
+
+  useEffect(() => { eventFramesRef.current = eventFrames; }, [eventFrames]);
+  useEffect(() => { peopleGroupsRef.current = peopleGroups; }, [peopleGroups]);
+
+
   const markUnsaved = useCallback(() => {
     setHasUnsavedChanges(true);
   }, []);
@@ -39,7 +46,7 @@ export const useEventDataManager = (
     };
     setEventFrames(prev => [...prev, newEventFrame].sort((a,b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime() || a.name.localeCompare(b.name)));
     markUnsaved();
-    return newEventFrame; // <<< LÍNIA CLAU: Retornem l'objecte creat
+    return newEventFrame;
   }, [markUnsaved]);
   
   const updateEventFrame = useCallback((updatedEventFrame: EventFrame) => {
@@ -266,22 +273,22 @@ markUnsaved();
   }, []);
 
   const exportData = useCallback((): AppData => {
-    const allAssignmentsList: Assignment[] = eventFrames.flatMap(ef => ef.assignments);
-    const eventFramesForExport: EventFrameForExport[] = eventFrames.map(({ assignments, ...restOfFrame }) => restOfFrame);
+    const allAssignmentsList: Assignment[] = eventFramesRef.current.flatMap(ef => ef.assignments);
+    const eventFramesForExport: EventFrameForExport[] = eventFramesRef.current.map(({ assignments, ...restOfFrame }) => restOfFrame);
 
     return {
-      peopleGroups,
+      peopleGroups: peopleGroupsRef.current,
       eventFrames: eventFramesForExport,
       assignments: allAssignmentsList,
     };
-   }, [eventFrames, peopleGroups]);
+   }, []);
 
   const setPersonnelComplete = useCallback((eventFrameId: string, complete: boolean) => {
     setEventFrames(prev => prev.map(ef => ef.id === eventFrameId ? {...ef, personnelComplete: complete} : ef));
     markUnsaved();
   }, [markUnsaved]);
 
-const syncWithGoogle = useCallback(async () => {
+  const syncWithGoogle = useCallback(async () => {
     setIsSyncing(true);
     if (!window.electronAPI) {
         showToast('La sincronització només està disponible a l\'aplicació d\'escriptori.', 'warning');
@@ -293,14 +300,14 @@ const syncWithGoogle = useCallback(async () => {
     const result = await window.electronAPI.syncWithGoogle(localData);
 
     if (result.success && result.data) {
-        // Important: Recarreguem les dades del backend per obtenir els nous googleEventIds.
         loadData(result.data);
+        await refreshGoogleEvents();
         showToast(result.message || 'Sincronització completada.', 'success');
     } else {
         showToast(result.message || 'Hi ha hagut un error durant la sincronització.', 'error');
     }
     setIsSyncing(false);
-}, [showToast, exportData, loadData]);
+  }, [showToast, exportData, loadData, refreshGoogleEvents]);
 
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -313,9 +320,10 @@ const syncWithGoogle = useCallback(async () => {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [hasUnsavedChanges]);
 
-  useEffect(() => {
-    refreshGoogleEvents();
-  }, [refreshGoogleEvents]);
+  // <<< useEffect ELIMINAT PER EVITAR LA CÀRREGA AUTOMÀTICA >>>
+  // useEffect(() => {
+  //   refreshGoogleEvents();
+  // }, [refreshGoogleEvents]);
 
   return {
     eventFrames,
@@ -343,4 +351,3 @@ const syncWithGoogle = useCallback(async () => {
     isSyncing, 
   };
 };
-

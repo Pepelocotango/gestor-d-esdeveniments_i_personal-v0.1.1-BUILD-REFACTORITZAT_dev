@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { EventFrame, Assignment, AssignmentStatus, ModalType, ModalData } from '../types';
+import { EventFrame, Assignment, AssignmentStatus, ModalType, ModalData, ShowToastFunction } from '../types';
 import { useEventData } from '../contexts/EventDataContext';
 import { PlusIcon, CalendarIcon, ListIcon, ChartBarIcon, CsvIcon, ChevronUpIcon, ChevronDownIcon } from '../constants';
 import FullCalendar from '@fullcalendar/react';
@@ -16,7 +16,7 @@ import EventFrameCard from './EventFrameCard';
 
 interface MainDisplayProps {
   openModal: (type: ModalType, data?: ModalData) => void;
-  setToastMessage: (message: string, type?: 'success' | 'error' | 'info' | 'warning', persistent?: boolean) => void;
+  setToastMessage: ShowToastFunction;
   currentFilterHighlight: string;
   setCurrentFilterHighlight: (filter: string) => void;
   filterToShowEventFrameId: string | null;
@@ -68,9 +68,36 @@ const MainDisplay: React.FC<MainDisplayProps> = ({
 }) => {
 const { eventFrames, googleEvents, peopleGroups, getPersonGroupById, getEventFrameById, getAssignmentById, updateAssignment, updateEventFrame } = useEventData();
   const [conflictDialog, setConflictDialog] = useState<{ message: string; personName: string | null } | null>(null);
-  
+
   const [expandedEventFrameIds, setExpandedEventFrameIds] = useState<Set<string>>(new Set());
   const [expandedDailyViewAssignmentIds, setExpandedDailyViewAssignmentIds] = useState<Set<string>>(new Set());
+
+  // <<< NOU CÀLCUL D'ESDEVENIMENTS PER AL CALENDARI >>>
+  const calendarEvents = useMemo(() => {
+    const localEventGoogleIds = new Set(eventFrames.map(ef => ef.googleEventId).filter(Boolean));
+    
+    const localEventsForCalendar = eventFrames.map(ef => ({
+      id: ef.id,
+      title: ef.name,
+      start: ef.startDate,
+      end: addDaysISO(ef.endDate, 1),
+      allDay: true,
+      className: ef.personnelComplete ? 'event-complete' : 'event-incomplete',
+      extendedProps: { type: 'local', googleEventId: ef.googleEventId } 
+    }));
+    
+    const filteredGoogleEventsForCalendar = googleEvents
+      .filter(gEvent => !localEventGoogleIds.has(gEvent.id))
+      .map(gEvent => ({
+        ...gEvent,
+        backgroundColor: '#D32F2F',
+        borderColor: '#D32F2F',
+        extendedProps: { ...gEvent.extendedProps, type: 'google' }
+      }));
+
+    return [...localEventsForCalendar, ...filteredGoogleEventsForCalendar];
+  }, [eventFrames, googleEvents]);
+
 
   const handleGeneralStatusChange = (eventFrameId: string, assignmentId: string, newStatus: AssignmentStatus) => {
     const assignment = getAssignmentById(eventFrameId, assignmentId);
@@ -79,7 +106,6 @@ const { eventFrames, googleEvents, peopleGroups, getPersonGroupById, getEventFra
         const result = updateAssignment({ ...assignment, status: newStatus, dailyStatuses: undefined });
         if (result.success) {
             setToastMessage(`Estat general de l'assignació actualitzat a ${newStatus}`, 'success');
-            // CANVI: Eliminem l'assignació del Set d'expansió diària
             setExpandedDailyViewAssignmentIds(prev => {
                 const newSet = new Set(prev);
                 newSet.delete(assignmentId);
@@ -164,7 +190,6 @@ const { eventFrames, googleEvents, peopleGroups, getPersonGroupById, getEventFra
             if (element) {
                 element.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 element.classList.add('ring-2', 'ring-offset-2', 'ring-blue-500', 'dark:ring-blue-400', 'transition-all', 'duration-1000', 'ease-in-out', 'rounded-lg');
-                // CANVI: Verifiquem i afegim al Set si cal
                 if (!expandedEventFrameIds.has(currentFilterHighlight)) {
                     setExpandedEventFrameIds(prev => new Set(prev).add(currentFilterHighlight));
                 }
@@ -221,12 +246,10 @@ useEffect(() => {
         setExpandedEventFrameIds(newExpandedFrames);
         setExpandedDailyViewAssignmentIds(newExpandedAssignments);
     } else if (prevIsAnyFilterActive.current && !isAnyFilterActive) {
-        // CANVI CLAU: Només replega tot si abans hi havia filtres i ara no
         setExpandedEventFrameIds(new Set());
         setExpandedDailyViewAssignmentIds(new Set());
     }
 
-    // Actualitzem el ref per al pròxim render
     prevIsAnyFilterActive.current = isAnyFilterActive;
 
   }, [filteredAndSortedEventFrames, filterText, filterPlace, filterStatus, filterDate, localFilterUIPerson, filterUIEventFrame]);
@@ -275,23 +298,11 @@ useEffect(() => {
                 height="auto"
                 contentHeight="auto"
                 aspectRatio={1.5}
-                events={[
-                ...eventFrames.map(ef => ({
-                id: ef.id,
-                title: ef.name,
-                start: ef.startDate,
-                end: addDaysISO(ef.endDate, 1),
-                allDay: true,
-                className: ef.personnelComplete ? 'event-complete' : 'event-incomplete',
-                extendedProps: { type: 'local' } // Afegim tipus per diferenciar
-                })),
-                ...googleEvents
-                ]}
+                events={calendarEvents}
                 dateClick={(info) => openModal('addEventFrame', { startDate: info.dateStr })}
                 eventClick={(info) => {
                 if (info.event.extendedProps.type === 'google') {
-                // Si és de Google, de moment no fem res al clic
-                info.jsEvent.preventDefault(); // Evita qualsevol acció per defecte
+                info.jsEvent.preventDefault();
                 return;
                 }
                 const ef = getEventFrameById(info.event.id);

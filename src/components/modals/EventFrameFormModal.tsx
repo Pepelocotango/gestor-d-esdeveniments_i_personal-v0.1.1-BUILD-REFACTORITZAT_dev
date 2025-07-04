@@ -1,12 +1,11 @@
-// ruta: src/components/modals/EventFrameFormModal.tsx
 import React, { useState, useEffect, FormEvent } from 'react';
 import { useEventData } from '../../contexts/EventDataContext';
-import { EventFrame, InitialEventFrameData } from '../../types';
+import { EventFrame, InitialEventFrameData, ShowToastFunction } from '../../types';
 import { formatDateDMY } from '../../utils/dateFormat';
 
 interface EventFrameFormProps {
   onClose: () => void;
-  showToast: (message: string, type?: 'success' | 'error' | 'info' | 'warning') => void;
+  showToast: ShowToastFunction;
   eventFrameToEdit?: Partial<EventFrame>;
   initialData?: InitialEventFrameData;
 }

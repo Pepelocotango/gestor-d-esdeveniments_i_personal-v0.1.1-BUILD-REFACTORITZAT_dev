@@ -58,6 +58,14 @@ export interface InitialEventFrameData {
     endDate?: string;
 }
 
+// <<< NOU TIPUS CENTRALITZAT >>>
+export type ShowToastFunction = (
+  message: string, 
+  type?: 'success' | 'error' | 'info' | 'warning', 
+  persistent?: boolean
+) => void;
+
+
 export type ModalType =
   | 'addEventFrame'
   | 'editEventFrame'
@@ -68,6 +76,7 @@ export type ModalType =
   | 'confirmDeleteEventFrame'
   | 'confirmDeleteAssignment'
   | 'googleSettings'
+  | 'confirmHardReset' // <<<< NOU TIPUS DE MODAL
 
   | null;
 
@@ -188,4 +197,3 @@ export interface GoogleCalendar {
   backgroundColor: string;
   primary?: boolean;
 }
-
