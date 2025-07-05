@@ -47,6 +47,9 @@ jobs:
       - name: Mostra la mida del fitxer google-credentials.json (debug)
         run: ls -lh google-credentials.json
 
+      - name: DEBUG: Mostra el contingut RAW de google-credentials.json
+        run: cat -A google-credentials.json
+
       - name: Comprova que el fitxer és JSON vàlid
         run: |
           if ! jq empty google-credentials.json; then
