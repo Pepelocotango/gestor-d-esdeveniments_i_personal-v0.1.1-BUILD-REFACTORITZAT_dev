@@ -11,11 +11,45 @@ interface TechSheetFormProps {
   eventFrame: EventFrame;
 }
 
+
 const TechSheetForm: React.FC<TechSheetFormProps> = ({ eventFrame }) => {
-  const { addOrUpdateTechSheet, showToast } = useEventData();
+  const { addOrUpdateTechSheet, showToast, getPersonGroupById } = useEventData();
   const [formData, setFormData] = useState<TechSheetData>(eventFrame.techSheet!);
   const [isDirty, setIsDirty] = useState(false); // Per controlar si hi ha canvis pendents de desar
   const formRef = useRef<HTMLDivElement>(null);
+
+  // Omple automàticament el personal tècnic confirmat si la fitxa és nova o buida
+  useEffect(() => {
+    if (eventFrame && eventFrame.assignments && eventFrame.assignments.length > 0 && formData.technicalPersonnel.length === 0) {
+      // Filtra assignacions confirmades (Sí) o Mixt amb almenys un dia Sí
+      const confirmedPersonnel = eventFrame.assignments
+        .filter(a => a.status === 'Sí' || (a.status === 'Mixt' && a.dailyStatuses && Object.values(a.dailyStatuses).some(st => st === 'Sí')))
+        .map(a => {
+          const person = getPersonGroupById(a.personGroupId);
+          return {
+            id: a.personGroupId,
+            role: person?.role || '',
+            name: person?.name || '',
+            origin: '',
+          };
+        });
+      if (confirmedPersonnel.length > 0) {
+        setFormData(prev => ({ ...prev, technicalPersonnel: confirmedPersonnel }));
+        setIsDirty(true);
+      }
+    }
+  }, [eventFrame, formData.technicalPersonnel.length, getPersonGroupById]);
+
+  // Si l'esdeveniment dura més d'un dia, afegeix la informació a la fitxa
+  useEffect(() => {
+    if (eventFrame.startDate !== eventFrame.endDate) {
+      const dateRange = `${formatDateDMY(eventFrame.startDate)} - ${formatDateDMY(eventFrame.endDate)}`;
+      if (formData.date !== dateRange) {
+        setFormData(prev => ({ ...prev, date: dateRange }));
+        setIsDirty(true);
+      }
+    }
+  }, [eventFrame.startDate, eventFrame.endDate, formData.date]);
 
   // Helper per generar IDs únics per a nous items en llistes
   const generateLocalId = () => `local_${Date.now().toString(36) + Math.random().toString(36).substring(2)}`;

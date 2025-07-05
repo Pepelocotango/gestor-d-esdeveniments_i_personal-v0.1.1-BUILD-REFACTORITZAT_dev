@@ -158,18 +158,21 @@ const SummaryReports: React.FC<SummaryReportsProps> = ({ setToastMessage }) => {
   };
   
   // --- RENDERITZAT (amb la correcció) ---
-  const renderSummaryCard = (title: string, data: Map<string, SummaryRow[]>, dataType: 'event-name' | 'start-date' | 'person') => (
+
+  const renderSummaryCard = (title: string, data: Map<string, SummaryRow[]>, dataType: 'event-name' | 'start-date' | 'person', showSortButton: boolean) => (
     <div className="bg-white dark:bg-gray-700/80 p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
       <div className="flex justify-between items-center mb-3 pb-2 border-b border-gray-200 dark:border-gray-600">
         <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">{title}</h3>
         <div className="flex items-center gap-2">
-          <button
-            onClick={() => setSummarySortOrder(summarySortOrder === 'asc' ? 'desc' : 'asc')}
-            className="flex items-center gap-1 px-2 py-1 rounded border border-gray-300 dark:border-gray-600 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-500 text-xs font-medium"
-            title={`Ordena per data ${summarySortOrder === 'asc' ? 'descendent' : 'ascendent'}`}
-          >
-            {summarySortOrder === 'asc' ? <ChevronUpIcon className="w-3 h-3" /> : <ChevronDownIcon className="w-3 h-3" />} Ordena
-          </button>
+          {showSortButton && (
+            <button
+              onClick={() => setSummarySortOrder(summarySortOrder === 'asc' ? 'desc' : 'asc')}
+              className="flex items-center gap-1 px-2 py-1 rounded border border-gray-300 dark:border-gray-600 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-500 text-xs font-medium"
+              title={`Ordena per data ${summarySortOrder === 'asc' ? 'descendent' : 'ascendent'}`}
+            >
+              {summarySortOrder === 'asc' ? <ChevronUpIcon className="w-3 h-3" /> : <ChevronDownIcon className="w-3 h-3" />} Ordena
+            </button>
+          )}
           <button 
               onClick={() => handleExportCsv(dataType)}
               className="text-sm flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 hover:underline"
@@ -215,7 +218,7 @@ const SummaryReports: React.FC<SummaryReportsProps> = ({ setToastMessage }) => {
                   
                   {a.assignmentStatus === AssignmentStatus.Mixed && a.assignmentObject.dailyStatuses ? (
                     <>
-                      <span className={`font-semibold ${statusColors[AssignmentStatus.Mixed]}`}>(Mixt)</span>
+                      <span className={`font-semibold ${statusColors[AssignmentStatus.Mixed]}`}> (Mixt)</span>
                       <ul className="pl-5 mt-1 text-xs list-none">
                         {Object.entries(a.assignmentObject.dailyStatuses)
                           .sort(([dateA], [dateB]) => new Date(dateA).getTime() - new Date(dateB).getTime())
@@ -242,9 +245,9 @@ const SummaryReports: React.FC<SummaryReportsProps> = ({ setToastMessage }) => {
 
   return (
     <div className="grid md:grid-cols-1 lg:grid-cols-3 gap-6">
-      {renderSummaryCard("Per Nom d'Esdeveniment", summaryByEventName, "event-name")}
-      {renderSummaryCard("Per Data d'Inici d'Assignació", summaryByStartDate, "start-date")}
-      {renderSummaryCard("Per Persona/Grup", summaryByPerson, "person")}
+      {renderSummaryCard("Per Nom d'Esdeveniment", summaryByEventName, "event-name", true)}
+      {renderSummaryCard("Per Data d'Inici d'Assignació", summaryByStartDate, "start-date", true)}
+      {renderSummaryCard("Per Persona/Grup", summaryByPerson, "person", false)}
     </div>
   );
 };
