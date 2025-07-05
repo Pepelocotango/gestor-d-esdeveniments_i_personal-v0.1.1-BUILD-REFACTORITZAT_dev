@@ -1,43 +1,110 @@
-import { useState, useCallback, useEffect } from 'react';
-import { EventFrame, PersonGroup, Assignment, AppData, EventFrameForExport, EventDataManagerReturn, AssignmentStatus } from '../types';
+import { useState, useCallback, useEffect, useRef } from 'react';
+import { EventFrame, PersonGroup, Assignment, AppData, EventFrameForExport, EventDataManagerReturn, AssignmentStatus, ShowToastFunction, TechSheetData } from '../types';
 import { formatDateDMY } from '../utils/dateFormat';
 
 const generateId = () => Date.now().toString(36) + Math.random().toString(36).substring(2);
 
+const createDefaultTechSheet = (eventFrame: Omit<EventFrame, 'id' | 'assignments' | 'personnelComplete' | 'techSheet'>): TechSheetData => ({
+  eventName: eventFrame.name,
+  location: eventFrame.place || '',
+  date: formatDateDMY(eventFrame.startDate),
+  showTime: '',
+  showDuration: '',
+  parkingInfo: '',
+  technicalPersonnel: [],
+  preAssemblySchedule: '',
+  assemblySchedule: [],
+  dressingRooms: '',
+  actors: '',
+  companyTechnicians: '',
+  lightingNeeds: [],
+  soundNeeds: [],
+  videoNeeds: [],
+  videoDetails: '', // Valor per defecte per al nou camp
+  machineryNeeds: [],
+  controlLocation: '',
+  otherEquipment: '',
+  rentals: '',
+  blueprints: '',
+  companyContact: '',
+  observations: '',
+});
+
 type AssignmentOperationResult = { success: boolean; message?: string; warningMessage?: string };
 
-export const useEventDataManager = (): EventDataManagerReturn => {
+export const useEventDataManager = (
+  showToast: ShowToastFunction,
+): EventDataManagerReturn => {
   const [eventFrames, setEventFrames] = useState<EventFrame[]>([]);
   const [peopleGroups, setPeopleGroups] = useState<PersonGroup[]>([]);
+  const [googleEvents, setGoogleEvents] = useState<any[]>([]);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
+  
+  const eventFramesRef = useRef(eventFrames);
+  const peopleGroupsRef = useRef(peopleGroups);
+
+  useEffect(() => { eventFramesRef.current = eventFrames; }, [eventFrames]);
+  useEffect(() => { peopleGroupsRef.current = peopleGroups; }, [peopleGroups]);
+
 
   const markUnsaved = useCallback(() => {
     setHasUnsavedChanges(true);
   }, []);
 
-  const addEventFrame = useCallback((newEventFrameData: Omit<EventFrame, 'id' | 'assignments' | 'personnelComplete'>): EventFrame => {
+  const refreshGoogleEvents = useCallback(async () => {
+    if (window.electronAPI?.getGoogleEvents) {
+        const result = await window.electronAPI.getGoogleEvents();
+        if (result.success && result.events) {
+            setGoogleEvents(result.events);
+        } else if (result.message) {
+            console.error("Error refrescant esdeveniments de Google:", result.message);
+        }
+    }
+  }, []);
+
+  const addEventFrame = useCallback((newEventFrameData: Omit<EventFrame, 'id' | 'assignments' | 'personnelComplete' | 'techSheet'>): EventFrame => {
     const newEventFrame: EventFrame = {
       ...newEventFrameData,
       id: generateId(),
       assignments: [],
       personnelComplete: false,
+      techSheet: createDefaultTechSheet(newEventFrameData),
     };
     setEventFrames(prev => [...prev, newEventFrame].sort((a,b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime() || a.name.localeCompare(b.name)));
     markUnsaved();
-    return newEventFrame; // <<< LÍNIA CLAU: Retornem l'objecte creat
+    return newEventFrame;
   }, [markUnsaved]);
   
   const updateEventFrame = useCallback((updatedEventFrame: EventFrame) => {
+    if (!updatedEventFrame.techSheet) {
+      console.log(`Generant fitxa tècnica per a l'esdeveniment antic: ${updatedEventFrame.name}`);
+      updatedEventFrame.techSheet = createDefaultTechSheet(updatedEventFrame);
+    }
+
     setEventFrames(prev => prev.map(ef => ef.id === updatedEventFrame.id ? updatedEventFrame : ef)
       .sort((a,b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime() || a.name.localeCompare(b.name))
     );
     markUnsaved();
   }, [markUnsaved]);
-
-  const deleteEventFrame = useCallback((eventFrameId: string) => {
-    setEventFrames(prev => prev.filter(ef => ef.id !== eventFrameId));
+  
+  const addOrUpdateTechSheet = useCallback((eventFrameId: string, techSheetData: TechSheetData) => {
+    setEventFrames(prevFrames => 
+      prevFrames.map(ef => {
+        if (ef.id === eventFrameId) {
+          return { ...ef, techSheet: techSheetData };
+        }
+        return ef;
+      })
+    );
     markUnsaved();
   }, [markUnsaved]);
+
+
+ const deleteEventFrame = useCallback((eventFrameId: string) => {
+    setEventFrames(prev => prev.filter(ef => ef.id !== eventFrameId));
+markUnsaved();
+}, [markUnsaved]);
 
   const getEventFrameById = useCallback((eventFrameId: string): EventFrame | undefined => {
     return eventFrames.find(ef => ef.id === eventFrameId);
@@ -172,13 +239,10 @@ export const useEventDataManager = (): EventDataManagerReturn => {
     
     let warningMessage: string | null = null;
     if (finalAssignment.status !== AssignmentStatus.No) {
-        // Lògica de conflicte depenent del context
         if (context?.changedDate) {
-            // Si es canvia un sol dia, només validem aquest dia
             const specificDate = new Date(context.changedDate);
             warningMessage = checkDateRange(specificDate, specificDate, finalAssignment.dailyStatuses || finalAssignment.status);
         } else {
-            // Si no hi ha context, validem el rang sencer (comportament anterior)
             warningMessage = checkDateRange(new Date(finalAssignment.startDate), new Date(finalAssignment.endDate), finalAssignment.dailyStatuses || finalAssignment.status);
         }
     }
@@ -213,11 +277,21 @@ export const useEventDataManager = (): EventDataManagerReturn => {
       return;
     }
 
-    const loadedEventFrames: EventFrame[] = (data.eventFrames || []).map((efExport: EventFrameForExport) => ({
-      ...efExport,
-      assignments: [],
-      personnelComplete: efExport.personnelComplete || false,
-    }));
+    const loadedEventFrames: EventFrame[] = (data.eventFrames || []).map((efExport: EventFrameForExport) => {
+      const defaultTechSheet = createDefaultTechSheet(efExport);
+      // <<< LÒGICA DE CURACIÓ AUTOMÀTICA >>>
+      // Fusiona la fitxa existent (si n'hi ha) amb la per defecte.
+      // Això assegura que els esdeveniments antics rebin la fitxa
+      // i que els que ja en tenien rebin els camps nous que s'hagin afegit.
+      const finalTechSheet = { ...defaultTechSheet, ...efExport.techSheet };
+
+      return {
+        ...efExport,
+        assignments: [],
+        personnelComplete: efExport.personnelComplete || false,
+        techSheet: finalTechSheet,
+      };
+    });
 
     if (data.assignments && data.assignments.length > 0) {
       data.assignments.forEach(assignmentFromFile => {
@@ -251,20 +325,41 @@ export const useEventDataManager = (): EventDataManagerReturn => {
   }, []);
 
   const exportData = useCallback((): AppData => {
-    const allAssignmentsList: Assignment[] = eventFrames.flatMap(ef => ef.assignments);
-    const eventFramesForExport: EventFrameForExport[] = eventFrames.map(({ assignments, ...restOfFrame }) => restOfFrame);
+    const allAssignmentsList: Assignment[] = eventFramesRef.current.flatMap(ef => ef.assignments);
+    const eventFramesForExport: EventFrameForExport[] = eventFramesRef.current.map(({ assignments, ...restOfFrame }) => restOfFrame);
 
     return {
-      peopleGroups,
+      peopleGroups: peopleGroupsRef.current,
       eventFrames: eventFramesForExport,
       assignments: allAssignmentsList,
     };
-  }, [eventFrames, peopleGroups]);
+   }, []);
 
   const setPersonnelComplete = useCallback((eventFrameId: string, complete: boolean) => {
     setEventFrames(prev => prev.map(ef => ef.id === eventFrameId ? {...ef, personnelComplete: complete} : ef));
     markUnsaved();
   }, [markUnsaved]);
+
+  const syncWithGoogle = useCallback(async () => {
+    setIsSyncing(true);
+    if (!window.electronAPI) {
+        showToast('La sincronització només està disponible a l\'aplicació d\'escriptori.', 'warning');
+        setIsSyncing(false);
+        return;
+    }
+
+    const localData = exportData();
+    const result = await window.electronAPI.syncWithGoogle(localData);
+
+    if (result.success && result.data) {
+        loadData(result.data);
+        await refreshGoogleEvents();
+        showToast(result.message || 'Sincronització completada.', 'success');
+    } else {
+        showToast(result.message || 'Hi ha hagut un error durant la sincronització.', 'error');
+    }
+    setIsSyncing(false);
+  }, [showToast, exportData, loadData, refreshGoogleEvents]);
 
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -297,5 +392,10 @@ export const useEventDataManager = (): EventDataManagerReturn => {
     setPersonnelComplete,
     hasUnsavedChanges,
     setHasUnsavedChanges,
+    googleEvents,
+    refreshGoogleEvents,
+    syncWithGoogle,
+    isSyncing,
+    addOrUpdateTechSheet,
   };
 };

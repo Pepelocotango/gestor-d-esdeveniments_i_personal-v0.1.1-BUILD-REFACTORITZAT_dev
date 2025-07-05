@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { EventFrame, Assignment, AssignmentStatus, ModalType, ModalData } from '../types';
+import { EventFrame, Assignment, AssignmentStatus, ModalType, ModalData, ShowToastFunction } from '../types';
 import { useEventData } from '../contexts/EventDataContext';
 import { PlusIcon, CalendarIcon, ListIcon, ChartBarIcon, CsvIcon, ChevronUpIcon, ChevronDownIcon } from '../constants';
 import FullCalendar from '@fullcalendar/react';
@@ -16,7 +16,7 @@ import EventFrameCard from './EventFrameCard';
 
 interface MainDisplayProps {
   openModal: (type: ModalType, data?: ModalData) => void;
-  setToastMessage: (message: string, type?: 'success' | 'error' | 'info' | 'warning', persistent?: boolean) => void;
+  setToastMessage: ShowToastFunction;
   currentFilterHighlight: string;
   setCurrentFilterHighlight: (filter: string) => void;
   filterToShowEventFrameId: string | null;
@@ -66,12 +66,38 @@ const MainDisplay: React.FC<MainDisplayProps> = ({
     onExportCurrentViewToCsv,
     setFilterUIPerson
 }) => {
-  const { eventFrames, peopleGroups, getPersonGroupById, getEventFrameById, getAssignmentById, updateAssignment, updateEventFrame } = useEventData();
-
+const { eventFrames, googleEvents, peopleGroups, getPersonGroupById, getEventFrameById, getAssignmentById, updateAssignment, updateEventFrame } = useEventData();
   const [conflictDialog, setConflictDialog] = useState<{ message: string; personName: string | null } | null>(null);
-  
+
   const [expandedEventFrameIds, setExpandedEventFrameIds] = useState<Set<string>>(new Set());
   const [expandedDailyViewAssignmentIds, setExpandedDailyViewAssignmentIds] = useState<Set<string>>(new Set());
+
+  // <<< NOU CÀLCUL D'ESDEVENIMENTS PER AL CALENDARI >>>
+  const calendarEvents = useMemo(() => {
+    const localEventGoogleIds = new Set(eventFrames.map(ef => ef.googleEventId).filter(Boolean));
+    
+    const localEventsForCalendar = eventFrames.map(ef => ({
+      id: ef.id,
+      title: ef.name,
+      start: ef.startDate,
+      end: addDaysISO(ef.endDate, 1),
+      allDay: true,
+      className: ef.personnelComplete ? 'event-complete' : 'event-incomplete',
+      extendedProps: { type: 'local', googleEventId: ef.googleEventId } 
+    }));
+    
+    const filteredGoogleEventsForCalendar = googleEvents
+      .filter(gEvent => !localEventGoogleIds.has(gEvent.id))
+      .map(gEvent => ({
+        ...gEvent,
+        backgroundColor: '#D32F2F',
+        borderColor: '#D32F2F',
+        extendedProps: { ...gEvent.extendedProps, type: 'google' }
+      }));
+
+    return [...localEventsForCalendar, ...filteredGoogleEventsForCalendar];
+  }, [eventFrames, googleEvents]);
+
 
   const handleGeneralStatusChange = (eventFrameId: string, assignmentId: string, newStatus: AssignmentStatus) => {
     const assignment = getAssignmentById(eventFrameId, assignmentId);
@@ -80,7 +106,6 @@ const MainDisplay: React.FC<MainDisplayProps> = ({
         const result = updateAssignment({ ...assignment, status: newStatus, dailyStatuses: undefined });
         if (result.success) {
             setToastMessage(`Estat general de l'assignació actualitzat a ${newStatus}`, 'success');
-            // CANVI: Eliminem l'assignació del Set d'expansió diària
             setExpandedDailyViewAssignmentIds(prev => {
                 const newSet = new Set(prev);
                 newSet.delete(assignmentId);
@@ -165,7 +190,6 @@ const MainDisplay: React.FC<MainDisplayProps> = ({
             if (element) {
                 element.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 element.classList.add('ring-2', 'ring-offset-2', 'ring-blue-500', 'dark:ring-blue-400', 'transition-all', 'duration-1000', 'ease-in-out', 'rounded-lg');
-                // CANVI: Verifiquem i afegim al Set si cal
                 if (!expandedEventFrameIds.has(currentFilterHighlight)) {
                     setExpandedEventFrameIds(prev => new Set(prev).add(currentFilterHighlight));
                 }
@@ -178,6 +202,8 @@ const MainDisplay: React.FC<MainDisplayProps> = ({
     }
   }, [currentFilterHighlight, setCurrentFilterHighlight, expandedEventFrameIds]);
 
+  // Estat per l'ordre de la llista
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const filteredAndSortedEventFrames = useMemo(() => {
     let frames = [...eventFrames];
     if (filterUIEventFrame) frames = frames.filter(ef => ef.id === filterUIEventFrame);
@@ -198,8 +224,11 @@ const MainDisplay: React.FC<MainDisplayProps> = ({
       if (localFilterUIPerson) frames = frames.filter(ef => ef.assignments.some(a => a.personGroupId === localFilterUIPerson));
       if (filterDate) frames = frames.filter(ef => new Date(ef.startDate) <= new Date(filterDate) && new Date(ef.endDate) >= new Date(filterDate));
     }
-    return frames.sort((a,b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
-  }, [eventFrames, filterText, filterPlace, filterStatus, filterDate, localFilterUIPerson, filterUIEventFrame, getPersonGroupById]);
+    return frames.sort((a,b) => sortOrder === 'asc'
+      ? new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+      : new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
+    );
+  }, [eventFrames, filterText, filterPlace, filterStatus, filterDate, localFilterUIPerson, filterUIEventFrame, getPersonGroupById, sortOrder]);
 useEffect(() => {
     const isAnyFilterActive = !!(filterText || filterPlace || filterStatus || filterDate || localFilterUIPerson || filterUIEventFrame);
 
@@ -222,15 +251,14 @@ useEffect(() => {
         setExpandedEventFrameIds(newExpandedFrames);
         setExpandedDailyViewAssignmentIds(newExpandedAssignments);
     } else if (prevIsAnyFilterActive.current && !isAnyFilterActive) {
-        // CANVI CLAU: Només replega tot si abans hi havia filtres i ara no
         setExpandedEventFrameIds(new Set());
         setExpandedDailyViewAssignmentIds(new Set());
     }
 
-    // Actualitzem el ref per al pròxim render
     prevIsAnyFilterActive.current = isAnyFilterActive;
 
   }, [filteredAndSortedEventFrames, filterText, filterPlace, filterStatus, filterDate, localFilterUIPerson, filterUIEventFrame]);
+
   useEffect(() => { setCurrentlyDisplayedFrames(filteredAndSortedEventFrames); }, [filteredAndSortedEventFrames, setCurrentlyDisplayedFrames]);  useEffect(() => { setFilterUIPerson(localFilterUIPerson); }, [localFilterUIPerson, setFilterUIPerson]);
 
   const handleEditAssignment = (eventFrameId: string, assignmentId: string) => {
@@ -275,24 +303,31 @@ useEffect(() => {
                 height="auto"
                 contentHeight="auto"
                 aspectRatio={1.5}
-                events={eventFrames.map(ef => ({
-                  id: ef.id,
-                  title: ef.name,
-                  start: ef.startDate,
-                  end: addDaysISO(ef.endDate, 1),
-                  allDay: true,
-                  className: ef.personnelComplete ? 'event-complete' : 'event-incomplete'
-                }))}
+                events={calendarEvents}
                 dateClick={(info) => openModal('addEventFrame', { startDate: info.dateStr })}
-                eventClick={(info) => { const ef = getEventFrameById(info.event.id); if (ef) openModal('eventFrameDetails', { eventFrame: ef }); }}
-              />
+                eventClick={(info) => {
+                if (info.event.extendedProps.type === 'google') {
+                info.jsEvent.preventDefault();
+                return;
+                }
+                const ef = getEventFrameById(info.event.id);
+                if (ef) openModal('eventFrameDetails', { eventFrame: ef });
+                }}
+                />
         </div>
       </CollapsibleSection>
 
       <CollapsibleSection title={`Llista d'Esdeveniments (${filteredAndSortedEventFrames.length})`} icon={<ListIcon />} defaultOpen={true} id="event-list-section">
-        <div className="mb-4 flex justify-start">
+        <div className="mb-4 flex justify-start items-center gap-4">
             <button onClick={() => openModal('addEventFrame')} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-semibold flex items-center gap-2">
               <PlusIcon className="w-5 h-5"/> Afegir Nou Marc
+            </button>
+            <button
+              onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+              className="flex items-center gap-1 px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-500 text-sm font-medium"
+              title={`Ordena per data ${sortOrder === 'asc' ? 'descendent' : 'ascendent'}`}
+            >
+              {sortOrder === 'asc' ? <ChevronUpIcon className="w-4 h-4" /> : <ChevronDownIcon className="w-4 h-4" />} Ordena per data
             </button>
         </div>
         

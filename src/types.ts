@@ -20,14 +20,80 @@ export interface Assignment {
   id:string;
   personGroupId: string;
   eventFrameId: string;
-  startDate: string; // Data d'inici de l'assignació general
-  endDate: string;   // Data de fi de l'assignació general
-  status: AssignmentStatus; // Ara pot ser 'Pendent', 'Sí', 'No', o 'Mixt'
+  startDate: string;
+  endDate: string;
+  status: AssignmentStatus;
   notes?: string;
-  dailyStatuses?: { // Opcional: només existirà si l'status és 'Mixt'
+  dailyStatuses?: {
     [dateYYYYMMDD: string]: AssignmentStatus;
   };
 }
+
+// <<< NOVES INTERFÍCIES PER A LA FITXA TÈCNICA (Tech Sheet) >>>
+
+export interface TechSheetPersonnel {
+  id: string;
+  role: string;
+  name: string;
+  /** Notes d'assignació (comentaris específics per a la fitxa tècnica) */
+  notes?: string;
+}
+
+export interface TechSheetScheduleItem {
+  id: string;
+  time: string;
+  description: string;
+}
+
+export interface TechSheetNeed {
+  id: string;
+  quantity: number | string;
+  description: string;
+  origin: string; // <<< CANVIAT: Ara és un string lliure
+}
+
+export interface TechSheetData {
+  // Secció General
+  eventName: string;
+  location: string;
+  date: string;
+  showTime: string;
+  showDuration: string;
+  parkingInfo: string;
+  
+  // Secció Personal
+  technicalPersonnel: TechSheetPersonnel[];
+  
+  // Secció Horaris
+  preAssemblySchedule: string;
+  assemblySchedule: TechSheetScheduleItem[];
+  
+  // Secció Logística
+  dressingRooms: string;
+  actors: string;
+  /** Nombre d'actors (selector numèric al formulari) */
+  actorsNumber?: number;
+  companyTechnicians: string;
+  /** Nombre de tècnics/producció de companyia (selector numèric al formulari) */
+  companyTechniciansNumber?: number;
+  
+  // Seccions de Necessitats Tècniques
+  lightingNeeds: TechSheetNeed[];
+  soundNeeds: TechSheetNeed[];
+  videoNeeds: TechSheetNeed[]; // Llista de necessitats específiques de vídeo
+  videoDetails?: string; // Camp de text per a notes generals de vídeo (ex: "NO", o descripció si no hi ha ítems)
+  machineryNeeds: TechSheetNeed[];
+  
+  // Altres seccions
+  controlLocation: string;
+  otherEquipment: string;
+  rentals: string;
+  blueprints: string;
+  companyContact: string;
+  observations: string;
+}
+// <<< FI DE LES NOVES INTERFÍCIES >>>
+
 
 export interface EventFrame {
   id: string;
@@ -38,6 +104,11 @@ export interface EventFrame {
   generalNotes?: string;
   personnelComplete?: boolean;
   assignments: Assignment[];
+  googleEventId?: string;
+  googleCalendarId?: string;
+  lastModified?: string;
+  lastSync?: string;
+  techSheet?: TechSheetData; // <<< CAMP AFEGIT
 }
 
 export type EventFrameForExport = Omit<EventFrame, 'assignments'>;
@@ -45,13 +116,20 @@ export type EventFrameForExport = Omit<EventFrame, 'assignments'>;
 export interface AppData {
   eventFrames: EventFrameForExport[];
   peopleGroups: PersonGroup[];
-  assignments: Assignment[]; // Les assignacions aquí contindran la nova estructura si escau
+  assignments: Assignment[];
 }
 
 export interface InitialEventFrameData {
     startDate?: string;
     endDate?: string;
 }
+
+export type ShowToastFunction = (
+  message: string, 
+  type?: 'success' | 'error' | 'info' | 'warning', 
+  persistent?: boolean
+) => void;
+
 
 export type ModalType =
   | 'addEventFrame'
@@ -62,7 +140,8 @@ export type ModalType =
   | 'eventFrameDetails'
   | 'confirmDeleteEventFrame'
   | 'confirmDeleteAssignment'
-  | 'confirmDeletePersonGroup'
+  | 'googleSettings'
+  | 'confirmHardReset'
   | null;
 
 export interface ModalData {
@@ -79,6 +158,7 @@ export interface ModalData {
     onConfirmSpecial?: () => void;
     confirmButtonText?: string;
     cancelButtonText?: string;
+    onCloseModal?: () => void;
     titleOverride?: string;
 }
 
@@ -91,16 +171,17 @@ export interface ModalState {
 export interface EventDataConteImplicits {
   eventFrames: EventFrame[];
   peopleGroups: PersonGroup[];
-  addEventFrame: (eventFrame: Omit<EventFrame, 'id' | 'assignments' | 'personnelComplete'>) => void;
+  addEventFrame: (eventFrame: Omit<EventFrame, 'id' | 'assignments' | 'personnelComplete' | 'techSheet'>) => EventFrame;
   updateEventFrame: (eventFrame: EventFrame) => void;
   deleteEventFrame: (eventFrameId: string) => void;
   getEventFrameById: (eventFrameId: string) => EventFrame | undefined;
   openModal: (type: ModalType, data?: ModalData) => void;
+  showToast: ShowToastFunction; // <<< LÍNIA AFEGIDA
   addPersonGroup: (personGroup: Omit<PersonGroup, 'id'>) => void;
   updatePersonGroup: (personGroup: PersonGroup) => void;
   deletePersonGroup: (personGroupId: string) => void;
   getPersonGroupById: (personGroupId: string) => PersonGroup | undefined;
-  addAssignment: (eventFrameId: string, assignment: Omit<Assignment, 'id' | 'eventFrameId' | 'dailyStatuses' | 'isMixedStatus'>) => { success: boolean; message?: string; warningMessage?: string };
+  addAssignment: (eventFrameId: string, assignment: Omit<Assignment, 'id' | 'eventFrameId' | 'dailyStatuses'>) => { success: boolean; message?: string; warningMessage?: string };
   updateAssignment: (assignment: Assignment, context?: { changedDate?: string }) => { success: boolean; message?: string; warningMessage?: string };
   deleteAssignment: (eventFrameId: string, assignmentId: string) => void;  getAssignmentById: (eventFrameId: string, assignmentId: string) => Assignment | undefined;
   loadData: (data: AppData | null) => void;
@@ -108,9 +189,14 @@ export interface EventDataConteImplicits {
   setPersonnelComplete: (eventFrameId: string, complete: boolean) => void;
   hasUnsavedChanges: boolean;
   setHasUnsavedChanges: (value: boolean) => void;
+  googleEvents: any[];
+  refreshGoogleEvents: () => Promise<void>;
+  syncWithGoogle: () => Promise<void>;
+  isSyncing: boolean;
+  addOrUpdateTechSheet: (eventFrameId: string, fitxaData: TechSheetData) => void;
 }
 
-export type EventDataManagerReturn = Omit<EventDataConteImplicits, 'openModal'>;
+export type EventDataManagerReturn = Omit<EventDataConteImplicits, 'openModal' | 'showToast'>;
 
 export interface SummaryRow {
   id: string;
@@ -155,8 +241,7 @@ export interface CalendarAssignmentEvent extends BaseCalendarEvent {
   extendedProps: {
     type: 'assignment';
     eventFrameId: string;
-    assignmentId: string; // L'ID de l'assignació general
-    // Podríem afegir informació sobre si és mixta aquí si el calendari ho necessita
+    assignmentId: string;
   };
 }
 
@@ -170,3 +255,9 @@ export interface CalendarEventFrameEvent extends BaseCalendarEvent {
 }
 
 export type CalendarEventType = CalendarAssignmentEvent | CalendarEventFrameEvent;
+export interface GoogleCalendar {
+  id: string;
+  summary: string;
+  backgroundColor: string;
+  primary?: boolean;
+}

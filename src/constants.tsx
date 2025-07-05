@@ -2,7 +2,7 @@
 import React, { FC } from 'react';
 import { AssignmentStatus } from './types';
 
-export const APP_TITLE = "Gestor de Esdeveniments i Personal v0.1.2_dev";
+export const APP_TITLE = "Gestor de Esdeveniments i Personal v0.2";
 export const THEME_STORAGE_KEY = 'eventManagementAppTheme';
 
 export const ASSIGNMENT_STATUS_OPTIONS = [
@@ -129,5 +129,20 @@ export const PersonAddIcon = ({ className = "w-5 h-5" } : {className?: string}) 
   <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16" className={className}>
     <path d="M12.5 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7m.5-5v1h1a.5.5 0 0 1 0 1h-1v1a.5.5 0 0 1-1 0v-1h-1a.5.5 0 0 1 0-1h1v-1a.5.5 0 0 1 1 0m-2-6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
     <path d="M2 13c0-1 1-2 3-2h5.259a4.5 4.5 0 0 1 .254-.834H5a2 2 0 0 0-2 2v2h4a4.5 4.5 0 0 1 .502-1z"/>
+  </svg>
+);
+
+export const SyncIcon = ({ className = "w-5 h-5" } : {className?: string}) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0011.664 0l3.181-3.183m-11.664 0l4.992-4.993m-4.993 0l-3.181 3.183a8.25 8.25 0 000 11.664l3.181 3.183" />
+  </svg>
+);
+
+export const GoogleIcon = ({ className = "w-5 h-5" }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" className={className}>
+    <path fill="#4285F4" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4C12.955 4 4 12.955 4 24s8.955 20 20 20s20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z" />
+    <path fill="#34A853" d="M43.611 20.083H24v8h11.303c-1.649 4.657-6.08 8-11.303 8V44c5.268 0 10.046-1.953 13.591-5.639l-5.657-5.657z" />
+    <path fill="#FBBC05" d="M11.636 14.876c-1.933 2.419-3.095 5.564-3.095 8.999s1.162 6.58 3.095 8.999L6.045 38.636C2.12 34.61 0 29.598 0 24s2.12-10.61 6.045-14.636z" />
+    <path fill="#EA4335" d="M43.611 20.083L37.954 14.426C34.046 10.498 29.268 8 24 8c-3.059 0-5.842 1.154-7.961 3.039l5.657 5.657C23.286 16.08 24.516 16 26 16c5.223 0 9.651 3.343 11.303 8H24v-8h19.611z" />
   </svg>
 );

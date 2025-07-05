@@ -1,22 +1,66 @@
 const { app, BrowserWindow, ipcMain, dialog, Menu } = require('electron');
 const path = require('path');
 const fs = require('fs');
-const os = require('os');
 
-const APP_NAME = 'gestor-esdeveniments';
-const DEFAULT_CONFIG_DIR = path.join(os.homedir(), '.config', APP_NAME);
-const DEFAULT_DATA_DIR = path.join(os.homedir(), '.local', 'share', APP_NAME);
-const DEFAULT_CACHE_DIR = path.join(os.homedir(), '.cache', APP_NAME);
+const { google } = require('googleapis');
+const url = require('url');
+const http = require('http');
 
-let CONFIG_DIR = DEFAULT_CONFIG_DIR;
-let DATA_DIR = DEFAULT_DATA_DIR;
-let CACHE_DIR = DEFAULT_CACHE_DIR;
+const APP_ID = 'com.gestorevents.app';
+app.setAppUserModelId(APP_ID);
 
-let SESSION_FILE;
-let DATA_FILE;
-let BACKUP_DIR;
 
-// --- Funcions de gestió de directoris (sense canvis) ---
+const CONFIG_DIR = app.getPath('userData');
+const DATA_DIR = CONFIG_DIR; 
+const SESSION_FILE = path.join(CONFIG_DIR, 'session.json');
+const DATA_FILE = path.join(DATA_DIR, 'events_data.json');
+const BACKUP_DIR = path.join(DATA_DIR, 'backups');
+const GOOGLE_TOKENS_PATH = path.join(CONFIG_DIR, 'google-tokens.json');
+const GOOGLE_CONFIG_PATH = path.join(CONFIG_DIR, 'google-config.json');
+
+const APP_CALENDAR_NAME = "Gestor d'Esdeveniments (App)";
+
+let mainWindow;
+let isQuitting = false;
+let googleAuthClient;
+let googleCredentials;
+
+const generateId = () => Date.now().toString(36) + Math.random().toString(36).substring(2);
+
+const addDaysISO = (dateStr, days) => {
+  const date = new Date(dateStr);
+  date.setDate(date.getDate() + days);
+  return date.toISOString().split('T')[0];
+};
+
+function ensureDirectoriesExist() {
+  [CONFIG_DIR, DATA_DIR, BACKUP_DIR].forEach(dir => {
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+  });
+}
+
+function loadGoogleCredentials() {
+  try {
+    const credentialsPath = path.join(__dirname, 'google-credentials.json');
+    if (!fs.existsSync(credentialsPath)) return false;
+
+    const content = fs.readFileSync(credentialsPath);
+    googleCredentials = JSON.parse(content).installed;
+    googleAuthClient = new google.auth.OAuth2(googleCredentials.client_id, googleCredentials.client_secret);
+    
+    if (fs.existsSync(GOOGLE_TOKENS_PATH)) {
+      const tokens = JSON.parse(fs.readFileSync(GOOGLE_TOKENS_PATH));
+      googleAuthClient.setCredentials(tokens);
+    }
+  } catch (err) {
+    console.error('Error carregant credencials de Google:', err);
+    return false;
+  }
+  return true;
+}
+
 function checkWritePermissions(dir) {
   try {
     const testFile = path.join(dir, '.write-test');
@@ -32,67 +76,9 @@ function getAlternativeDirectory(baseDir) {
   return path.join(app.getPath('userData'), baseDir);
 }
 
-function ensureDirectoriesExist() {
-  const dirs = [
-    { name: 'CONFIG_DIR', currentVal: CONFIG_DIR, defaultPath: DEFAULT_CONFIG_DIR, altBaseName: 'config' },
-    { name: 'DATA_DIR', currentVal: DATA_DIR, defaultPath: DEFAULT_DATA_DIR, altBaseName: 'data' },
-    { name: 'CACHE_DIR', currentVal: CACHE_DIR, defaultPath: DEFAULT_CACHE_DIR, altBaseName: 'cache' }
-  ];
-
-  dirs.forEach(dirInfo => {
-    let chosenPath = dirInfo.defaultPath;
-    try {
-      if (!fs.existsSync(chosenPath)) {
-        fs.mkdirSync(chosenPath, { recursive: true });
-      }
-      if (!checkWritePermissions(chosenPath)) {
-        chosenPath = getAlternativeDirectory(dirInfo.altBaseName);
-        if (!fs.existsSync(chosenPath)) {
-          fs.mkdirSync(chosenPath, { recursive: true });
-        }
-        if (!checkWritePermissions(chosenPath)) {
-             console.error(`FATAL: No s'han pogut establir permisos d'escriptura ni a ${dirInfo.defaultPath} ni a ${chosenPath}`);
-             dialog.showErrorBox('Error Crític de Permisos', `No s'han pogut establir permisos d'escriptura per a ${dirInfo.name}. L'aplicació podria no funcionar correctament.`);
-        } else {
-          dialog.showMessageBoxSync({
-            type: 'warning',
-            title: 'Canvi de directori',
-            message: `No hi ha permisos per escriure a ${dirInfo.defaultPath}.\nS'utilitzarà ${chosenPath} per a ${dirInfo.name}.`
-          });
-        }
-      }
-    } catch (error) {
-      console.error(`Error gestionant el directori ${dirInfo.name} (${chosenPath}):`, error);
-      chosenPath = getAlternativeDirectory(dirInfo.altBaseName);
-      try {
-        if (!fs.existsSync(chosenPath)) {
-          fs.mkdirSync(chosenPath, { recursive: true });
-        }
-         if (!checkWritePermissions(chosenPath)) {
-            console.error(`FATAL: No s'han pogut establir permisos d'escriptura ni a ${dirInfo.defaultPath} ni a ${chosenPath} (fallback)`);
-            dialog.showErrorBox('Error Crític de Permisos', `No s'han pogut establir permisos d'escriptura per a ${dirInfo.name} (fallback). L'aplicació podria no funcionar correctament.`);
-        }
-      } catch (fallbackError) {
-         console.error(`Error crític creant directori alternatiu ${dirInfo.name}:`, fallbackError);
-         dialog.showErrorBox('Error Crític de Directoris', `No s'ha pogut crear un directori funcional per a ${dirInfo.name}.`);
-      }
-    }
-    if (dirInfo.name === 'CONFIG_DIR') CONFIG_DIR = chosenPath;
-    if (dirInfo.name === 'DATA_DIR') DATA_DIR = chosenPath;
-    if (dirInfo.name === 'CACHE_DIR') CACHE_DIR = chosenPath;
-  });
-
-  SESSION_FILE = path.join(CONFIG_DIR, 'session.json');
-  DATA_FILE = path.join(DATA_DIR, 'events_data.json');
-  BACKUP_DIR = path.join(DATA_DIR, 'backups');
-}
-// --- Fi de funcions de gestió de directoris ---
 
 
-let mainWindow;
-let isQuitting = false;
 
-// --- Funcions de gestió de dades (sense canvis) ---
 function loadSessionData() {
   if (!SESSION_FILE) return {};
   try {
@@ -187,10 +173,47 @@ async function cleanupOldBackups() {
     console.error('Error durant la neteja de backups:', error);
   }
 }
-// --- Fi de funcions de gestió de dades ---
+
+function loadGoogleConfigFromFile() {
+    if (!fs.existsSync(GOOGLE_CONFIG_PATH)) return null;
+    try {
+        return JSON.parse(fs.readFileSync(GOOGLE_CONFIG_PATH, 'utf8'));
+    } catch(err) {
+        console.error('Error llegint el fitxer de configuració de Google:', err);
+        return null;
+    }
+}
+
+async function findOrCreateAppCalendar(calendar) {
+  try {
+    const res = await calendar.calendarList.list();
+    const calendars = res.data.items;
+    let appCalendar = calendars.find(cal => cal.summary === APP_CALENDAR_NAME);
+
+    if (appCalendar) {
+      console.log(`Calendari de l'aplicació trobat: ${appCalendar.id}`);
+      return appCalendar.id;
+    } else {
+      console.log(`El calendari de l'aplicació no existeix. Creant-lo...`);
+      const newCalendar = await calendar.calendars.insert({
+        requestBody: {
+          summary: APP_CALENDAR_NAME,
+          description: "Calendari gestionat per l'aplicació Gestor d'Esdeveniments.",
+          timeZone: 'Europe/Madrid' // O obtenir-ho del calendari principal de l'usuari
+        }
+      });
+      console.log(`Calendari creat amb ID: ${newCalendar.data.id}`);
+      return newCalendar.data.id;
+    }
+  } catch (error) {
+    console.error("Error buscant o creant el calendari de l'aplicació:", error);
+    throw error; // Propaguem l'error per gestionar-lo més amunt
+  }
+}
 
 function createWindow() {
   ensureDirectoriesExist();
+  loadGoogleCredentials(); 
   const sessionData = loadSessionData();
 
   mainWindow = new BrowserWindow({
@@ -255,12 +278,9 @@ function createWindow() {
 
 app.on('before-quit', async (event) => {
   if (isQuitting) {
-    return; // Si ja estem sortint, no fem res i deixem que es tanqui
+    return;
   }
-
-  event.preventDefault(); // Aturem el primer intent de sortida
-
-  // Desa la sessió de la finestra abans de mostrar el diàleg
+  event.preventDefault();
   if (mainWindow && !mainWindow.isDestroyed()) {
     const windowBounds = mainWindow.getBounds();
     await saveSessionWindowData({
@@ -270,7 +290,6 @@ app.on('before-quit', async (event) => {
       y: windowBounds.y
     });
   }
-
   const choice = await dialog.showMessageBox(mainWindow, {
     type: 'question',
     buttons: ['Sí, sortir', 'No, cancel·lar'],
@@ -279,29 +298,33 @@ app.on('before-quit', async (event) => {
     message: 'Estàs segur que vols sortir?',
     cancelId: 1,
   });
-
-  if (choice.response === 0) { // Si l'usuari confirma la sortida
+  if (choice.response === 0) {
     isQuitting = true;
-
-    // Primer, fem la còpia de seguretat.
-    await createBackup();
-    await cleanupOldBackups();
-
-    // Després, notifiquem al renderer que desi les seves dades.
-    // Això es fa de forma asíncrona, no esperem resposta.
+    
     if (mainWindow && !mainWindow.isDestroyed()) {
       mainWindow.webContents.send('confirm-quit-signal');
     }
     
-    // Donem un petit marge de temps al renderer per desar i després tanquem.
-    // Això és més robust que esperar un senyal de tornada.
-    setTimeout(() => {
-      app.exit(); // Usem app.exit() per a un tancament més directe
-    }, 1500); // 1.5 segons hauria de ser suficient per a l'escriptura a disc.
   }
 });
 
-// --- Gestors IPC i esdeveniments de l'App (sense canvis funcionals) ---
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') {
+    app.quit();
+  }
+});
+
+
+// NOU LISTENER: S'executa quan el frontend ha acabat de desar les dades.
+ipcMain.on('quit-confirmed-by-renderer-signal', async () => {
+  console.log("Backend rebut 'quit-confirmed'. Iniciant backup i sortida final.");
+  await createBackup();
+  await cleanupOldBackups();
+  setTimeout(() => {
+    app.exit();
+  }, 500); // Un petit temps de marge per si de cas
+});
+
 ipcMain.handle('load-app-data', async () => {
   if (!DATA_FILE) return null;
   try {
@@ -318,12 +341,300 @@ ipcMain.handle('load-app-data', async () => {
 
 ipcMain.handle('save-app-data', (event, data) => saveDataWithErrorHandling(DATA_FILE, data));
 
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit();
+
+ipcMain.handle('sync-with-google', async (event, localData) => {
+  if (!googleAuthClient || !googleAuthClient.credentials.access_token) {
+    return { success: false, message: 'No autenticat amb Google.' };
+  }
+  
+  const calendar = google.calendar({ version: 'v3', auth: googleAuthClient });
+  const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+  const config = loadGoogleConfigFromFile();
+
+  if (!config?.appCalendarId) {
+    return { success: false, message: "No s'ha trobat el calendari de l'aplicació. Si us plau, reconnecta el teu compte." };
+  }
+  const appCalendarId = config.appCalendarId;
+
+  try {
+    // --- FASE 1: BUIDAR COMPLETAMENT EL CALENDARI DE L'APP A GOOGLE ---
+    console.log(`Buidant el calendari de l'app a Google: ${appCalendarId}`);
+    const res = await calendar.events.list({
+      calendarId: appCalendarId,
+      maxResults: 2500,
+    });
+    
+    const eventsToDelete = res.data.items;
+    if (eventsToDelete && eventsToDelete.length > 0) {
+      console.log(`Trobats ${eventsToDelete.length} esdeveniments per eliminar...`);
+      for (const event of eventsToDelete) {
+        try {
+          await calendar.events.delete({ calendarId: appCalendarId, eventId: event.id });
+          await delay(200);
+        } catch (err) {
+          if (err.code !== 404 && err.code !== 410) console.error(`Error eliminant l'esdeveniment "${event.summary}":`, err.message);
+        }
+      }
+    }
+
+    // --- FASE 2: PUJAR TOTS ELS ESDEVENIMENTS DES DE L'APP LOCAL ---
+    const localFramesToUpload = localData.eventFrames;
+    console.log(`Pujant ${localFramesToUpload.length} esdeveniments al calendari de l'app...`);
+    
+    for (const localFrame of localFramesToUpload) {
+      const eventResource = {
+        summary: localFrame.name,
+        description: localFrame.generalNotes || '',
+        location: localFrame.place || '',
+        start: { date: localFrame.startDate },
+        end: { date: addDaysISO(localFrame.endDate, 1) }, // La data de fi és exclusiva a l'API de Google
+      };
+
+      try {
+        const newGoogleEvent = await calendar.events.insert({
+          calendarId: appCalendarId,
+          requestBody: eventResource,
+        });
+        // Actualitzem les dades locals amb el nou ID de Google per a futures referències
+        localFrame.googleEventId = newGoogleEvent.data.id;
+        localFrame.googleCalendarId = appCalendarId;
+        localFrame.lastModified = newGoogleEvent.data.updated;
+        localFrame.lastSync = new Date().toISOString();
+      } catch (err) {
+        console.error(`Error creant "${localFrame.name}" a Google:`, err.message);
+      }
+      await delay(250); // Mantenim una pausa per no excedir els límits de l'API
+    }
+
+    // --- FASE 3: RETORNAR LES DADES LOCALS ACTUALITZADES ---
+    // Les dades que retornem ara contenen els nous googleEventId
+    return { success: true, message: 'Sincronització completada amb èxit.', data: localData };
+
+  } catch (error) {
+    console.error('Error durant la sincronització unidireccional:', error);
+    return { success: false, message: `Error de sincronització: ${error.message}` };
   }
 });
 
+
+
+ipcMain.handle('google-auth-start', async () => {
+  if (!googleAuthClient) {
+    return { success: false, message: "El client d'autenticació de Google no s'ha iniciat correctament." };
+  }
+
+  return new Promise((resolve) => {
+    const server = http.createServer();
+
+    const closeServerAndResolve = (result) => {
+      if (server.listening) {
+        server.close();
+      }
+      resolve(result);
+    };
+
+    server.listen(0, '127.0.0.1', () => {
+      const { port } = server.address();
+      const redirectUri = `http://localhost:${port}`;
+      googleAuthClient.redirectUri = redirectUri;
+
+      const authUrl = googleAuthClient.generateAuthUrl({
+        access_type: 'offline', prompt: 'consent',
+        scope: ['https://www.googleapis.com/auth/calendar'],
+      });
+      require('electron').shell.openExternal(authUrl);
+    });
+
+    server.on('request', async (req, res) => {
+      const qs = new url.URL(req.url, 'http://localhost').searchParams;
+      const code = qs.get('code');
+      
+      if (!code) {
+        res.end('<h1>Esperant codi...</h1>');
+        return;
+      }
+
+      try {
+        const { tokens } = await googleAuthClient.getToken(code);
+        googleAuthClient.setCredentials(tokens);
+        fs.writeFileSync(GOOGLE_TOKENS_PATH, JSON.stringify(tokens));
+        
+        const calendar = google.calendar({ version: 'v3', auth: googleAuthClient });
+        const appCalendarId = await findOrCreateAppCalendar(calendar);
+        
+        // Desem l'ID del calendari a la configuració
+        const config = loadGoogleConfigFromFile() || { selectedCalendarIds: [] };
+        config.appCalendarId = appCalendarId;
+        // Opcional: Afegir automàticament el nostre calendari a la llista de seleccionats
+        if (!config.selectedCalendarIds.includes(appCalendarId)) {
+          config.selectedCalendarIds.push(appCalendarId);
+        }
+        fs.writeFileSync(GOOGLE_CONFIG_PATH, JSON.stringify(config, null, 2));
+        
+        mainWindow.webContents.send('google-auth-success');
+        res.end('<h1>Autenticació completada!</h1><p>Pots tancar aquesta pestanya.</p>');
+        closeServerAndResolve({ success: true });
+
+      } catch (e) {
+        console.error("Error en el callback d'autenticació:", e);
+        mainWindow.webContents.send('google-auth-error', e.message);
+        res.writeHead(500);
+        res.end('<h1>Error d\'autenticació</h1>');
+        closeServerAndResolve({ success: false, message: e.message });
+      }
+    });
+
+    server.on('error', (err) => {
+      dialog.showErrorBox('Error de Servidor', `No s'ha pogut iniciar el servidor d'autenticació: ${err.message}`);
+      closeServerAndResolve({ success: false, message: err.message });
+    });
+  });
+});
+
+ipcMain.handle('load-google-config', async () => {
+  return loadGoogleConfigFromFile();
+});
+
+ipcMain.handle('save-google-config', (event, config) => {
+  try {
+    fs.writeFileSync(GOOGLE_CONFIG_PATH, JSON.stringify(config, null, 2));
+    return { success: true };
+  } catch (err) {
+    console.error('Error desant configuració de Google:', err);
+    return { success: false, message: err.message };
+  }
+});
+
+ipcMain.handle('google-get-calendar-list', async () => {
+  try {
+    if (!googleAuthClient || !googleAuthClient.credentials.access_token) {
+        throw new Error('No autenticat. Si us plau, connecta\'t a Google primer.');
+    }
+    const calendar = google.calendar({ version: 'v3', auth: googleAuthClient });
+    const res = await calendar.calendarList.list();
+    return {
+      success: true,
+      calendars: res.data.items?.map(cal => ({
+        id: cal.id,
+        summary: cal.summary,
+        backgroundColor: cal.backgroundColor,
+        primary: cal.primary,
+      })) || [],
+    };
+  } catch (error) {
+    console.error('Error obtenint la llista de calendaris:', error);
+    return { success: false, message: error.message };
+  }
+});
+
+ipcMain.handle('get-google-events', async () => {
+  try {
+    const config = loadGoogleConfigFromFile();
+    if (!config?.selectedCalendarIds?.length) {
+      return { success: true, events: [] };
+    }
+    if (!googleAuthClient?.credentials?.access_token) {
+      throw new Error('No autenticat.');
+    }
+    
+    const calendar = google.calendar({ version: 'v3', auth: googleAuthClient });
+    const timeMin = new Date(); timeMin.setMonth(timeMin.getMonth() - 6);
+    const timeMax = new Date(); timeMax.setMonth(timeMax.getMonth() + 6);
+    const allEvents = [];
+
+    // ASSEGUREM QUE appCalendarId EXISTEIXI A LA CONFIGURACIÓ
+    if (!config || !config.appCalendarId) {
+      console.warn('appCalendarId no trobat a la configuració de Google. Retornant llista d\'esdeveniments buida.');
+      return { success: true, events: [] };
+    }
+
+    // OBTENIM ESDEVENIMENTS NOMÉS DEL CALENDARI DE L'APP
+    const appCalendarOnlyId = config.appCalendarId;
+    console.log(`Obtenint esdeveniments només del calendari de l'app: ${appCalendarOnlyId}`);
+
+    const res = await calendar.events.list({
+      calendarId: appCalendarOnlyId, // <<<< NOMÉS LLEGEIX DEL CALENDARI DE L'APP
+      timeMin: timeMin.toISOString(),
+      timeMax: timeMax.toISOString(),
+      singleEvents: true,
+      orderBy: 'startTime',
+    });
+    const events = res.data.items?.map(event => ({
+      id: event.id,
+      title: event.summary,
+      start: event.start.dateTime || event.start.date,
+      end: event.end.dateTime || event.end.date,
+      allDay: !!event.start.date,
+      backgroundColor: '#D32F2F', // Color per a esdeveniments de Google
+      borderColor: '#D32F2F',
+      extendedProps: { type: 'google' }
+    })) || [];
+    allEvents.push(...events);
+
+    return { success: true, events: allEvents };
+  } catch (error) {
+    console.error('Error obtenint esdeveniments de Google:', error);
+    return { success: false, message: error.message };
+  }
+});
+
+ipcMain.handle('clear-google-app-calendar', async () => {
+  if (!googleAuthClient || !googleAuthClient.credentials.access_token) {
+    return { success: false, message: 'No autenticat amb Google.' };
+  }
+  
+  const calendar = google.calendar({ version: 'v3', auth: googleAuthClient });
+  const config = loadGoogleConfigFromFile();
+
+  if (!config?.appCalendarId) {
+    return { success: true, message: "No hi ha calendari de l'app per netejar." };
+  }
+  const appCalendarId = config.appCalendarId;
+
+  try {
+    console.log(`Iniciant buidatge d'esdeveniments del calendari de l'app: ${appCalendarId}`);
+    
+    // 1. Obtenim tots els esdeveniments del calendari de l'app
+    const res = await calendar.events.list({
+      calendarId: appCalendarId,
+      maxResults: 2500, // Un límit alt per assegurar que els agafem tots
+    });
+
+    const eventsToDelete = res.data.items;
+    
+    if (!eventsToDelete || eventsToDelete.length === 0) {
+      console.log('El calendari de Google de l\'app ja estava buit.');
+      return { success: true, message: "El calendari de l'app ja està buit." };
+    }
+
+    console.log(`Trobats ${eventsToDelete.length} esdeveniments per eliminar a Google.`);
+    const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+    // 2. Esborrem cada esdeveniment un per un
+    for (const event of eventsToDelete) {
+      try {
+        await calendar.events.delete({
+          calendarId: appCalendarId,
+          eventId: event.id,
+        });
+        console.log(`  -> Eliminat de Google: "${event.summary}" (${event.id})`);
+        await delay(200); // Pausa per no excedir els límits de l'API
+      } catch (err) {
+        // Ignorem errors si l'esdeveniment ja no existeix (codi 410)
+        if (err.code !== 410) {
+          console.error(`Error eliminant l'esdeveniment "${event.summary}":`, err.message);
+        }
+      }
+    }
+    
+    return { success: true, message: "El calendari de Google de l'app ha estat buidat correctament." };
+  } catch (error) {
+    console.error("Error buidant el calendari de l'app a Google:", error.message);
+    return { success: false, message: `Error buidant el calendari de Google: ${error.message}` };
+  }
+});
+
+  
 app.on('activate', () => {
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow();
@@ -336,5 +647,48 @@ process.on('uncaughtException', (error) => {
   app.exit(1);
 });
 
+
 app.whenReady().then(createWindow);
-// END OF FILE: ./main.js
+
+// <<< FUNCIÓ MODIFICADA >>>
+ipcMain.handle('perform-hard-reset', async () => {
+  console.log("Iniciant Reset de Fàbrica...");
+  
+  let success = true;
+  let messages = [];
+
+  const eliminarFitxerDeFormaSegura = (filePath, fileNameForMessage) => {
+    if (fs.existsSync(filePath)) {
+      try {
+        fs.unlinkSync(filePath);
+        messages.push(`${fileNameForMessage} eliminat.`);
+        console.log(`${fileNameForMessage} eliminat: ${filePath}`);
+      } catch (err) {
+        success = false;
+        messages.push(`Error eliminant ${fileNameForMessage}: ${err.message}`);
+        console.error(`Error eliminant ${fileNameForMessage} (${filePath}):`, err);
+      }
+    } else {
+      messages.push(`${fileNameForMessage} no existia.`);
+      console.log(`${fileNameForMessage} no existia: ${filePath}`);
+    }
+  };
+
+  eliminarFitxerDeFormaSegura(DATA_FILE, `Fitxer de dades (${path.basename(DATA_FILE)})`);
+  eliminarFitxerDeFormaSegura(GOOGLE_TOKENS_PATH, `Fitxer de tokens de Google (${path.basename(GOOGLE_TOKENS_PATH)})`);
+  eliminarFitxerDeFormaSegura(GOOGLE_CONFIG_PATH, `Fitxer de configuració de Google (${path.basename(GOOGLE_CONFIG_PATH)})`);
+
+  if (googleAuthClient) {
+    googleAuthClient.setCredentials(null);
+    console.log("Credencials de googleAuthClient en memòria netejades.");
+    messages.push("Credencials de Google en memòria netejades.");
+  }
+  
+  if (success) {
+    console.log("Reset de fàbrica del backend completat.");
+    return { success: true, message: `Reset completat:\n${messages.join('\n')}` };
+  } else {
+    console.error("El reset de fàbrica ha fallat en alguns passos.");
+    return { success: false, message: `El reset de fàbrica ha fallat:\n${messages.join('\n')}` };
+  }
+});

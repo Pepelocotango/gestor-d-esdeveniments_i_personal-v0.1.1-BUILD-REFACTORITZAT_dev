@@ -1,13 +1,12 @@
-// ruta: src/components/modals/PeopleGroupManagerModal.tsx
 import React, { useState, FormEvent } from 'react';
 import { saveAs } from 'file-saver';
 import { useEventData } from '../../contexts/EventDataContext';
-import { PersonGroup } from '../../types';
+import { PersonGroup, ShowToastFunction } from '../../types';
 import { TrashIcon, EditIcon } from '../../constants';
 
 interface PeopleGroupManagerProps {
   onClose: () => void;
-  showToast: (message: string, type?: 'success' | 'error' | 'info' | 'warning') => void;
+  showToast: ShowToastFunction;
 }
 
 const PeopleGroupManagerModal: React.FC<PeopleGroupManagerProps> = ({ onClose, showToast }) => {

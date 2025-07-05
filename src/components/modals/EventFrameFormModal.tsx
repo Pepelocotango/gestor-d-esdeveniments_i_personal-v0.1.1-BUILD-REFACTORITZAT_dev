@@ -1,12 +1,11 @@
-// ruta: src/components/modals/EventFrameFormModal.tsx
 import React, { useState, useEffect, FormEvent } from 'react';
 import { useEventData } from '../../contexts/EventDataContext';
-import { EventFrame, InitialEventFrameData } from '../../types';
+import { EventFrame, InitialEventFrameData, ShowToastFunction } from '../../types';
 import { formatDateDMY } from '../../utils/dateFormat';
 
 interface EventFrameFormProps {
   onClose: () => void;
-  showToast: (message: string, type?: 'success' | 'error' | 'info' | 'warning') => void;
+  showToast: ShowToastFunction;
   eventFrameToEdit?: Partial<EventFrame>;
   initialData?: InitialEventFrameData;
 }
@@ -82,10 +81,10 @@ export const EventFrameFormModal: React.FC<EventFrameFormProps> = ({ onClose, ev
       openModal('addAssignment', { eventFrame: eventFrameToEdit as EventFrame });
     } else {
       const eventData = { name, place, startDate, endDate, generalNotes };
-      const newEventFrame = addEventFrame(eventData);
+      const newEventFrame: EventFrame = addEventFrame(eventData); 
       showToast("Marc d'esdeveniment afegit.", 'success');
-      onClose();
-      openModal('addAssignment', { eventFrame: newEventFrame });
+      onClose(); 
+      openModal('addAssignment', { eventFrame: newEventFrame }); 
     }
   };
   const commonInputClass = "mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm disabled:opacity-50";

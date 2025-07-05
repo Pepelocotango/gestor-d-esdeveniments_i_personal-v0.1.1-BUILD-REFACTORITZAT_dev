@@ -21,6 +21,9 @@ jobs:
     # 3. Instal·la totes les dependències del package.json
     - name: Instal·lació de dependències del projecte
       run: npm install
+      
+    - name: 4.5 Create google-credentials.json from secret - crearà el fitxer google-credentials.json dinàmicament durant l'execució del workflow utilitzant el secret 
+      run: echo "${{ secrets.GOOGLE_CREDENTIALS_JSON }}" > google-credentials.json
 
     # 4. PAS CLAU: Executa el teu script "build:electron"
     # Aquesta única comanda s'encarrega de compilar el teu codi React i empaquetar-lo amb Electron.

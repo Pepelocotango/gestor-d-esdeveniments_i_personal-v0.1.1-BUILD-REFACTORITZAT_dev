@@ -1,0 +1,114 @@
+Arbre del directori: /home/peplx/Escriptori/enllaç a GitHub/Gestor-Events_i_Personal
+
+Gestor-Events_i_Personal/ (directori arrel de l'escaneig)
+    .gitattributes
+    .gitignore
+    0 arbre_directoris_a_fitxer_terminalv2.py
+    0 concatena_projecte_V3.py
+    00arbre_directoris.txt
+    LICENSE
+    README.md
+    index.html
+    main.cjs
+    metadata.json
+    package-lock.json
+    package.json
+    postcss.config.cjs
+    preload.cjs
+    tailwind.config.cjs
+    tsconfig.json
+    vite.config.ts
+
+    .github/
+        workflows/
+            build-linux v20_04.yml
+            build-macos12.yml
+            build-win10.yml
+    build/
+        icons/
+            icon.png
+    examples json/
+        example_all .json
+        example_person.json
+    imatges i recursos/
+        person-fill-add.svg
+        screenshot1mac.jpeg
+    public/
+        black_icon-128.png
+        black_icon-16.png
+        black_icon-24.png
+        black_icon-256.png
+        black_icon-32.png
+        black_icon-48.png
+        black_icon-512.png
+        black_icon-64.png
+        black_icon.icns
+        black_icon.ico
+        black_icon.png
+        black_icon_1024x1024.png
+        black_icon_128x128.png
+        black_icon_16x16.png
+        black_icon_256x256.png
+        black_icon_32x32.png
+        black_icon_512x512.png
+        black_icon_64x64.png
+        favicon.ico
+        icon-128.png
+        icon-16.png
+        icon-24.png
+        icon-256.png
+        icon-32.png
+        icon-48.png
+        icon-512.png
+        icon-64.png
+        icon.icns
+        icon.ico
+        icon.png
+        icon_1024x1024.png
+        icon_128x128.png
+        icon_16x16.png
+        icon_256x256.png
+        icon_32x32.png
+        icon_512x512.png
+        icon_64x64.png
+    screenshots/
+        Screenshot 2025-06-09 at 17-46-04 Gestor de Esdeveniments i Personal v0.1.1_dev.png
+    src/
+        App.tsx
+        calendar-styles.d.ts
+        constants.tsx
+        index.css
+        index.tsx
+        types.ts
+
+        components/
+            AssignmentCard.tsx
+            Controls.tsx
+            EventFrameCard.tsx
+            MainDisplay.tsx
+            Navigation.tsx
+            SummaryReports.tsx
+            TechSheetsDisplay.tsx
+
+            modals/
+                AssignmentFormModal.tsx
+                ConfirmDeleteModal.tsx
+                EventFrameDetailsModal.tsx
+                EventFrameFormModal.tsx
+                GoogleSettingsModal.tsx
+                PeopleGroupManagerModal.tsx
+            tech_sheets/
+                TechSheetField.tsx
+                TechSheetForm.tsx
+                TechSheetSection.tsx
+            ui/
+                Modal.tsx
+        contexts/
+            EventDataContext.tsx
+        hooks/
+            useEventDataManager.ts
+        utils/
+            dataMigration.ts
+            dateFormat.ts
+            dateRangeFormatter.ts
+            statusUtils.ts

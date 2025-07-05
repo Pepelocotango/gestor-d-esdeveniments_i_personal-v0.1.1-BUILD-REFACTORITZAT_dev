@@ -1,13 +1,12 @@
-// ruta: src/components/modals/EventFrameDetailsModal.tsx
 import React from 'react';
 import { useEventData } from '../../contexts/EventDataContext';
-import { EventFrame, AssignmentStatus } from '../../types';
+import { EventFrame, AssignmentStatus, ShowToastFunction } from '../../types';
 import { formatDateDMY, formatDateRangeDMY } from '../../utils/dateFormat';
 import { getStatusSummaryText } from '../../utils/statusUtils';
 
 interface CommonFormProps {
   onClose: () => void;
-  showToast: (message: string, type?: 'success' | 'error' | 'info' | 'warning') => void;
+  showToast: ShowToastFunction;
 }
 
 interface EventFrameDetailsModalProps extends CommonFormProps {
