@@ -5,9 +5,7 @@ on:
 
 jobs:
   build:
-  
     runs-on: ubuntu-22.04
-
     steps:
       - name: 1. Checkout del codi
         uses: actions/checkout@v4
@@ -21,7 +19,6 @@ jobs:
       - name: 3. Instal·lació de dependències del sistema per a Ubuntu 22.04
         run: |
           sudo apt-get update
-          # AQUESTA ÉS LA LLISTA CORRECTA I VERIFICADA PER A UBUNTU 22.04
           sudo apt-get install -y --no-install-recommends \
             libfuse2 \
             libgtk-3-dev \
@@ -34,9 +31,9 @@ jobs:
       - name: 4. Instal·lació de dependències del projecte (npm)
         run: npm install
 
-      - name: 4.5 Create google-credentials.json from secret - crearà el fitxer google-credentials.json dinàmicament durant l'execució del workflow utilitzant el secret 
+      - name: 4.5 Create google-credentials.json from secret
         run: echo "${{ secrets.GOOGLE_CREDENTIALS_JSON }}" > google-credentials.json
-      
+
       - name: Comprova que google-credentials.json existeix i no està buit
         run: |
           if [ ! -s google-credentials.json ]; then
@@ -47,7 +44,7 @@ jobs:
       - name: Mostra la mida del fitxer google-credentials.json (debug)
         run: ls -lh google-credentials.json
 
-      - name: DEBUG: Mostra el contingut RAW de google-credentials.json
+      - name: DEBUG Mostra el contingut RAW de google-credentials.json
         run: cat -A google-credentials.json
 
       - name: Comprova que el fitxer és JSON vàlid
