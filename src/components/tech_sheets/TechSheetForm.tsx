@@ -298,12 +298,74 @@ const TechSheetForm: React.FC<TechSheetFormProps> = ({ eventFrame }) => {
         <TechSheetField id="date" label="DATA:" value={formData.date} onChange={handleChange} onBlur={handleBlur} />
         <TechSheetField id="showTime" label="HORA:" value={formData.showTime} onChange={handleChange} onBlur={handleBlur} type="time" />
         <TechSheetField id="showDuration" label="DURADA ESPECTACLE:" value={formData.showDuration} onChange={handleChange} onBlur={handleBlur} placeholder="XX min" />
-        <TechSheetField id="parkingInfo" label="ZONA RESERVADA PARKING:" value={formData.parkingInfo} onChange={handleChange} onBlur={handleBlur} as="textarea" rows={3} placeholder="Ex: si, X Camió 5 mts. + 2 furgonetes"/>
+        {/* ZONA RESERVADA PARKING: selector SI/NO i detalls */}
+        <div className="mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">ZONA RESERVADA PARKING:</label>
+          <select
+            value={formData.parkingInfo?.startsWith('SI') ? 'SI' : (formData.parkingInfo?.startsWith('NO') ? 'NO' : '')}
+            onChange={e => {
+              const val = e.target.value;
+              setFormData(prev => ({ ...prev, parkingInfo: val === 'NO' ? 'NO' : '' }));
+              setIsDirty(true);
+            }}
+            className="mt-1 block w-32 pl-3 pr-10 py-1 text-base border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+          >
+            <option value="">--</option>
+            <option value="SI">SI</option>
+            <option value="NO">NO</option>
+          </select>
+          {formData.parkingInfo?.startsWith('SI') && (
+            <textarea
+              className="mt-2 block w-full border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              rows={2}
+              placeholder="Detalls de la zona de parking..."
+              value={formData.parkingInfo.replace(/^SI:?\s*/, '')}
+              onChange={e => {
+                setFormData(prev => ({ ...prev, parkingInfo: `SI: ${e.target.value}` }));
+                setIsDirty(true);
+              }}
+              onBlur={handleBlur}
+            />
+          )}
+        </div>
       </TechSheetSection>
 
       <TechSheetSection title="Personal Tècnic">
+        <div className="flex justify-end mb-2 no-print">
+          <button
+            type="button"
+            onClick={() => {
+              // Llegeix assignacions confirmades i afegeix-les a la llista (sense duplicats)
+              const confirmedPersonnel = eventFrame.assignments
+                .filter(a => a.status === 'Sí' || (a.status === 'Mixt' && a.dailyStatuses && Object.values(a.dailyStatuses).some(st => st === 'Sí')))
+                .map(a => {
+                  const person = getPersonGroupById(a.personGroupId);
+                  return {
+                    id: a.personGroupId,
+                    role: person?.role || '',
+                    name: person?.name || '',
+                    origin: '',
+                  };
+                });
+              setFormData(prev => {
+                // Evita duplicats per id
+                const existingIds = new Set(prev.technicalPersonnel.map(p => p.id));
+                const merged = [
+                  ...prev.technicalPersonnel,
+                  ...confirmedPersonnel.filter(p => !existingIds.has(p.id))
+                ];
+                return { ...prev, technicalPersonnel: merged };
+              });
+              setIsDirty(true);
+              showToast('Personal tècnic actualitzat des de les assignacions.', 'success');
+            }}
+            className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-xs font-medium shadow"
+          >
+            Actualitza des d'assignacions
+          </button>
+        </div>
         {formData.technicalPersonnel.map((person, index) => (
-          <React.Fragment key={person.id || `person-${index}`}>
+          <React.Fragment key={person.id || `person-${index}`}> 
             <TechSheetField
               id={`person-role-${index}`}
               label={`Rol Personal ${index + 1}`}
@@ -349,54 +411,141 @@ const TechSheetForm: React.FC<TechSheetFormProps> = ({ eventFrame }) => {
       </TechSheetSection>
 
       <TechSheetSection title="Premuntatge i Horaris">
-        <TechSheetField id="preAssemblySchedule" label="PREMUNTAGE:" value={formData.preAssemblySchedule} onChange={handleChange} onBlur={handleBlur} as="textarea" rows={3} placeholder="Ex: XX x/x/x X Tomàs i Pep" />
-
-        <h4 className="col-span-full text-md font-semibold text-gray-700 dark:text-gray-300 mt-3 -mb-2">HORARIS PREMUNTATGE:</h4>
-        {formData.assemblySchedule.map((item, index) => (
-          <React.Fragment key={item.id || `schedule-${index}`}>
-            <TechSheetField
-              id={`schedule-time-${index}`}
-              label={`Hora ${index + 1}`}
-              value={item.time}
-              onChange={(e) => handleListChange('assemblySchedule', index, 'time', e.target.value)}
+        <div className="mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Premuntatge:</label>
+          <select
+            value={formData.preAssemblySchedule?.startsWith('SI') ? 'SI' : (formData.preAssemblySchedule?.startsWith('NO') ? 'NO' : '')}
+            onChange={e => {
+              const val = e.target.value;
+              setFormData(prev => ({ ...prev, preAssemblySchedule: val === 'NO' ? 'NO' : '' }));
+              setIsDirty(true);
+            }}
+            className="mt-1 block w-32 pl-3 pr-10 py-1 text-base border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+          >
+            <option value="">--</option>
+            <option value="SI">SI</option>
+            <option value="NO">NO</option>
+          </select>
+          {formData.preAssemblySchedule?.startsWith('SI') && (
+            <textarea
+              className="mt-2 block w-full border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              rows={2}
+              placeholder="Detalls premuntatge, personal, horaris..."
+              value={formData.preAssemblySchedule.replace(/^SI:?\s*/, '')}
+              onChange={e => {
+                setFormData(prev => ({ ...prev, preAssemblySchedule: `SI: ${e.target.value}` }));
+                setIsDirty(true);
+              }}
               onBlur={handleBlur}
-              type="time"
             />
-            <TechSheetField
-              id={`schedule-desc-${index}`}
-              label={`Descripció Horari ${index + 1}`}
-              value={item.description}
-              onChange={(e) => handleListChange('assemblySchedule', index, 'description', e.target.value)}
-              onBlur={handleBlur}
-              as="textarea"
-              rows={1}
-            />
-            <div className="flex items-end">
+          )}
+        </div>
+        {formData.preAssemblySchedule?.startsWith('SI') && (
+          <>
+            <h4 className="col-span-full text-md font-semibold text-gray-700 dark:text-gray-300 mt-3 -mb-2">HORARIS PREMUNTATGE:</h4>
+            {formData.assemblySchedule.map((item, index) => (
+              <React.Fragment key={item.id || `schedule-${index}`}> 
+                <TechSheetField
+                  id={`schedule-time-${index}`}
+                  label={`Hora ${index + 1}`}
+                  value={item.time}
+                  onChange={(e) => handleListChange('assemblySchedule', index, 'time', e.target.value)}
+                  onBlur={handleBlur}
+                  type="time"
+                />
+                <TechSheetField
+                  id={`schedule-desc-${index}`}
+                  label={`Descripció Horari ${index + 1}`}
+                  value={item.description}
+                  onChange={(e) => handleListChange('assemblySchedule', index, 'description', e.target.value)}
+                  onBlur={handleBlur}
+                  as="textarea"
+                  rows={1}
+                />
+                <div className="flex items-end">
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveListItem('assemblySchedule', index)}
+                    className="remove-item-button px-3 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 text-sm no-print"
+                  >
+                    Eliminar
+                  </button>
+                </div>
+              </React.Fragment>
+            ))}
+            <div className="col-span-full mt-2 no-print">
               <button
                 type="button"
-                onClick={() => handleRemoveListItem('assemblySchedule', index)}
-                className="remove-item-button px-3 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 text-sm no-print"
+                onClick={() => handleAddListItem('assemblySchedule')}
+                className="add-item-button px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 text-sm"
               >
-                Eliminar
+                + Afegir Ítem Horari
               </button>
             </div>
-          </React.Fragment>
-        ))}
-        <div className="col-span-full mt-2 no-print">
-          <button
-            type="button"
-            onClick={() => handleAddListItem('assemblySchedule')}
-            className="add-item-button px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 text-sm"
-          >
-            + Afegir Ítem Horari
-          </button>
-        </div>
+          </>
+        )}
       </TechSheetSection>
 
       <TechSheetSection title="Logística">
         <TechSheetField id="dressingRooms" label="CAMERINOS:" value={formData.dressingRooms} onChange={handleChange} onBlur={handleBlur} placeholder="Ex: SI X"/>
-        <TechSheetField id="actors" label="ACTORS:" value={formData.actors} onChange={handleChange} onBlur={handleBlur} as="textarea" rows={2} />
-        <TechSheetField id="companyTechnicians" label="TÈCNICS/PRODUCCIÓ CIA:" value={formData.companyTechnicians} onChange={handleChange} onBlur={handleBlur} as="textarea" rows={2} />
+        {/* Actors: selector numèric i caixa de text si >0 */}
+        <div className="mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">ACTORS:</label>
+          <select
+            value={formData.actorsNumber || ''}
+            onChange={e => {
+              const val = parseInt(e.target.value, 10);
+              setFormData(prev => ({ ...prev, actorsNumber: val, actors: val > 0 ? prev.actors : '' }));
+              setIsDirty(true);
+            }}
+            className="mt-1 block w-24 pl-3 pr-10 py-1 text-base border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+          >
+            <option value="">--</option>
+            {[...Array(21).keys()].map(n => <option key={n} value={n}>{n}</option>)}
+          </select>
+          {Number(formData.actorsNumber) > 0 && (
+            <textarea
+              className="mt-2 block w-full border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              rows={2}
+              placeholder="Noms dels actors..."
+              value={formData.actors || ''}
+              onChange={e => {
+                setFormData(prev => ({ ...prev, actors: e.target.value }));
+                setIsDirty(true);
+              }}
+              onBlur={handleBlur}
+            />
+          )}
+        </div>
+        {/* Tècnics companyia: selector numèric i caixa de text si >0 */}
+        <div className="mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">TÈCNICS/PRODUCCIÓ CIA:</label>
+          <select
+            value={formData.companyTechniciansNumber || ''}
+            onChange={e => {
+              const val = parseInt(e.target.value, 10);
+              setFormData(prev => ({ ...prev, companyTechniciansNumber: val, companyTechnicians: val > 0 ? prev.companyTechnicians : '' }));
+              setIsDirty(true);
+            }}
+            className="mt-1 block w-24 pl-3 pr-10 py-1 text-base border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+          >
+            <option value="">--</option>
+            {[...Array(21).keys()].map(n => <option key={n} value={n}>{n}</option>)}
+          </select>
+          {Number(formData.companyTechniciansNumber) > 0 && (
+            <textarea
+              className="mt-2 block w-full border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              rows={2}
+              placeholder="Noms dels tècnics/producció..."
+              value={formData.companyTechnicians || ''}
+              onChange={e => {
+                setFormData(prev => ({ ...prev, companyTechnicians: e.target.value }));
+                setIsDirty(true);
+              }}
+              onBlur={handleBlur}
+            />
+          )}
+        </div>
       </TechSheetSection>
 
       <TechSheetSection title="Necessitats Tècniques">
@@ -427,18 +576,50 @@ const TechSheetForm: React.FC<TechSheetFormProps> = ({ eventFrame }) => {
         </div>
 
         <h4 className="col-span-full text-md font-semibold text-gray-700 dark:text-gray-300 mt-3 -mb-2">VÍDEO:</h4>
-        <TechSheetField id="videoDetails" label="Detalls Generals Vídeo:" value={formData.videoDetails || ''} onChange={handleChange} onBlur={handleBlur} as="textarea" rows={2} placeholder="Ex: NO, o descripció general si no hi ha ítems específics."/>
-        {formData.videoNeeds.map((need, index) => (
-          <React.Fragment key={need.id || `video-need-${index}`}>
-            <TechSheetField id={`video-qty-${index}`} label={`Qt. Vídeo ${index + 1}`} value={need.quantity} onChange={e => handleListChange('videoNeeds', index, 'quantity', e.target.value)} onBlur={handleBlur} placeholder="XX"/>
-            <TechSheetField id={`video-desc-${index}`} label={`Desc. Vídeo ${index + 1}`} value={need.description} onChange={e => handleListChange('videoNeeds', index, 'description', e.target.value)} onBlur={handleBlur} />
-            <TechSheetField id={`video-origin-${index}`} label={`Origen Vídeo ${index + 1}`} value={need.origin} onChange={e => handleListChange('videoNeeds', index, 'origin', e.target.value)} onBlur={handleBlur} placeholder="CIA / TÀG"/>
-            <div className="flex items-end"><button type="button" onClick={() => handleRemoveListItem('videoNeeds', index)} className="remove-item-button px-3 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 text-sm no-print">Eliminar</button></div>
-          </React.Fragment>
-        ))}
-        <div className="col-span-full mt-2 no-print">
-          <button type="button" onClick={() => handleAddListItem('videoNeeds')} className="add-item-button px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 text-sm">+ Afegir Necessitat Vídeo</button>
+        <div className="mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">VÍDEO:</label>
+          <select
+            value={formData.videoDetails?.startsWith('SI') ? 'SI' : (formData.videoDetails?.startsWith('NO') ? 'NO' : '')}
+            onChange={e => {
+              const val = e.target.value;
+              setFormData(prev => ({ ...prev, videoDetails: val === 'NO' ? 'NO' : '' }));
+              setIsDirty(true);
+            }}
+            className="mt-1 block w-32 pl-3 pr-10 py-1 text-base border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+          >
+            <option value="">--</option>
+            <option value="SI">SI</option>
+            <option value="NO">NO</option>
+          </select>
+          {formData.videoDetails?.startsWith('SI') && (
+            <textarea
+              className="mt-2 block w-full border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              rows={2}
+              placeholder="Detalls generals de vídeo..."
+              value={formData.videoDetails.replace(/^SI:?\s*/, '')}
+              onChange={e => {
+                setFormData(prev => ({ ...prev, videoDetails: `SI: ${e.target.value}` }));
+                setIsDirty(true);
+              }}
+              onBlur={handleBlur}
+            />
+          )}
         </div>
+        {formData.videoDetails?.startsWith('SI') && (
+          <>
+            {formData.videoNeeds.map((need, index) => (
+              <React.Fragment key={need.id || `video-need-${index}`}>
+                <TechSheetField id={`video-qty-${index}`} label={`Qt. Vídeo ${index + 1}`} value={need.quantity} onChange={e => handleListChange('videoNeeds', index, 'quantity', e.target.value)} onBlur={handleBlur} placeholder="XX"/>
+                <TechSheetField id={`video-desc-${index}`} label={`Desc. Vídeo ${index + 1}`} value={need.description} onChange={e => handleListChange('videoNeeds', index, 'description', e.target.value)} onBlur={handleBlur} />
+                <TechSheetField id={`video-origin-${index}`} label={`Origen Vídeo ${index + 1}`} value={need.origin} onChange={e => handleListChange('videoNeeds', index, 'origin', e.target.value)} onBlur={handleBlur} placeholder="CIA / TÀG"/>
+                <div className="flex items-end"><button type="button" onClick={() => handleRemoveListItem('videoNeeds', index)} className="remove-item-button px-3 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 text-sm no-print">Eliminar</button></div>
+              </React.Fragment>
+            ))}
+            <div className="col-span-full mt-2 no-print">
+              <button type="button" onClick={() => handleAddListItem('videoNeeds')} className="add-item-button px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 text-sm">+ Afegir Necessitat Vídeo</button>
+            </div>
+          </>
+        )}
 
         <h4 className="col-span-full text-md font-semibold text-gray-700 dark:text-gray-300 mt-3 -mb-2">MAQUINÀRIA:</h4>
         {formData.machineryNeeds.map((need, index) => (
@@ -456,8 +637,66 @@ const TechSheetForm: React.FC<TechSheetFormProps> = ({ eventFrame }) => {
       
       <TechSheetSection title="Altres Detalls">
         <TechSheetField id="controlLocation" label="CONTROL A:" value={formData.controlLocation} onChange={handleChange} onBlur={handleBlur} placeholder="Ex: X PLATEA"/>
-        <TechSheetField id="otherEquipment" label="MATERIAL D’ALTRES EQUIPAMENTS:" value={formData.otherEquipment} onChange={handleChange} onBlur={handleBlur} as="textarea" rows={3}/>
-        <TechSheetField id="rentals" label="LLOGUERS:" value={formData.rentals} onChange={handleChange} onBlur={handleBlur} as="textarea" rows={3}/>
+        {/* MATERIAL D’ALTRES EQUIPAMENTS: SI/NO i detalls */}
+        <div className="mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">MATERIAL D’ALTRES EQUIPAMENTS:</label>
+          <select
+            value={formData.otherEquipment?.startsWith('SI') ? 'SI' : (formData.otherEquipment?.startsWith('NO') ? 'NO' : '')}
+            onChange={e => {
+              const val = e.target.value;
+              setFormData(prev => ({ ...prev, otherEquipment: val === 'NO' ? 'NO' : '' }));
+              setIsDirty(true);
+            }}
+            className="mt-1 block w-32 pl-3 pr-10 py-1 text-base border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+          >
+            <option value="">--</option>
+            <option value="SI">SI</option>
+            <option value="NO">NO</option>
+          </select>
+          {formData.otherEquipment?.startsWith('SI') && (
+            <textarea
+              className="mt-2 block w-full border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              rows={2}
+              placeholder="Detalls del material d’altres equipaments..."
+              value={formData.otherEquipment.replace(/^SI:?\s*/, '')}
+              onChange={e => {
+                setFormData(prev => ({ ...prev, otherEquipment: `SI: ${e.target.value}` }));
+                setIsDirty(true);
+              }}
+              onBlur={handleBlur}
+            />
+          )}
+        </div>
+        {/* LLOGUERS: SI/NO i detalls */}
+        <div className="mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">LLOGUERS:</label>
+          <select
+            value={formData.rentals?.startsWith('SI') ? 'SI' : (formData.rentals?.startsWith('NO') ? 'NO' : '')}
+            onChange={e => {
+              const val = e.target.value;
+              setFormData(prev => ({ ...prev, rentals: val === 'NO' ? 'NO' : '' }));
+              setIsDirty(true);
+            }}
+            className="mt-1 block w-32 pl-3 pr-10 py-1 text-base border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+          >
+            <option value="">--</option>
+            <option value="SI">SI</option>
+            <option value="NO">NO</option>
+          </select>
+          {formData.rentals?.startsWith('SI') && (
+            <textarea
+              className="mt-2 block w-full border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              rows={2}
+              placeholder="Detalls dels lloguers..."
+              value={formData.rentals.replace(/^SI:?\s*/, '')}
+              onChange={e => {
+                setFormData(prev => ({ ...prev, rentals: `SI: ${e.target.value}` }));
+                setIsDirty(true);
+              }}
+              onBlur={handleBlur}
+            />
+          )}
+        </div>
         <TechSheetField id="blueprints" label="PLÀNOLS:" value={formData.blueprints} onChange={handleChange} onBlur={handleBlur} as="textarea" rows={3} placeholder="Ex: XX x/x/x HORARIS x/x/x"/>
       </TechSheetSection>
 

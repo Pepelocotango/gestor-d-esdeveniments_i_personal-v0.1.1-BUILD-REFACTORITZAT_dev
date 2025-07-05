@@ -69,7 +69,11 @@ export interface TechSheetData {
   // Secció Logística
   dressingRooms: string;
   actors: string;
+  /** Nombre d'actors (selector numèric al formulari) */
+  actorsNumber?: number;
   companyTechnicians: string;
+  /** Nombre de tècnics/producció de companyia (selector numèric al formulari) */
+  companyTechniciansNumber?: number;
   
   // Seccions de Necessitats Tècniques
   lightingNeeds: TechSheetNeed[];
