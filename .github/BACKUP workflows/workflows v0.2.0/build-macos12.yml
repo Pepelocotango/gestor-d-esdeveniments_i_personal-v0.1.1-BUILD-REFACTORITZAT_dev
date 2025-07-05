@@ -1,0 +1,34 @@
+name: Compilar per a macOS (DMG + ZIP)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - name: 1. Checkout del codi
+        uses: actions/checkout@v4
+
+      - name: 2. Configuració de Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: 3. Instal·lació de dependències del projecte (npm)
+        run: npm install
+
+      - name: 4. Compilació de l'aplicació per a macOS
+        run: npm run build:mac
+
+      - name: 4.5 Create google-credentials.json from secret - crearà el fitxer google-credentials.json dinàmicament durant l'execució del workflow utilitzant el secret 
+        run: echo "${{ secrets.GOOGLE_CREDENTIALS_JSON }}" > google-credentials.json
+
+
+      - name: 5. Pujada dels artefactes de macOS
+        uses: actions/upload-artifact@v4
+        with:
+          name: GestorEsdeveniments-macOS-x64
+          path: dist/

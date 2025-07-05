@@ -1,0 +1,47 @@
+name: Compilar per a Linux (AppImage)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+  
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: 1. Checkout del codi
+        uses: actions/checkout@v4
+
+      - name: 2. Configuració de Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: 3. Instal·lació de dependències del sistema per a Ubuntu 22.04
+        run: |
+          sudo apt-get update
+          # AQUESTA ÉS LA LLISTA CORRECTA I VERIFICADA PER A UBUNTU 22.04
+          sudo apt-get install -y --no-install-recommends \
+            libfuse2 \
+            libgtk-3-dev \
+            libnss3 \
+            libasound2 \
+            libxtst-dev \
+            libxss1 \
+            libappindicator3-1
+
+      - name: 4. Instal·lació de dependències del projecte (npm)
+        run: npm install
+
+      - name: 4.5 Create google-credentials.json from secret - crearà el fitxer google-credentials.json dinàmicament durant l'execució del workflow utilitzant el secret 
+        run: echo "${{ secrets.GOOGLE_CREDENTIALS_JSON }}" > google-credentials.json
+      
+      - name: 5. Compilació de l'aplicació per a Linux
+        run: npm run build:electron -- --linux --x64 --publish never
+
+      - name: 6. Pujada de l'AppImage com a artefacte
+        uses: actions/upload-artifact@v4
+        with:
+          name: GestorEsdeveniments-Linux-AppImage
+          path: dist/*.AppImage

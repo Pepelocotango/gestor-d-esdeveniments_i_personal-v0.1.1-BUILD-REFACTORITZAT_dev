@@ -1,3 +1,25 @@
+// --- LOGS DE SESSIÓ PER DESENVOLUPAMENT ---
+const LOGS_DIR = path.join(app.getPath('userData'), 'logs');
+if (!fs.existsSync(LOGS_DIR)) fs.mkdirSync(LOGS_DIR, { recursive: true });
+function rotateLogs() {
+  const files = fs.readdirSync(LOGS_DIR)
+    .filter(f => f.startsWith('app-') && f.endsWith('.log'))
+    .sort((a, b) => fs.statSync(path.join(LOGS_DIR, b)).mtime - fs.statSync(path.join(LOGS_DIR, a)).mtime);
+  while (files.length >= 20) {
+    fs.unlinkSync(path.join(LOGS_DIR, files.pop()));
+  }
+}
+const sessionLogFile = path.join(LOGS_DIR, `app-${Date.now()}.log`);
+rotateLogs();
+function logToFile(...args) {
+  const msg = `[${new Date().toISOString()}] ${args.map(String).join(' ')}\n`;
+  fs.appendFileSync(sessionLogFile, msg);
+  process.stdout.write(msg);
+}
+console.log = logToFile;
+console.error = logToFile;
+console.warn = logToFile;
+console.log('Sessió Electron iniciada. Tots els logs d\'aquesta sessió s\'emmagatzemen a:', sessionLogFile);
 const { app, BrowserWindow, ipcMain, dialog, Menu } = require('electron');
 const path = require('path');
 const fs = require('fs');

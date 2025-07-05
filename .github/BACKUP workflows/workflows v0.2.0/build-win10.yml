@@ -1,0 +1,41 @@
+name: Compilar EXE per a Windows (Projecte Electron)
+
+on:
+  workflow_dispatch:
+    
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    # 1. Descarrega el codi del teu repositori
+    - name: Checkout del codi
+      uses: actions/checkout@v4
+
+    # 2. Configura l'entorn de Node.js per poder utilitzar npm
+    - name: Configuració de Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20' # Utilitzem una versió recent de Node.js
+
+    # 3. Instal·la totes les dependències del package.json
+    - name: Instal·lació de dependències del projecte
+      run: npm install
+      
+    - name: 4.5 Create google-credentials.json from secret - crearà el fitxer google-credentials.json dinàmicament durant l'execució del workflow utilitzant el secret 
+      run: echo "${{ secrets.GOOGLE_CREDENTIALS_JSON }}" > google-credentials.json
+
+    # 4. PAS CLAU: Executa el teu script "build:electron"
+    # Aquesta única comanda s'encarrega de compilar el teu codi React i empaquetar-lo amb Electron.
+    # Els paràmetres --win --x64 asseguren que es construeixi per a Windows 64-bit.
+    - name: Compilació i empaquetat de l'aplicació
+      run: npm run build:electron -- --win --x64 --publish never
+
+    # 5. Puja l'arxiu .exe que es genera a la carpeta 'dist' com a resultat
+    - name: Pujada de l'executable com a artefacte
+      uses: actions/upload-artifact@v4
+      with:
+        name: GestorEsdeveniments-Windows-Installer
+        # El teu package.json confirma que la sortida és a la carpeta 'dist'.
+        # L'asterisc (*) ajuda a trobar l'arxiu encara que el nom complet variï.
+        path: dist/*.exe

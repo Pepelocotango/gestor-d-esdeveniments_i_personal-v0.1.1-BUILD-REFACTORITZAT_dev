@@ -1,3 +1,42 @@
+---
+
+## 📝 Logs, Backups i Càrrega Automàtica de Dades
+
+### Logs de Sessió (només desenvolupament)
+
+- **Arxiu:** `main.cjs`
+- **Ruta dels logs:** `logs/app-<timestamp>.log` dins la carpeta de dades de l'usuari (`app.getPath('userData')/logs`).
+- **Funcionament:**
+  - Cada execució de l'app crea un fitxer de log nou amb tots els `console.log`, `console.error` i `console.warn` de la sessió.
+  - Si hi ha més de 20 fitxers de log, s'esborren els més antics automàticament.
+  - Tots els missatges de log es mostren també per consola.
+- **Codi relacionat:** Bloc de codi al principi de `main.cjs` (comentari: `// --- LOGS DE SESSIÓ PER DESENVOLUPAMENT ---`).
+
+### Backups automàtics
+
+- **Arxiu:** `main.cjs`
+- **Funció:** `createBackup()`
+- **Ruta dels backups:** `backups/backup-events_data-<timestamp>.json` dins la carpeta de dades de l'usuari.
+- **Funcionament:**
+  - Es crea una còpia de seguretat del fitxer principal de dades (`events_data.json`) cada cop que es confirma la sortida de l'app.
+  - Es mantenen només els 5 backups més recents (funció `cleanupOldBackups()`).
+- **Codi relacionat:** Funcions `createBackup()` i `cleanupOldBackups()` a `main.cjs`.
+
+### Càrrega automàtica de sessió i dades
+
+- **Arxiu:** `main.cjs`
+- **Funció:** `loadSessionData()`
+- **Fitxer:** `session.json` (estat de la finestra i, si està implementat, altres dades de sessió).
+- **Càrrega de dades principals:**
+  - **Funció:** `ipcMain.handle('load-app-data', ...)` i `saveDataWithErrorHandling()`
+  - **Fitxer:** `events_data.json`
+- **Funcionament:**
+  - En iniciar l'app, es carrega l'estat de la finestra i les dades principals si existeixen.
+  - Quan es tanquen o es guarden canvis, es desa l'estat i les dades.
+- **Frontend:**
+  - El frontend (React) crida la càrrega i el desat de dades via `window.electronAPI`.
+
+> Consulta el codi de `main.cjs` per veure la implementació exacta de cada funció.
 
 ###NOVA BRANCA DESENVOLUPAMENT -->DEV
 
