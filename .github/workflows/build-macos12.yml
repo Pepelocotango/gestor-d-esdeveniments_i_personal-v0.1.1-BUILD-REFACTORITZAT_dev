@@ -26,6 +26,12 @@ jobs:
       - name: 4.5 Create google-credentials.json from secret - crearà el fitxer google-credentials.json dinàmicament durant l'execució del workflow utilitzant el secret 
         run: echo "${{ secrets.GOOGLE_CREDENTIALS_JSON }}" > google-credentials.json
 
+      - name: Comprova que google-credentials.json existeix i no està buit
+        run: |
+          if [ ! -s google-credentials.json ]; then
+            echo "El fitxer google-credentials.json està buit o no existeix!"
+            exit 1
+          fi
 
       - name: 5. Pujada dels artefactes de macOS
         uses: actions/upload-artifact@v4

@@ -25,6 +25,15 @@ jobs:
     - name: 4.5 Create google-credentials.json from secret - crearà el fitxer google-credentials.json dinàmicament durant l'execució del workflow utilitzant el secret 
       run: echo "${{ secrets.GOOGLE_CREDENTIALS_JSON }}" > google-credentials.json
 
+    - name: Comprova que google-credentials.json existeix i no està buit
+      run: |
+        if not exist google-credentials.json (
+          echo "El fitxer google-credentials.json NO existeix!" && exit 1
+        )
+        for %%A in (google-credentials.json) do if %%~zA lss 10 (
+          echo "El fitxer google-credentials.json està buit o massa petit!" && exit 1
+        )
+
     # 4. PAS CLAU: Executa el teu script "build:electron"
     # Aquesta única comanda s'encarrega de compilar el teu codi React i empaquetar-lo amb Electron.
     # Els paràmetres --win --x64 asseguren que es construeixi per a Windows 64-bit.
