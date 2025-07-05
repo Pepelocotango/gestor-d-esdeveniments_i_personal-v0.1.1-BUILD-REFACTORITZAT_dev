@@ -44,6 +44,25 @@ jobs:
             exit 1
           fi
 
+      - name: Mostra la mida del fitxer google-credentials.json (debug)
+        run: ls -lh google-credentials.json
+
+      - name: Comprova que el fitxer és JSON vàlid
+        run: |
+          if ! jq empty google-credentials.json; then
+            echo "El fitxer google-credentials.json NO és JSON vàlid!"
+            exit 1
+          fi
+        shell: bash
+
+      - name: Comprova que el fitxer conté la clau 'installed'
+        run: |
+          if ! jq -e '.installed' google-credentials.json > /dev/null; then
+            echo "El fitxer google-credentials.json NO conté la clau 'installed'!"
+            exit 1
+          fi
+        shell: bash
+
       - name: 5. Compilació de l'aplicació per a Linux
         run: npm run build:electron -- --linux --x64 --publish never
 
