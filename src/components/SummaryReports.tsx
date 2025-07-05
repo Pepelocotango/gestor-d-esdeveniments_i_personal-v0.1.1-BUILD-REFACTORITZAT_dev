@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { useEventData } from '../contexts/EventDataContext';
 import { AssignmentStatus, SummaryRow, ShowToastFunction } from '../types';
-import { CsvIcon } from '../constants';
+import { CsvIcon, ChevronUpIcon, ChevronDownIcon } from '../constants';
 import { formatDateDMY, formatDateRangeDMY } from '../utils/dateFormat';
 import { getStatusSummaryText } from '../utils/statusUtils';
 
@@ -40,6 +40,9 @@ const SummaryReports: React.FC<SummaryReportsProps> = ({ setToastMessage }) => {
     return summary;
   }, [eventFrames, getPersonGroupById]);
 
+  // Estat d'ordre per als resums
+  const [summarySortOrder, setSummarySortOrder] = React.useState<'asc' | 'desc'>('desc');
+
   const summaryByEventName = useMemo((): Map<string, SummaryRow[]> => {
     const map = new Map<string, SummaryRow[]>();
     allAssignmentsSummary.forEach(row => {
@@ -51,10 +54,11 @@ const SummaryReports: React.FC<SummaryReportsProps> = ({ setToastMessage }) => {
     return new Map([...map.entries()].sort((a, b) => {
         const dateA = new Date(a[1][0].eventFrameStartDate).getTime();
         const dateB = new Date(b[1][0].eventFrameStartDate).getTime();
-        // CANVI: b - a per ordre descendent
-        return dateB - dateA || a[0].localeCompare(b[0]);
+        return summarySortOrder === 'asc'
+          ? dateA - dateB || a[0].localeCompare(b[0])
+          : dateB - dateA || a[0].localeCompare(b[0]);
     }));
-  }, [allAssignmentsSummary]);
+  }, [allAssignmentsSummary, summarySortOrder]);
 
   const summaryByStartDate = useMemo((): Map<string, SummaryRow[]> => {
     const map = new Map<string, SummaryRow[]>();
@@ -65,9 +69,12 @@ const SummaryReports: React.FC<SummaryReportsProps> = ({ setToastMessage }) => {
         }
         map.get(dateStr)!.push(row);
     });
-    // CANVI: b - a per ordre descendent
-    return new Map([...map.entries()].sort((a, b) => new Date(b[0].split('/').reverse().join('-')).getTime() - new Date(a[0].split('/').reverse().join('-')).getTime()));
-  }, [allAssignmentsSummary]);
+    return new Map([...map.entries()].sort((a, b) => {
+      const dateA = new Date(a[0].split('/').reverse().join('-')).getTime();
+      const dateB = new Date(b[0].split('/').reverse().join('-')).getTime();
+      return summarySortOrder === 'asc' ? dateA - dateB : dateB - dateA;
+    }));
+  }, [allAssignmentsSummary, summarySortOrder]);
 
   const summaryByPerson = useMemo((): Map<string, SummaryRow[]> => {
     const map = new Map<string, SummaryRow[]>();
@@ -155,13 +162,22 @@ const SummaryReports: React.FC<SummaryReportsProps> = ({ setToastMessage }) => {
     <div className="bg-white dark:bg-gray-700/80 p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
       <div className="flex justify-between items-center mb-3 pb-2 border-b border-gray-200 dark:border-gray-600">
         <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">{title}</h3>
-        <button 
-            onClick={() => handleExportCsv(dataType)}
-            className="text-sm flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 hover:underline"
-            aria-label={`Exportar tot el resum ${title} a CSV`}
-        >
-            <CsvIcon className="w-4 h-4" /> Exportar Tot
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setSummarySortOrder(summarySortOrder === 'asc' ? 'desc' : 'asc')}
+            className="flex items-center gap-1 px-2 py-1 rounded border border-gray-300 dark:border-gray-600 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-500 text-xs font-medium"
+            title={`Ordena per data ${summarySortOrder === 'asc' ? 'descendent' : 'ascendent'}`}
+          >
+            {summarySortOrder === 'asc' ? <ChevronUpIcon className="w-3 h-3" /> : <ChevronDownIcon className="w-3 h-3" />} Ordena
+          </button>
+          <button 
+              onClick={() => handleExportCsv(dataType)}
+              className="text-sm flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 hover:underline"
+              aria-label={`Exportar tot el resum ${title} a CSV`}
+          >
+              <CsvIcon className="w-4 h-4" /> Exportar Tot
+          </button>
+        </div>
       </div>
       {Array.from(data.entries()).length === 0 ? <p className="text-sm text-gray-500 dark:text-gray-400">No hi ha dades per aquest resum.</p> : null}
       <div className="space-y-4 max-h-96 overflow-y-auto pr-2"> 
@@ -172,7 +188,7 @@ const SummaryReports: React.FC<SummaryReportsProps> = ({ setToastMessage }) => {
               <button
                 onClick={() => handleExportCsv(dataType, groupKey)}
                 className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 flex-shrink-0 ml-2"
-                title={`Exportar només "${groupKey}"`}
+                title={`Exportar només \"${groupKey}\"`}
               >
                 <CsvIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
               </button>

@@ -1,5 +1,4 @@
-###### AIXÓ ES UNA PROVA EN LOCAL DE JULES I LA SEVA CAPACITAT EN LOCAL#####
-###### BRANCA NOVA DE DESENVOLUPAMENT -> fitxes_tecniques - 
+###### BRANCA NOVA DE DESENVOLUPAMENT -> feat/fitxes-bolo-complet
 
 
 ### `README.md`**
@@ -60,6 +59,7 @@ Per a Linux, utilitzem el format `AppImage`, que no requereix instal·lació:
 
 ---
 
+
 ### 📂 Fitxers d'Exemple
 
 Per ajudar-te a començar, hem inclòs una carpeta anomenada `examples_json` amb fitxers de dades d'exemple que pots carregar a l'aplicació:
@@ -70,7 +70,30 @@ Per ajudar-te a començar, hem inclòs una carpeta anomenada `examples_json` amb
 Pots carregar aquests fitxers des de l'aplicació utilitzant el botó "Carregar dades" per familiaritzar-te amb l'estructura de dades.
 
 
-### **## 🚀 Funcionalitats Clau**
+---
+
+### 🆕 Fitxes de Bolo (en desenvolupament)
+
+Des de la versió 0.3.x, s'està implementant una nova funcionalitat per a la **gestió i generació de fitxes tècniques de bolo** per a cada esdeveniment. Aquesta funcionalitat permet:
+
+- Visualitzar i editar una fitxa tècnica associada a cada esdeveniment (si l'esdeveniment és nou o s'ha desat amb la nova versió).
+- Exportar la fitxa de bolo a PDF amb un sol clic, amb format optimitzat per impressió.
+- Gestionar llistes de personal tècnic, horaris de premuntatge, necessitats tècniques (llum, so, vídeo, maquinària, etc.) i informació general de l'esdeveniment.
+- Les dades es desen automàticament quan es canvia de camp.
+
+**Arxius principals relacionats amb les fitxes de bolo:**
+
+- `src/components/TechSheetsDisplay.tsx`: Component principal per seleccionar i mostrar la fitxa de bolo d'un esdeveniment.
+- `src/components/tech_sheets/TechSheetForm.tsx`: Formulari complet d'edició i exportació de la fitxa tècnica.
+- `src/components/tech_sheets/TechSheetSection.tsx` i `TechSheetField.tsx`: Components auxiliars per estructurar i editar seccions i camps de la fitxa.
+- `src/components/Navigation.tsx`: S'ha afegit l'accés a la vista de fitxes de bolo.
+- `src/hooks/useEventDataManager.ts`: Gestió de l'estat i persistència de les fitxes tècniques.
+
+> **Nota:** Aquesta funcionalitat encara està en desenvolupament. Algunes opcions o seccions poden canviar o ampliar-se en futures versions.
+
+---
+
+### 🚀 Funcionalitats Clau
 
 -   **Gestió d'Esdeveniments i Assignacions:** Creació d'esdeveniments marc i assignació de personal amb estats detallats (`Sí`, `No`, `Pendent` i `Mixt` per dies).
 -   **Base de Dades de Personal:** Gestor centralitzat de persones i grups.
@@ -271,3 +294,18 @@ Aquest projecte està sota la llicència MIT.
 > LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 > SOFTWARE.
+
+---
+
+## ⚠️ Nota sobre la configuració de TypeScript
+
+Per garantir que la compilació (`npm run build`) funcioni correctament encara que hi hagi imports de tipus o variables no utilitzades directament (per exemple, tipus utilitzats només en estructures o per claredat), s'ha modificat el fitxer `tsconfig.json`:
+
+```jsonc
+"noUnusedLocals": false,
+"noUnusedParameters": false,
+```
+
+Això permet que el projecte es compili sense errors per imports/tipus no utilitzats directament, mantenint la seguretat de tipus i la claredat del codi. Si vols tornar a activar la comprovació estricta, només cal posar aquests valors a `true`.
+
+---

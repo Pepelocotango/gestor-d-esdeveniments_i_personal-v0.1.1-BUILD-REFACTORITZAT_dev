@@ -8,7 +8,6 @@ Gestor-Events_i_Personal/ (directori arrel de l'escaneig)
     00arbre_directoris.txt
     LICENSE
     README.md
-    google-credentials.json
     index.html
     main.cjs
     metadata.json
@@ -99,7 +98,9 @@ Gestor-Events_i_Personal/ (directori arrel de l'escaneig)
                 GoogleSettingsModal.tsx
                 PeopleGroupManagerModal.tsx
             tech_sheets/
+                TechSheetField.tsx
                 TechSheetForm.tsx
+                TechSheetSection.tsx
             ui/
                 Modal.tsx
         contexts/

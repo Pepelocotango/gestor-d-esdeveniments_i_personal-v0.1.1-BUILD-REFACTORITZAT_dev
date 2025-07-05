@@ -77,8 +77,6 @@ export const useEventDataManager = (
   }, [markUnsaved]);
   
   const updateEventFrame = useCallback((updatedEventFrame: EventFrame) => {
-    // Assegurem que la fitxa tècnica existeix en actualitzar.
-    // Això "cura" els EventFrames antics que es carreguen sense aquesta propietat.
     if (!updatedEventFrame.techSheet) {
       console.log(`Generant fitxa tècnica per a l'esdeveniment antic: ${updatedEventFrame.name}`);
       updatedEventFrame.techSheet = createDefaultTechSheet(updatedEventFrame);
@@ -281,14 +279,17 @@ markUnsaved();
 
     const loadedEventFrames: EventFrame[] = (data.eventFrames || []).map((efExport: EventFrameForExport) => {
       const defaultTechSheet = createDefaultTechSheet(efExport);
+      // <<< LÒGICA DE CURACIÓ AUTOMÀTICA >>>
+      // Fusiona la fitxa existent (si n'hi ha) amb la per defecte.
+      // Això assegura que els esdeveniments antics rebin la fitxa
+      // i que els que ja en tenien rebin els camps nous que s'hagin afegit.
+      const finalTechSheet = { ...defaultTechSheet, ...efExport.techSheet };
+
       return {
         ...efExport,
         assignments: [],
         personnelComplete: efExport.personnelComplete || false,
-        // Curació de TechSheet: si no existeix o li falten camps, es crea/completa.
-        techSheet: efExport.techSheet
-          ? { ...defaultTechSheet, ...efExport.techSheet }
-          : defaultTechSheet,
+        techSheet: finalTechSheet,
       };
     });
 

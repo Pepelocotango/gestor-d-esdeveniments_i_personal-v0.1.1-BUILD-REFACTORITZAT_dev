@@ -202,6 +202,8 @@ const { eventFrames, googleEvents, peopleGroups, getPersonGroupById, getEventFra
     }
   }, [currentFilterHighlight, setCurrentFilterHighlight, expandedEventFrameIds]);
 
+  // Estat per l'ordre de la llista
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const filteredAndSortedEventFrames = useMemo(() => {
     let frames = [...eventFrames];
     if (filterUIEventFrame) frames = frames.filter(ef => ef.id === filterUIEventFrame);
@@ -222,8 +224,11 @@ const { eventFrames, googleEvents, peopleGroups, getPersonGroupById, getEventFra
       if (localFilterUIPerson) frames = frames.filter(ef => ef.assignments.some(a => a.personGroupId === localFilterUIPerson));
       if (filterDate) frames = frames.filter(ef => new Date(ef.startDate) <= new Date(filterDate) && new Date(ef.endDate) >= new Date(filterDate));
     }
-    return frames.sort((a,b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
-  }, [eventFrames, filterText, filterPlace, filterStatus, filterDate, localFilterUIPerson, filterUIEventFrame, getPersonGroupById]);
+    return frames.sort((a,b) => sortOrder === 'asc'
+      ? new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+      : new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
+    );
+  }, [eventFrames, filterText, filterPlace, filterStatus, filterDate, localFilterUIPerson, filterUIEventFrame, getPersonGroupById, sortOrder]);
 useEffect(() => {
     const isAnyFilterActive = !!(filterText || filterPlace || filterStatus || filterDate || localFilterUIPerson || filterUIEventFrame);
 
@@ -313,9 +318,16 @@ useEffect(() => {
       </CollapsibleSection>
 
       <CollapsibleSection title={`Llista d'Esdeveniments (${filteredAndSortedEventFrames.length})`} icon={<ListIcon />} defaultOpen={true} id="event-list-section">
-        <div className="mb-4 flex justify-start">
+        <div className="mb-4 flex justify-start items-center gap-4">
             <button onClick={() => openModal('addEventFrame')} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-semibold flex items-center gap-2">
               <PlusIcon className="w-5 h-5"/> Afegir Nou Marc
+            </button>
+            <button
+              onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+              className="flex items-center gap-1 px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-500 text-sm font-medium"
+              title={`Ordena per data ${sortOrder === 'asc' ? 'descendent' : 'ascendent'}`}
+            >
+              {sortOrder === 'asc' ? <ChevronUpIcon className="w-4 h-4" /> : <ChevronDownIcon className="w-4 h-4" />} Ordena per data
             </button>
         </div>
         

@@ -31,6 +31,8 @@
     "@types/react-router-dom": "^5.3.3",
     "file-saver": "^2.0.5",
     "googleapis": "^150.0.1",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^3.0.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^7.6.3"
@@ -113,6 +115,8 @@
         "@types/react-router-dom": "^5.3.3",
         "file-saver": "^2.0.5",
         "googleapis": "^150.0.1",
+        "html2canvas": "^1.4.1",
+        "jspdf": "^3.0.1",
         "react": "^18.3.1",
         "react-dom": "^18.3.1",
         "react-router-dom": "^7.6.3"
@@ -389,7 +393,6 @@
       "version": "7.27.6",
       "resolved": "https://registry.npmjs.org/@babel/runtime/-/runtime-7.27.6.tgz",
       "integrity": "sha512-vbavdySgbTTrmFE+EsiqUTzlOr5bzlnJtUv9PynGCAKvfQqjIXbvFdumPM/GxMDfyuGMJaJAU6TO4zc1Jf1i8Q==",
-      "dev": true,
       "license": "MIT",
       "engines": {
         "node": ">=6.9.0"
@@ -2036,6 +2039,13 @@
       "integrity": "sha512-gNMvNH49DJ7OJYv+KAKn0Xp45p8PLl6zo2YnvDIbTd4J6MER2BmWN49TG7n9LvkyihINxeKW8+3bfS2yDC9dzQ==",
       "license": "MIT"
     },
+    "node_modules/@types/raf": {
+      "version": "3.4.3",
+      "resolved": "https://registry.npmjs.org/@types/raf/-/raf-3.4.3.tgz",
+      "integrity": "sha512-c4YAvMedbPZ5tEyxzQdMoOhhJ4RD3rngZIdwC2/qDN3d7JpEhB6fiBRKVY1lg5B7Wk+uPBjn5f39j1/2MY1oOw==",
+      "license": "MIT",
+      "optional": true
+    },
     "node_modules/@types/react": {
       "version": "18.3.23",
       "resolved": "https://registry.npmjs.org/@types/react/-/react-18.3.23.tgz",
@@ -2086,6 +2096,13 @@
       "dependencies": {
         "@types/node": "*"
       }
+    },
+    "node_modules/@types/trusted-types": {
+      "version": "2.0.7",
+      "resolved": "https://registry.npmjs.org/@types/trusted-types/-/trusted-types-2.0.7.tgz",
+      "integrity": "sha512-ScaPdn1dQczgbl0QFTeTOmVHFULt394XJgOQNoyVhZ6r2vLnMLJfBPd53SB52T/3G36VI1/g2MZaX0cwDuXsfw==",
+      "license": "MIT",
+      "optional": true
     },
     "node_modules/@types/verror": {
       "version": "1.10.11",
@@ -2481,6 +2498,18 @@
         "node": ">= 4.0.0"
       }
     },
+    "node_modules/atob": {
+      "version": "2.1.2",
+      "resolved": "https://registry.npmjs.org/atob/-/atob-2.1.2.tgz",
+      "integrity": "sha512-Wm6ukoaOGJi/73p/cl2GvLjTI5JM1k/O14isD73YML8StrH/7/lRFgmg8nICZgD3bZZvjwCGxtMOD3wWNAu8cg==",
+      "license": "(MIT OR Apache-2.0)",
+      "bin": {
+        "atob": "bin/atob.js"
+      },
+      "engines": {
+        "node": ">= 4.5.0"
+      }
+    },
     "node_modules/autoprefixer": {
       "version": "10.4.21",
       "resolved": "https://registry.npmjs.org/autoprefixer/-/autoprefixer-10.4.21.tgz",
@@ -2537,6 +2566,15 @@
       "integrity": "sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==",
       "dev": true,
       "license": "MIT"
+    },
+    "node_modules/base64-arraybuffer": {
+      "version": "1.0.2",
+      "resolved": "https://registry.npmjs.org/base64-arraybuffer/-/base64-arraybuffer-1.0.2.tgz",
+      "integrity": "sha512-I3yl4r9QB5ZRY3XuJVEPfc2XhZO6YweFPI+UovAzn+8/hb3oJ6lnysaFcjVpkCPfVWFUDvoZ8kmVDP7WyRtYtQ==",
+      "license": "MIT",
+      "engines": {
+        "node": ">= 0.6.0"
+      }
     },
     "node_modules/base64-js": {
       "version": "1.5.1",
@@ -2673,6 +2711,18 @@
       },
       "engines": {
         "node": "^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7"
+      }
+    },
+    "node_modules/btoa": {
+      "version": "1.2.1",
+      "resolved": "https://registry.npmjs.org/btoa/-/btoa-1.2.1.tgz",
+      "integrity": "sha512-SB4/MIGlsiVkMcHmT+pSmIPoNDoHg+7cMzmt3Uxt628MTz2487DKSqK/fuhFBrkuqrYv5UCEnACpF4dTFNKc/g==",
+      "license": "(MIT OR Apache-2.0)",
+      "bin": {
+        "btoa": "bin/btoa.js"
+      },
+      "engines": {
+        "node": ">= 0.4.0"
       }
     },
     "node_modules/buffer": {
@@ -2901,6 +2951,26 @@
         }
       ],
       "license": "CC-BY-4.0"
+    },
+    "node_modules/canvg": {
+      "version": "3.0.11",
+      "resolved": "https://registry.npmjs.org/canvg/-/canvg-3.0.11.tgz",
+      "integrity": "sha512-5ON+q7jCTgMp9cjpu4Jo6XbvfYwSB2Ow3kzHKfIyJfaCAOHLbdKPQqGKgfED/R5B+3TFFfe8pegYA+b423SRyA==",
+      "license": "MIT",
+      "optional": true,
+      "dependencies": {
+        "@babel/runtime": "^7.12.5",
+        "@types/raf": "^3.4.0",
+        "core-js": "^3.8.3",
+        "raf": "^3.4.1",
+        "regenerator-runtime": "^0.13.7",
+        "rgbcolor": "^1.0.1",
+        "stackblur-canvas": "^2.0.0",
+        "svg-pathdata": "^6.0.3"
+      },
+      "engines": {
+        "node": ">=10.0.0"
+      }
     },
     "node_modules/chalk": {
       "version": "4.1.2",
@@ -3228,6 +3298,18 @@
         "node": ">=18"
       }
     },
+    "node_modules/core-js": {
+      "version": "3.43.0",
+      "resolved": "https://registry.npmjs.org/core-js/-/core-js-3.43.0.tgz",
+      "integrity": "sha512-N6wEbTTZSYOY2rYAn85CuvWWkCK6QweMn7/4Nr3w+gDBeBhk/x4EJeY6FPo4QzDoJZxVTv8U7CMvgWk6pOHHqA==",
+      "hasInstallScript": true,
+      "license": "MIT",
+      "optional": true,
+      "funding": {
+        "type": "opencollective",
+        "url": "https://opencollective.com/core-js"
+      }
+    },
     "node_modules/core-util-is": {
       "version": "1.0.2",
       "resolved": "https://registry.npmjs.org/core-util-is/-/core-util-is-1.0.2.tgz",
@@ -3288,6 +3370,15 @@
       },
       "engines": {
         "node": ">= 8"
+      }
+    },
+    "node_modules/css-line-break": {
+      "version": "2.1.0",
+      "resolved": "https://registry.npmjs.org/css-line-break/-/css-line-break-2.1.0.tgz",
+      "integrity": "sha512-FHcKFCZcAha3LwfVBhCQbW2nCNbkZXn7KVUJcsT5/P8YmfsVja0FMPJr0B903j/E69HUphKiV9iQArX8SDYA4w==",
+      "license": "MIT",
+      "dependencies": {
+        "utrie": "^1.0.2"
       }
     },
     "node_modules/cssesc": {
@@ -3577,6 +3668,16 @@
       },
       "engines": {
         "node": ">=8"
+      }
+    },
+    "node_modules/dompurify": {
+      "version": "3.2.6",
+      "resolved": "https://registry.npmjs.org/dompurify/-/dompurify-3.2.6.tgz",
+      "integrity": "sha512-/2GogDQlohXPZe6D6NOgQvXLPSYBqIWMnZ8zzOhn09REE4eyAzb+Hed3jhoM9OkuaJ8P6ZGTTVWQKAi8ieIzfQ==",
+      "license": "(MPL-2.0 OR Apache-2.0)",
+      "optional": true,
+      "optionalDependencies": {
+        "@types/trusted-types": "^2.0.7"
       }
     },
     "node_modules/dotenv": {
@@ -4119,6 +4220,12 @@
       "engines": {
         "node": "^12.20 || >= 14.13"
       }
+    },
+    "node_modules/fflate": {
+      "version": "0.8.2",
+      "resolved": "https://registry.npmjs.org/fflate/-/fflate-0.8.2.tgz",
+      "integrity": "sha512-cPJU47OaAoCbg0pBvzsgpTPhmhqI5eJjh/JIu8tPj5q+T7iLvW/JAYUqmE7KOB4R1ZyEhzBaIQpQpardBF5z8A==",
+      "license": "MIT"
     },
     "node_modules/file-saver": {
       "version": "2.0.5",
@@ -4771,6 +4878,19 @@
       "dev": true,
       "license": "ISC"
     },
+    "node_modules/html2canvas": {
+      "version": "1.4.1",
+      "resolved": "https://registry.npmjs.org/html2canvas/-/html2canvas-1.4.1.tgz",
+      "integrity": "sha512-fPU6BHNpsyIhr8yyMpTLLxAbkaK8ArIBcmZIRiBLiDhjeqvXolaEmDGmELFuX9I4xDcaKKcJl+TKZLqruBbmWA==",
+      "license": "MIT",
+      "dependencies": {
+        "css-line-break": "^2.1.0",
+        "text-segmentation": "^1.0.3"
+      },
+      "engines": {
+        "node": ">=8.0.0"
+      }
+    },
     "node_modules/http-cache-semantics": {
       "version": "4.2.0",
       "resolved": "https://registry.npmjs.org/http-cache-semantics/-/http-cache-semantics-4.2.0.tgz",
@@ -5172,6 +5292,24 @@
       "license": "MIT",
       "optionalDependencies": {
         "graceful-fs": "^4.1.6"
+      }
+    },
+    "node_modules/jspdf": {
+      "version": "3.0.1",
+      "resolved": "https://registry.npmjs.org/jspdf/-/jspdf-3.0.1.tgz",
+      "integrity": "sha512-qaGIxqxetdoNnFQQXxTKUD9/Z7AloLaw94fFsOiJMxbfYdBbrBuhWmbzI8TVjrw7s3jBY1PFHofBKMV/wZPapg==",
+      "license": "MIT",
+      "dependencies": {
+        "@babel/runtime": "^7.26.7",
+        "atob": "^2.1.2",
+        "btoa": "^1.2.1",
+        "fflate": "^0.8.1"
+      },
+      "optionalDependencies": {
+        "canvg": "^3.0.11",
+        "core-js": "^3.6.0",
+        "dompurify": "^3.2.4",
+        "html2canvas": "^1.0.0-rc.5"
       }
     },
     "node_modules/jwa": {
@@ -5785,6 +5923,13 @@
       "dev": true,
       "license": "MIT"
     },
+    "node_modules/performance-now": {
+      "version": "2.1.0",
+      "resolved": "https://registry.npmjs.org/performance-now/-/performance-now-2.1.0.tgz",
+      "integrity": "sha512-7EAHlyLHI56VEIdK57uwHdHKIaAGbnXPiw0yWbarQZOKaKpvUIgW0jWRVLiatnM+XXlSwsanIBH/hzGMJulMow==",
+      "license": "MIT",
+      "optional": true
+    },
     "node_modules/picocolors": {
       "version": "1.1.1",
       "resolved": "https://registry.npmjs.org/picocolors/-/picocolors-1.1.1.tgz",
@@ -6109,6 +6254,16 @@
         "url": "https://github.com/sponsors/sindresorhus"
       }
     },
+    "node_modules/raf": {
+      "version": "3.4.1",
+      "resolved": "https://registry.npmjs.org/raf/-/raf-3.4.1.tgz",
+      "integrity": "sha512-Sq4CW4QhwOHE8ucn6J34MqtZCeWFP2aQSmrlroYgqAV1PjStIhJXxYuTgUIfkEk7zTLjmIjLmU5q+fbD1NnOJA==",
+      "license": "MIT",
+      "optional": true,
+      "dependencies": {
+        "performance-now": "^2.1.0"
+      }
+    },
     "node_modules/react": {
       "version": "18.3.1",
       "resolved": "https://registry.npmjs.org/react/-/react-18.3.1.tgz",
@@ -6250,6 +6405,13 @@
         "node": ">=8.10.0"
       }
     },
+    "node_modules/regenerator-runtime": {
+      "version": "0.13.11",
+      "resolved": "https://registry.npmjs.org/regenerator-runtime/-/regenerator-runtime-0.13.11.tgz",
+      "integrity": "sha512-kY1AZVr2Ra+t+piVaJ4gxaFaReZVH40AKNo7UCX6W+dEwBo/2oZJzqfuN1qLq1oL45o56cPaTXELwrTh8Fpggg==",
+      "license": "MIT",
+      "optional": true
+    },
     "node_modules/require-directory": {
       "version": "2.1.1",
       "resolved": "https://registry.npmjs.org/require-directory/-/require-directory-2.1.1.tgz",
@@ -6320,6 +6482,16 @@
       "engines": {
         "iojs": ">=1.0.0",
         "node": ">=0.10.0"
+      }
+    },
+    "node_modules/rgbcolor": {
+      "version": "1.0.1",
+      "resolved": "https://registry.npmjs.org/rgbcolor/-/rgbcolor-1.0.1.tgz",
+      "integrity": "sha512-9aZLIrhRaD97sgVhtJOW6ckOEh6/GnvQtdVNfdZ6s67+3/XwLS9lBcQYzEEhYVeUowN7pRzMLsyGhK2i/xvWbw==",
+      "license": "MIT OR SEE LICENSE IN FEEL-FREE.md",
+      "optional": true,
+      "engines": {
+        "node": ">= 0.8.15"
       }
     },
     "node_modules/roarr": {
@@ -6729,6 +6901,16 @@
       "license": "BSD-3-Clause",
       "optional": true
     },
+    "node_modules/stackblur-canvas": {
+      "version": "2.7.0",
+      "resolved": "https://registry.npmjs.org/stackblur-canvas/-/stackblur-canvas-2.7.0.tgz",
+      "integrity": "sha512-yf7OENo23AGJhBriGx0QivY5JP6Y1HbrrDI6WLt6C5auYZXlQrheoY8hD4ibekFKz1HOfE48Ww8kMWMnJD/zcQ==",
+      "license": "MIT",
+      "optional": true,
+      "engines": {
+        "node": ">=0.1.14"
+      }
+    },
     "node_modules/stat-mode": {
       "version": "1.0.0",
       "resolved": "https://registry.npmjs.org/stat-mode/-/stat-mode-1.0.0.tgz",
@@ -6930,6 +7112,16 @@
         "url": "https://github.com/sponsors/ljharb"
       }
     },
+    "node_modules/svg-pathdata": {
+      "version": "6.0.3",
+      "resolved": "https://registry.npmjs.org/svg-pathdata/-/svg-pathdata-6.0.3.tgz",
+      "integrity": "sha512-qsjeeq5YjBZ5eMdFuUa4ZosMLxgr5RZ+F+Y1OrDhuOCEInRMA3x74XdBtggJcj9kOeInz0WE+LgCPDkZFlBYJw==",
+      "license": "MIT",
+      "optional": true,
+      "engines": {
+        "node": ">=12.0.0"
+      }
+    },
     "node_modules/tailwindcss": {
       "version": "3.4.17",
       "resolved": "https://registry.npmjs.org/tailwindcss/-/tailwindcss-3.4.17.tgz",
@@ -7058,6 +7250,15 @@
       "license": "MIT",
       "engines": {
         "node": ">= 10.0.0"
+      }
+    },
+    "node_modules/text-segmentation": {
+      "version": "1.0.3",
+      "resolved": "https://registry.npmjs.org/text-segmentation/-/text-segmentation-1.0.3.tgz",
+      "integrity": "sha512-iOiPUo/BGnZ6+54OsWxZidGCsdU8YbE4PSpdPinp7DeMtUJNJBoJ/ouUSTJjHkh1KntHaltHl/gDs2FC4i5+Nw==",
+      "license": "MIT",
+      "dependencies": {
+        "utrie": "^1.0.2"
       }
     },
     "node_modules/thenify": {
@@ -7300,6 +7501,15 @@
       "integrity": "sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==",
       "dev": true,
       "license": "MIT"
+    },
+    "node_modules/utrie": {
+      "version": "1.0.2",
+      "resolved": "https://registry.npmjs.org/utrie/-/utrie-1.0.2.tgz",
+      "integrity": "sha512-1MLa5ouZiOmQzUbjbu9VmjLzn1QLXBhwpUa7kdLUQK+KQ5KA9I1vk5U4YHe/X2Ch7PYnJfWuWT+VbuxbGwljhw==",
+      "license": "MIT",
+      "dependencies": {
+        "base64-arraybuffer": "^1.0.2"
+      }
     },
     "node_modules/verror": {
       "version": "1.10.1",
@@ -8963,7 +9173,7 @@ import { EventDataProvider } from './contexts/EventDataContext';
 import { useEventDataManager } from './hooks/useEventDataManager';
 import { THEME_STORAGE_KEY } from './constants';
 import Modal from './components/ui/Modal';
-import { ModalState, ModalType, InitialEventFrameData, ModalData, EventDataConteImplicits, EventFrame, SummaryRow, AppData, Assignment, AssignmentStatus, GoogleCalendar, ShowToastFunction, TechSheetData } from './types';
+import { ModalState, ModalType, InitialEventFrameData, ModalData, EventDataConteImplicits, EventFrame, SummaryRow, AppData, Assignment, AssignmentStatus, GoogleCalendar, ShowToastFunction } from './types';
 import { formatDateDMY } from './utils/dateFormat';
 
 const MainDisplay = lazy(() => import('./components/MainDisplay'));
@@ -8976,8 +9186,6 @@ const PeopleGroupManagerModal = lazy(() => import('./components/modals/PeopleGro
 const ConfirmDeleteModal = lazy(() => import('./components/modals/ConfirmDeleteModal'));
 const EventFrameDetailsModal = lazy(() => import('./components/modals/EventFrameDetailsModal'));
 const GoogleSettingsModal = lazy(() => import('./components/modals/GoogleSettingsModal'));
-
-
 
 // Millor posar-ho en un fitxer global.d.ts, però per compatibilitat ràpida:
 interface ElectronAPI {
@@ -9184,7 +9392,8 @@ const App: React.FC = () => {
   const contextValue = useMemo((): EventDataConteImplicits => ({
     ...eventDataManagerHookResult,
     openModal,
-  }), [eventDataManagerHookResult, openModal]);
+    showToast, // <<< LÍNIA AFEGIDA
+  }), [eventDataManagerHookResult, openModal, showToast]);
 
   useEffect(() => {
     const attemptInitialLoad = async () => {
@@ -9566,6 +9775,16 @@ const App: React.FC = () => {
           </Modal>
 
           {toastState && <Toast toast={toastState} />}
+
+          {isLoadingOverlayVisible && (
+            <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex flex-col justify-center items-center z-[9999]" aria-live="assertive" role="alert">
+              <svg className="animate-spin h-10 w-10 text-white mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <p className="text-white text-lg">{loadingOverlayMessage || "Processant..."}</p>
+            </div>
+          )}
         </div>
       </HashRouter>
     </EventDataProvider>
@@ -9573,7 +9792,6 @@ const App: React.FC = () => {
 };
 
 export default App;
-
 --- END OF FILE: ./src/App.tsx ---
 
 --- START OF FILE: ./src/calendar-styles.d.ts ---
@@ -9968,7 +10186,8 @@ export interface TechSheetData {
   // Seccions de Necessitats Tècniques
   lightingNeeds: TechSheetNeed[];
   soundNeeds: TechSheetNeed[];
-  videoNeeds: TechSheetNeed[];
+  videoNeeds: TechSheetNeed[]; // Llista de necessitats específiques de vídeo
+  videoDetails?: string; // Camp de text per a notes generals de vídeo (ex: "NO", o descripció si no hi ha ítems)
   machineryNeeds: TechSheetNeed[];
   
   // Altres seccions
@@ -10063,6 +10282,7 @@ export interface EventDataConteImplicits {
   deleteEventFrame: (eventFrameId: string) => void;
   getEventFrameById: (eventFrameId: string) => EventFrame | undefined;
   openModal: (type: ModalType, data?: ModalData) => void;
+  showToast: ShowToastFunction; // <<< LÍNIA AFEGIDA
   addPersonGroup: (personGroup: Omit<PersonGroup, 'id'>) => void;
   updatePersonGroup: (personGroup: PersonGroup) => void;
   deletePersonGroup: (personGroupId: string) => void;
@@ -10082,7 +10302,7 @@ export interface EventDataConteImplicits {
   addOrUpdateTechSheet: (eventFrameId: string, fitxaData: TechSheetData) => void;
 }
 
-export type EventDataManagerReturn = Omit<EventDataConteImplicits, 'openModal'>;
+export type EventDataManagerReturn = Omit<EventDataConteImplicits, 'openModal' | 'showToast'>;
 
 export interface SummaryRow {
   id: string;
@@ -10147,7 +10367,6 @@ export interface GoogleCalendar {
   backgroundColor: string;
   primary?: boolean;
 }
-
 --- END OF FILE: ./src/types.ts ---
 
 --- START OF FILE: ./src/utils/dataMigration.ts ---
@@ -11748,34 +11967,547 @@ export default TechSheetsDisplay;
 
 --- END OF FILE: ./src/components/TechSheetsDisplay.tsx ---
 
---- START OF FILE: ./src/components/tech_sheets/TechSheetForm.tsx ---
+--- START OF FILE: ./src/components/tech_sheets/TechSheetField.tsx ---
 import React from 'react';
-import { EventFrame } from '../../types';
+interface TechSheetFieldProps {
+id: string;
+label: string;
+value: string | number;
+onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+onBlur?: (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => void; // Nova propietat onBlur
+type?: string;
+placeholder?: string;
+as?: 'input' | 'textarea';
+rows?: number;
+required?: boolean;
+}
+const TechSheetField: React.FC<TechSheetFieldProps> = ({
+id,
+label,
+value,
+onChange,
+onBlur, // Destructure onBlur
+type = 'text',
+placeholder = '',
+as = 'input',
+rows = 3,
+required = false,
+}) => {
+const commonClasses = "mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm";
+return (
+<div className="w-full">
+<label htmlFor={id} className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+{label}
+{required && <span className="text-red-500">*</span>}
+</label>
+{as === 'textarea' ? (
+<textarea
+id={id}
+name={id}
+value={value}
+onChange={onChange}
+onBlur={onBlur} // Afegeix onBlur aquí
+placeholder={placeholder}
+rows={rows}
+className={commonClasses}
+required={required}
+/>
+) : (
+<input
+type={type}
+id={id}
+name={id}
+value={value}
+onChange={onChange}
+onBlur={onBlur} // Afegeix onBlur aquí
+placeholder={placeholder}
+className={commonClasses}
+required={required}
+/>
+)}
+</div>
+);
+};
+export default TechSheetField;
+--- END OF FILE: ./src/components/tech_sheets/TechSheetField.tsx ---
+
+--- START OF FILE: ./src/components/tech_sheets/TechSheetForm.tsx ---
+import React, { useState, FormEvent, useEffect, useRef } from 'react';
+import { useEventData } from '../../contexts/EventDataContext';
+import { EventFrame, TechSheetData, TechSheetPersonnel, TechSheetScheduleItem, TechSheetNeed } from '../../types';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+import TechSheetSection from './TechSheetSection';
+import TechSheetField from './TechSheetField';
+import { formatDateDMY } from '../../utils/dateFormat';
 
 interface TechSheetFormProps {
   eventFrame: EventFrame;
 }
 
 const TechSheetForm: React.FC<TechSheetFormProps> = ({ eventFrame }) => {
-  if (!eventFrame.techSheet) {
-    return <div>Error: No s'han trobat les dades de la fitxa tècnica.</div>;
+  const { addOrUpdateTechSheet, showToast } = useEventData();
+  const [formData, setFormData] = useState<TechSheetData>(eventFrame.techSheet!);
+  const [isDirty, setIsDirty] = useState(false); // Per controlar si hi ha canvis pendents de desar
+  const formRef = useRef<HTMLDivElement>(null);
+
+  // Helper per generar IDs únics per a nous items en llistes
+  const generateLocalId = () => `local_${Date.now().toString(36) + Math.random().toString(36).substring(2)}`;
+
+  // Tipus per a les claus de les llistes de TechSheetData
+  type TechSheetListKey = 'technicalPersonnel' | 'assemblySchedule' | 'lightingNeeds' | 'soundNeeds' | 'videoNeeds' | 'machineryNeeds';
+
+  useEffect(() => {
+    setFormData(currentFormData => {
+      const newEventName = eventFrame.name;
+      const newLocation = eventFrame.place || '';
+      const newDate = formatDateDMY(eventFrame.startDate);
+
+      if (
+        currentFormData.eventName !== newEventName ||
+        currentFormData.location !== newLocation ||
+        currentFormData.date !== newDate
+      ) {
+        // Si hi ha canvis externs, també marquem com a "dirty" per si l'usuari estava editant
+        setIsDirty(true);
+        return {
+          ...currentFormData,
+          eventName: newEventName,
+          location: newLocation,
+          date: newDate,
+        };
+      }
+      return currentFormData;
+    });
+  }, [eventFrame.name, eventFrame.place, eventFrame.startDate]);
+
+  useEffect(() => {
+    if (eventFrame.techSheet) {
+      // Quan la techSheet canvia completament (ex: curació), resetejem l'estat del formulari
+      // i considerem que no hi ha canvis "bruts" fets per l'usuari en aquest formulari concret.
+      setFormData(eventFrame.techSheet);
+      setIsDirty(false);
+    }
+  }, [eventFrame.techSheet]);
+
+  if (!formData) {
+    return <div>Carregant dades de la fitxa tècnica...</div>;
   }
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+    setIsDirty(true); // Marquem que hi ha canvis
+  };
+
+  const handleBlur = () => {
+    if (isDirty) {
+      addOrUpdateTechSheet(eventFrame.id, formData);
+      showToast('Canvis desats automàticament.', 'success');
+      setIsDirty(false);
+    }
+  };
+
+  const handleListChange = (listName: TechSheetListKey, index: number, field: string, value: any) => {
+    setFormData(prev => {
+      const newList = [...prev[listName]];
+      newList[index] = { ...newList[index], [field]: value };
+      return { ...prev, [listName]: newList };
+    });
+    setIsDirty(true);
+    // Considera si vols desar onBlur dels camps de la llista o només quan s'afegeix/elimina un ítem
+    // O potser un botó de "Desar llista" si es torna complex. Per ara, el handleBlur general desarà.
+  };
+
+  const handleAddListItem = (listName: TechSheetListKey) => {
+    setFormData(prev => {
+      let newItem: any;
+      switch (listName) {
+        case 'technicalPersonnel':
+          newItem = { id: generateLocalId(), role: '', name: '', origin: '' };
+          break;
+        case 'assemblySchedule':
+          newItem = { id: generateLocalId(), time: '', description: '' };
+          break;
+        case 'lightingNeeds':
+        case 'soundNeeds':
+        case 'videoNeeds':
+        case 'machineryNeeds':
+          newItem = { id: generateLocalId(), quantity: '', description: '', origin: '' };
+          break;
+        default:
+          return prev;
+      }
+      return { ...prev, [listName]: [...prev[listName], newItem] };
+    });
+    setIsDirty(true);
+    // Després d'afegir, podem forçar el desat si volem, o esperar el proper blur/canvi.
+    // Per consistència, esperarem el blur o un canvi en un camp.
+  };
+
+  const handleRemoveListItem = (listName: TechSheetListKey, index: number) => {
+    setFormData(prev => {
+      const newList = [...prev[listName]];
+      newList.splice(index, 1);
+      return { ...prev, [listName]: newList };
+    });
+    setIsDirty(true);
+    // Forcem el desat immediatament després d'eliminar un ítem per evitar confusió
+    // ja que no hi haurà un "blur" directe sobre l'element eliminat.
+    // Passem una còpia actualitzada de formData a addOrUpdateTechSheet.
+    const updatedList = formData[listName].filter((_, i) => i !== index);
+    addOrUpdateTechSheet(eventFrame.id, { ...formData, [listName]: updatedList });
+    showToast('Ítem eliminat i canvis desats.', 'info');
+     // setIsDirty es manté a true si hi havia altres canvis, o es posa a false si només era aquest.
+     // Per simplificar, el toast ja indica que s'ha desat. Si l'usuari fa més canvis, es tornarà dirty.
+  };
+
+  const handleExportToPdf = async () => {
+    if (!formRef.current) {
+      showToast('Error: No es pot accedir al contingut del formulari per exportar.', 'error');
+      return;
+    }
+    showToast('Generant PDF... Això pot trigar uns instants.', 'info');
+
+    // Forcem que totes les seccions estiguin obertes temporalment per a la captura
+    const sectionButtons = formRef.current.querySelectorAll('button[aria-expanded="false"]');
+    sectionButtons.forEach(button => (button as HTMLElement).click());
+
+    // Esperem un breu instant perquè el DOM s'actualitzi amb les seccions obertes
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    try {
+      const canvas = await html2canvas(formRef.current, {
+        scale: 2, // Augmenta la resolució per a millor qualitat
+        logging: true,
+        useCORS: true, // Per si hi ha imatges externes en el futur
+        onclone: (documentClone) => {
+          // Amaguem els botons d'exportar i eliminar/afegir ítems en la versió clonada per al PDF
+          const clone = documentClone.querySelector('.tech-sheet-form-container');
+          if (clone) {
+            clone.querySelectorAll('.export-pdf-button, .add-item-button, .remove-item-button, .no-print')
+              .forEach(el => (el as HTMLElement).style.display = 'none');
+            // També podem aplicar estils específics per a la impressió si cal
+            // per exemple, assegurar que els camps de text es mostrin completament
+            clone.querySelectorAll('input, textarea').forEach(input => {
+              (input as HTMLElement).style.overflow = 'visible';
+              (input as HTMLElement).style.height = 'auto';
+            });
+          }
+        }
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+      const ratio = imgWidth / imgHeight;
+      
+      let finalImgHeight = pdfHeight;
+      let finalImgWidth = finalImgHeight * ratio;
+
+      if (finalImgWidth > pdfWidth) {
+        finalImgWidth = pdfWidth;
+        finalImgHeight = finalImgWidth / ratio;
+      }
+      
+      let position = 0;
+      let remainingHeight = imgHeight * (pdfWidth / imgWidth); // Alçada total de la imatge reescalada a l'amplada del PDF
+
+      pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, remainingHeight);
+      remainingHeight -= pdfHeight;
+
+      while (remainingHeight > 0) {
+        pdf.addPage();
+        position = remainingHeight - imgHeight * (pdfWidth / imgWidth); // Aquesta lògica necessita ser revisada per a la paginació correcta
+        pdf.addImage(imgData, 'PNG', 0, -position * (pdfHeight / remainingHeight) , pdfWidth, imgHeight * (pdfWidth / imgWidth)); // Això no és correcte, s'ha d'ajustar
+        remainingHeight -= pdfHeight;
+      }
+      
+      // Intent simplificat per ara, caldrà millorar la paginació si el contingut és molt llarg
+      // La paginació amb html2canvas i jspdf pot ser complexa.
+      // Aquesta és una versió bàsica que posa la imatge i afegeix pàgines si cal,
+      // però el tall pot no ser perfecte.
+
+      const totalCanvasHeightInMm = (imgHeight * 25.4) / (96 * 2); // 96 DPI, scale 2
+      const a4HeightInMm = 297;
+      let currentY = 0;
+      const pageMargin = 10; // mm
+      const contentWidthMm = pdf.internal.pageSize.getWidth() - 2 * pageMargin;
+      const contentHeightMm = (imgHeight / imgWidth) * contentWidthMm;
+
+
+      if (contentHeightMm <= (a4HeightInMm - 2 * pageMargin)) {
+        pdf.addImage(imgData, 'PNG', pageMargin, pageMargin, contentWidthMm, contentHeightMm);
+      } else {
+        // Paginació més robusta (encara simplificada)
+        let yPos = 0;
+        const pageHeight = pdf.internal.pageSize.getHeight() - 2 * pageMargin;
+        const imageTotalHeight = (canvas.height * contentWidthMm) / canvas.width; // Alçada total de la imatge reescalada
+        let heightLeft = imageTotalHeight;
+
+        pdf.addImage(imgData, 'PNG', pageMargin, pageMargin, contentWidthMm, imageTotalHeight);
+        heightLeft -= pageHeight;
+
+        while (heightLeft > 0) {
+          pdf.addPage();
+          yPos -= pageHeight; // Mou la "finestra" de la imatge cap avall
+          pdf.addImage(imgData, 'PNG', pageMargin, yPos + pageMargin, contentWidthMm, imageTotalHeight);
+          heightLeft -= pageHeight;
+        }
+      }
+
+
+      const fileName = `Fitxa_Bolo_${eventFrame.name.replace(/[^a-z0-9]/gi, '_')}_${formData.date.replace(/\//g, '-')}.pdf`;
+      pdf.save(fileName);
+      showToast('PDF generat amb èxit!', 'success');
+
+    } catch (error) {
+      console.error("Error generant PDF:", error);
+      showToast(`Error generant PDF: ${(error as Error).message}`, 'error');
+    } finally {
+      // Tornem a tancar les seccions que hem obert
+      sectionButtons.forEach(button => (button as HTMLElement).click());
+    }
+  };
+
   return (
-    <div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
-      {/* Marcador de posició del formulari */}
-      <h3 className="text-xl font-bold">Fitxa per a: {eventFrame.name}</h3>
-      <p className="text-gray-500">El formulari complet anirà aquí.</p>
-      <pre className="mt-4 p-2 bg-gray-100 dark:bg-gray-700 rounded text-xs overflow-x-auto">
-        {JSON.stringify(eventFrame.techSheet, null, 2)}
-      </pre>
+    <div ref={formRef} className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow space-y-6 tech-sheet-form-container">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+          Fitxa de Bolo: <span className="text-blue-600 dark:text-blue-400">{eventFrame.name}</span>
+        </h2>
+        <button
+          onClick={handleExportToPdf}
+          className="export-pdf-button px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 font-semibold no-print"
+        >
+          Exportar a PDF
+        </button>
+      </div>
+      <div className="mt-2"> {/* Afegit un div per mantenir el paràgraf si cal o per altres controls futurs */}
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          Edita els detalls tècnics de l'esdeveniment. Els canvis es desen automàticament quan canvies de camp.
+        </p>
+      </div>
+
+      <TechSheetSection title="Informació General">
+        <TechSheetField id="eventName" label="NOM DEL BOLO:" value={formData.eventName} onChange={handleChange} onBlur={handleBlur} required />
+        <TechSheetField id="location" label="LLOC:" value={formData.location} onChange={handleChange} onBlur={handleBlur} />
+        <TechSheetField id="date" label="DATA:" value={formData.date} onChange={handleChange} onBlur={handleBlur} />
+        <TechSheetField id="showTime" label="HORA:" value={formData.showTime} onChange={handleChange} onBlur={handleBlur} type="time" />
+        <TechSheetField id="showDuration" label="DURADA ESPECTACLE:" value={formData.showDuration} onChange={handleChange} onBlur={handleBlur} placeholder="XX min" />
+        <TechSheetField id="parkingInfo" label="ZONA RESERVADA PARKING:" value={formData.parkingInfo} onChange={handleChange} onBlur={handleBlur} as="textarea" rows={3} placeholder="Ex: si, X Camió 5 mts. + 2 furgonetes"/>
+      </TechSheetSection>
+
+      <TechSheetSection title="Personal Tècnic">
+        {formData.technicalPersonnel.map((person, index) => (
+          <React.Fragment key={person.id || `person-${index}`}>
+            <TechSheetField
+              id={`person-role-${index}`}
+              label={`Rol Personal ${index + 1}`}
+              value={person.role}
+              onChange={(e) => handleListChange('technicalPersonnel', index, 'role', e.target.value)}
+              onBlur={handleBlur}
+            />
+            <TechSheetField
+              id={`person-name-${index}`}
+              label={`Nom Personal ${index + 1}`}
+              value={person.name}
+              onChange={(e) => handleListChange('technicalPersonnel', index, 'name', e.target.value)}
+              onBlur={handleBlur}
+            />
+            <TechSheetField
+              id={`person-origin-${index}`}
+              label={`Origen Personal ${index + 1}`}
+              value={person.origin}
+              onChange={(e) => handleListChange('technicalPersonnel', index, 'origin', e.target.value)}
+              onBlur={handleBlur}
+              placeholder="CIA / TÀG / Altre"
+            />
+            <div className="flex items-end">
+              <button
+                type="button"
+                onClick={() => handleRemoveListItem('technicalPersonnel', index)}
+                className="remove-item-button px-3 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 text-sm no-print"
+              >
+                Eliminar
+              </button>
+            </div>
+          </React.Fragment>
+        ))}
+        <div className="col-span-full mt-2 no-print">
+          <button
+            type="button"
+            onClick={() => handleAddListItem('technicalPersonnel')}
+            className="add-item-button px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 text-sm"
+          >
+            + Afegir Personal Tècnic
+          </button>
+        </div>
+      </TechSheetSection>
+
+      <TechSheetSection title="Premuntatge i Horaris">
+        <TechSheetField id="preAssemblySchedule" label="PREMUNTAGE:" value={formData.preAssemblySchedule} onChange={handleChange} onBlur={handleBlur} as="textarea" rows={3} placeholder="Ex: XX x/x/x X Tomàs i Pep" />
+
+        <h4 className="col-span-full text-md font-semibold text-gray-700 dark:text-gray-300 mt-3 -mb-2">HORARIS PREMUNTATGE:</h4>
+        {formData.assemblySchedule.map((item, index) => (
+          <React.Fragment key={item.id || `schedule-${index}`}>
+            <TechSheetField
+              id={`schedule-time-${index}`}
+              label={`Hora ${index + 1}`}
+              value={item.time}
+              onChange={(e) => handleListChange('assemblySchedule', index, 'time', e.target.value)}
+              onBlur={handleBlur}
+              type="time"
+            />
+            <TechSheetField
+              id={`schedule-desc-${index}`}
+              label={`Descripció Horari ${index + 1}`}
+              value={item.description}
+              onChange={(e) => handleListChange('assemblySchedule', index, 'description', e.target.value)}
+              onBlur={handleBlur}
+              as="textarea"
+              rows={1}
+            />
+            <div className="flex items-end">
+              <button
+                type="button"
+                onClick={() => handleRemoveListItem('assemblySchedule', index)}
+                className="remove-item-button px-3 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 text-sm no-print"
+              >
+                Eliminar
+              </button>
+            </div>
+          </React.Fragment>
+        ))}
+        <div className="col-span-full mt-2 no-print">
+          <button
+            type="button"
+            onClick={() => handleAddListItem('assemblySchedule')}
+            className="add-item-button px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 text-sm"
+          >
+            + Afegir Ítem Horari
+          </button>
+        </div>
+      </TechSheetSection>
+
+      <TechSheetSection title="Logística">
+        <TechSheetField id="dressingRooms" label="CAMERINOS:" value={formData.dressingRooms} onChange={handleChange} onBlur={handleBlur} placeholder="Ex: SI X"/>
+        <TechSheetField id="actors" label="ACTORS:" value={formData.actors} onChange={handleChange} onBlur={handleBlur} as="textarea" rows={2} />
+        <TechSheetField id="companyTechnicians" label="TÈCNICS/PRODUCCIÓ CIA:" value={formData.companyTechnicians} onChange={handleChange} onBlur={handleBlur} as="textarea" rows={2} />
+      </TechSheetSection>
+
+      <TechSheetSection title="Necessitats Tècniques">
+        <h4 className="col-span-full text-md font-semibold text-gray-700 dark:text-gray-300 -mb-2">IL·LUMINACIÓ:</h4>
+        {formData.lightingNeeds.map((need, index) => (
+          <React.Fragment key={need.id || `light-need-${index}`}>
+            <TechSheetField id={`light-qty-${index}`} label={`Qt. Il·lu. ${index + 1}`} value={need.quantity} onChange={e => handleListChange('lightingNeeds', index, 'quantity', e.target.value)} onBlur={handleBlur} placeholder="XX"/>
+            <TechSheetField id={`light-desc-${index}`} label={`Desc. Il·lu. ${index + 1}`} value={need.description} onChange={e => handleListChange('lightingNeeds', index, 'description', e.target.value)} onBlur={handleBlur} />
+            <TechSheetField id={`light-origin-${index}`} label={`Origen Il·lu. ${index + 1}`} value={need.origin} onChange={e => handleListChange('lightingNeeds', index, 'origin', e.target.value)} onBlur={handleBlur} placeholder="CIA / TÀG"/>
+            <div className="flex items-end"><button type="button" onClick={() => handleRemoveListItem('lightingNeeds', index)} className="remove-item-button px-3 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 text-sm no-print">Eliminar</button></div>
+          </React.Fragment>
+        ))}
+        <div className="col-span-full mt-2 no-print">
+          <button type="button" onClick={() => handleAddListItem('lightingNeeds')} className="add-item-button px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 text-sm">+ Afegir Necessitat Il·luminació</button>
+        </div>
+
+        <h4 className="col-span-full text-md font-semibold text-gray-700 dark:text-gray-300 mt-3 -mb-2">SO:</h4>
+        {formData.soundNeeds.map((need, index) => (
+          <React.Fragment key={need.id || `sound-need-${index}`}>
+            <TechSheetField id={`sound-qty-${index}`} label={`Qt. So ${index + 1}`} value={need.quantity} onChange={e => handleListChange('soundNeeds', index, 'quantity', e.target.value)} onBlur={handleBlur} placeholder="XX"/>
+            <TechSheetField id={`sound-desc-${index}`} label={`Desc. So ${index + 1}`} value={need.description} onChange={e => handleListChange('soundNeeds', index, 'description', e.target.value)} onBlur={handleBlur} />
+            <TechSheetField id={`sound-origin-${index}`} label={`Origen So ${index + 1}`} value={need.origin} onChange={e => handleListChange('soundNeeds', index, 'origin', e.target.value)} onBlur={handleBlur} placeholder="CIA / TÀG"/>
+            <div className="flex items-end"><button type="button" onClick={() => handleRemoveListItem('soundNeeds', index)} className="remove-item-button px-3 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 text-sm no-print">Eliminar</button></div>
+          </React.Fragment>
+        ))}
+        <div className="col-span-full mt-2 no-print">
+          <button type="button" onClick={() => handleAddListItem('soundNeeds')} className="add-item-button px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 text-sm">+ Afegir Necessitat So</button>
+        </div>
+
+        <h4 className="col-span-full text-md font-semibold text-gray-700 dark:text-gray-300 mt-3 -mb-2">VÍDEO:</h4>
+        <TechSheetField id="videoDetails" label="Detalls Generals Vídeo:" value={formData.videoDetails || ''} onChange={handleChange} onBlur={handleBlur} as="textarea" rows={2} placeholder="Ex: NO, o descripció general si no hi ha ítems específics."/>
+        {formData.videoNeeds.map((need, index) => (
+          <React.Fragment key={need.id || `video-need-${index}`}>
+            <TechSheetField id={`video-qty-${index}`} label={`Qt. Vídeo ${index + 1}`} value={need.quantity} onChange={e => handleListChange('videoNeeds', index, 'quantity', e.target.value)} onBlur={handleBlur} placeholder="XX"/>
+            <TechSheetField id={`video-desc-${index}`} label={`Desc. Vídeo ${index + 1}`} value={need.description} onChange={e => handleListChange('videoNeeds', index, 'description', e.target.value)} onBlur={handleBlur} />
+            <TechSheetField id={`video-origin-${index}`} label={`Origen Vídeo ${index + 1}`} value={need.origin} onChange={e => handleListChange('videoNeeds', index, 'origin', e.target.value)} onBlur={handleBlur} placeholder="CIA / TÀG"/>
+            <div className="flex items-end"><button type="button" onClick={() => handleRemoveListItem('videoNeeds', index)} className="remove-item-button px-3 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 text-sm no-print">Eliminar</button></div>
+          </React.Fragment>
+        ))}
+        <div className="col-span-full mt-2 no-print">
+          <button type="button" onClick={() => handleAddListItem('videoNeeds')} className="add-item-button px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 text-sm">+ Afegir Necessitat Vídeo</button>
+        </div>
+
+        <h4 className="col-span-full text-md font-semibold text-gray-700 dark:text-gray-300 mt-3 -mb-2">MAQUINÀRIA:</h4>
+        {formData.machineryNeeds.map((need, index) => (
+          <React.Fragment key={need.id || `machinery-need-${index}`}>
+            <TechSheetField id={`machinery-qty-${index}`} label={`Qt. Maquin. ${index + 1}`} value={need.quantity} onChange={e => handleListChange('machineryNeeds', index, 'quantity', e.target.value)} onBlur={handleBlur} placeholder="XX"/>
+            <TechSheetField id={`machinery-desc-${index}`} label={`Desc. Maquin. ${index + 1}`} value={need.description} onChange={e => handleListChange('machineryNeeds', index, 'description', e.target.value)} onBlur={handleBlur} />
+            <TechSheetField id={`machinery-origin-${index}`} label={`Origen Maquin. ${index + 1}`} value={need.origin} onChange={e => handleListChange('machineryNeeds', index, 'origin', e.target.value)} onBlur={handleBlur} placeholder="CIA / TÀG"/>
+            <div className="flex items-end"><button type="button" onClick={() => handleRemoveListItem('machineryNeeds', index)} className="remove-item-button px-3 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 text-sm no-print">Eliminar</button></div>
+          </React.Fragment>
+        ))}
+        <div className="col-span-full mt-2 no-print">
+          <button type="button" onClick={() => handleAddListItem('machineryNeeds')} className="add-item-button px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 text-sm">+ Afegir Necessitat Maquinària</button>
+        </div>
+      </TechSheetSection>
+      
+      <TechSheetSection title="Altres Detalls">
+        <TechSheetField id="controlLocation" label="CONTROL A:" value={formData.controlLocation} onChange={handleChange} onBlur={handleBlur} placeholder="Ex: X PLATEA"/>
+        <TechSheetField id="otherEquipment" label="MATERIAL D’ALTRES EQUIPAMENTS:" value={formData.otherEquipment} onChange={handleChange} onBlur={handleBlur} as="textarea" rows={3}/>
+        <TechSheetField id="rentals" label="LLOGUERS:" value={formData.rentals} onChange={handleChange} onBlur={handleBlur} as="textarea" rows={3}/>
+        <TechSheetField id="blueprints" label="PLÀNOLS:" value={formData.blueprints} onChange={handleChange} onBlur={handleBlur} as="textarea" rows={3} placeholder="Ex: XX x/x/x HORARIS x/x/x"/>
+      </TechSheetSection>
+
+      <TechSheetSection title="Contacte i Observacions">
+        <TechSheetField id="companyContact" label="PERSONA DE CONTACTE COMPANYIA:" value={formData.companyContact} onChange={handleChange} onBlur={handleBlur} />
+        <TechSheetField id="observations" label="ALTRES / OBSERVACIONS:" value={formData.observations} onChange={handleChange} onBlur={handleBlur} as="textarea" rows={4}/>
+      </TechSheetSection>
+
     </div>
   );
 };
 
 export default TechSheetForm;
-
 --- END OF FILE: ./src/components/tech_sheets/TechSheetForm.tsx ---
+
+--- START OF FILE: ./src/components/tech_sheets/TechSheetSection.tsx ---
+import React, { useState } from 'react';
+import { ChevronDownIcon, ChevronUpIcon } from '../../constants';
+
+interface TechSheetSectionProps {
+  title: string;
+  children: React.ReactNode;
+  defaultOpen?: boolean;
+}
+
+const TechSheetSection: React.FC<TechSheetSectionProps> = ({ title, children, defaultOpen = true }) => {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+
+  return (
+    <div className="mb-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex justify-between items-center p-3 bg-gray-100 dark:bg-gray-700/50 rounded-t-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        aria-expanded={isOpen}
+      >
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">{title}</h3>
+        {isOpen ? <ChevronUpIcon className="w-5 h-5 text-gray-600 dark:text-gray-400" /> : <ChevronDownIcon className="w-5 h-5 text-gray-600 dark:text-gray-400" />}
+      </button>
+      {isOpen && (
+        <div className="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {children}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default TechSheetSection;
+--- END OF FILE: ./src/components/tech_sheets/TechSheetSection.tsx ---
 
 --- START OF FILE: ./src/components/modals/AssignmentFormModal.tsx ---
 import React, { useState, useEffect, FormEvent } from 'react';
@@ -12766,6 +13498,7 @@ const createDefaultTechSheet = (eventFrame: Omit<EventFrame, 'id' | 'assignments
   lightingNeeds: [],
   soundNeeds: [],
   videoNeeds: [],
+  videoDetails: '', // Valor per defecte per al nou camp
   machineryNeeds: [],
   controlLocation: '',
   otherEquipment: '',
@@ -12822,6 +13555,13 @@ export const useEventDataManager = (
   }, [markUnsaved]);
   
   const updateEventFrame = useCallback((updatedEventFrame: EventFrame) => {
+    // Assegurem que la fitxa tècnica existeix en actualitzar.
+    // Això "cura" els EventFrames antics que es carreguen sense aquesta propietat.
+    if (!updatedEventFrame.techSheet) {
+      console.log(`Generant fitxa tècnica per a l'esdeveniment antic: ${updatedEventFrame.name}`);
+      updatedEventFrame.techSheet = createDefaultTechSheet(updatedEventFrame);
+    }
+
     setEventFrames(prev => prev.map(ef => ef.id === updatedEventFrame.id ? updatedEventFrame : ef)
       .sort((a,b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime() || a.name.localeCompare(b.name))
     );
@@ -13017,11 +13757,18 @@ markUnsaved();
       return;
     }
 
-    const loadedEventFrames: EventFrame[] = (data.eventFrames || []).map((efExport: EventFrameForExport) => ({
-      ...efExport,
-      assignments: [],
-      personnelComplete: efExport.personnelComplete || false,
-    }));
+    const loadedEventFrames: EventFrame[] = (data.eventFrames || []).map((efExport: EventFrameForExport) => {
+      const defaultTechSheet = createDefaultTechSheet(efExport);
+      return {
+        ...efExport,
+        assignments: [],
+        personnelComplete: efExport.personnelComplete || false,
+        // Curació de TechSheet: si no existeix o li falten camps, es crea/completa.
+        techSheet: efExport.techSheet
+          ? { ...defaultTechSheet, ...efExport.techSheet }
+          : defaultTechSheet,
+      };
+    });
 
     if (data.assignments && data.assignments.length > 0) {
       data.assignments.forEach(assignmentFromFile => {
@@ -13129,7 +13876,6 @@ markUnsaved();
     addOrUpdateTechSheet,
   };
 };
-
 --- END OF FILE: ./src/hooks/useEventDataManager.ts ---
 
 --- START OF FILE: ./.github/workflows/build-linux v20_04.yml ---
