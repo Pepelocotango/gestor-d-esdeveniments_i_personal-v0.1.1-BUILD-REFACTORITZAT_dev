@@ -72,24 +72,43 @@ Pots carregar aquests fitxers des de l'aplicació utilitzant el botó "Carregar 
 
 ---
 
-### 🆕 Fitxes de Bolo (en desenvolupament)
+### 🆕 NOVETATS: Fitxes de Bolo Dinàmiques i Exportació PDF Professional (v0.3.x)
 
-Des de la versió 0.3.x, s'està implementant una nova funcionalitat per a la **gestió i generació de fitxes tècniques de bolo** per a cada esdeveniment. Aquesta funcionalitat permet:
+A la branca `feat/fitxes-bolo-complet` s'han implementat grans millores a la funcionalitat de fitxes tècniques de bolo:
 
-- Visualitzar i editar una fitxa tècnica associada a cada esdeveniment (si l'esdeveniment és nou o s'ha desat amb la nova versió).
-- Exportar la fitxa de bolo a PDF amb un sol clic, amb format optimitzat per impressió.
-- Gestionar llistes de personal tècnic, horaris de premuntatge, necessitats tècniques (llum, so, vídeo, maquinària, etc.) i informació general de l'esdeveniment.
-- Les dades es desen automàticament quan es canvia de camp.
+- **UI dinàmica i moderna:**
+  - Selectors SI/NO per a camps com Premuntatge, Zona reservada parking, Vídeo, Lloguers, Material d’altres equipaments, amb camps de detall que apareixen només quan cal.
+  - Dropdowns numèrics per a actors i tècnics de companyia, amb text condicionat per noms.
+  - Botons d'eliminació compactes (X) i accions col·locades de forma més intuïtiva (ex: "Actualitza des d'assignacions" al capçalera de secció).
+  - Sincronització automàtica de notes d'assignació i eliminació del camp "Origen Personal".
+- **Exportació a PDF professional:**
+  - El botó "Exportar a PDF" genera una fitxa tècnica compacta, clara i totalment basada en text (no captura de pantalla).
+  - El PDF inclou seccions, taules i formatació optimitzada per impressió professional.
+  - S'han solucionat tots els errors de TypeScript relacionats amb valors indefinits a l'exportació.
+- **Millores d'UX i robustesa:**
+  - Camps i seccions s'actualitzen i desen automàticament.
+  - Validació i persistència de seleccions SI/NO i camps dinàmics.
+  - Tots els canvis s'han documentat i provat amb usuaris reals.
 
-**Arxius principals relacionats amb les fitxes de bolo:**
+**Arxius clau modificats:**
+- `src/components/tech_sheets/TechSheetForm.tsx` (UI, lògica, PDF)
+- `src/components/tech_sheets/TechSheetSection.tsx` (accions de capçalera)
+- `src/types.ts` (nous camps i lògica de fitxa)
 
-- `src/components/TechSheetsDisplay.tsx`: Component principal per seleccionar i mostrar la fitxa de bolo d'un esdeveniment.
-- `src/components/tech_sheets/TechSheetForm.tsx`: Formulari complet d'edició i exportació de la fitxa tècnica.
-- `src/components/tech_sheets/TechSheetSection.tsx` i `TechSheetField.tsx`: Components auxiliars per estructurar i editar seccions i camps de la fitxa.
-- `src/components/Navigation.tsx`: S'ha afegit l'accés a la vista de fitxes de bolo.
-- `src/hooks/useEventDataManager.ts`: Gestió de l'estat i persistència de les fitxes tècniques.
+> Consulta la secció corresponent més avall per a detalls d'ús i estructura.
 
-> **Nota:** Aquesta funcionalitat encara està en desenvolupament. Algunes opcions o seccions poden canviar o ampliar-se en futures versions.
+---
+
+#### 📑 Responsabilitat dels fitxers clau de Fitxes de Bolo
+
+- **`src/components/tech_sheets/TechSheetForm.tsx`**: Formulari principal i lògica de tota la fitxa tècnica. Gestiona l'estat intern, la dinàmica dels camps (SI/NO, dropdowns, camps condicionals), la sincronització de notes, la validació i l'exportació professional a PDF. Tota la interacció de l'usuari amb la fitxa passa per aquest component.
+- **`src/components/tech_sheets/TechSheetSection.tsx`**: Component de presentació que encapsula cada secció de la fitxa (ex: Personal Tècnic, Horaris, Logística...). Permet injectar accions personalitzades a la capçalera de cada secció (com el botó "Actualitza des d'assignacions").
+- **`src/components/tech_sheets/TechSheetField.tsx`**: Component reutilitzable per a camps individuals de la fitxa (inputs, selects, textareas), amb suport per a validació, focus i accessibilitat.
+- **`src/types.ts`**: Defineix totes les interfícies i tipus TypeScript per a la fitxa tècnica, incloent la descripció de cada secció, llistes, camps opcionals i la seva estructura jeràrquica. Qualsevol canvi d'estructura de dades de la fitxa s'ha de reflectir aquí.
+- **`src/hooks/useEventDataManager.ts`**: Gestiona l'estat global de l'aplicació, incloent la persistència i sincronització de les fitxes tècniques amb la resta de dades de l'esdeveniment. S'encarrega de desar automàticament els canvis i d'actualitzar la fitxa quan canvien les assignacions.
+- **`src/components/TechSheetsDisplay.tsx`**: Component contenidor que mostra la fitxa de bolo seleccionada i permet navegar entre fitxes d'esdeveniments. Orquestra la visualització i la selecció de fitxes.
+
+> Amb aquesta arquitectura modular, cada fitxer té una responsabilitat clara i delimitada, facilitant el manteniment, l'escalabilitat i la col·laboració entre desenvolupadors.
 
 ---
 

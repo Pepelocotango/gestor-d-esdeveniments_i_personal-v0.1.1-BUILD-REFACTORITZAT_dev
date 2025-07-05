@@ -30,7 +30,7 @@ const TechSheetForm: React.FC<TechSheetFormProps> = ({ eventFrame }) => {
             id: a.personGroupId,
             role: person?.role || '',
             name: person?.name || '',
-            origin: '',
+            notes: a.notes || '',
           };
         });
       if (confirmedPersonnel.length > 0) {
@@ -162,114 +162,133 @@ const TechSheetForm: React.FC<TechSheetFormProps> = ({ eventFrame }) => {
      // Per simplificar, el toast ja indica que s'ha desat. Si l'usuari fa més canvis, es tornarà dirty.
   };
 
-  const handleExportToPdf = async () => {
-    if (!formRef.current) {
-      showToast('Error: No es pot accedir al contingut del formulari per exportar.', 'error');
-      return;
-    }
-    showToast('Generant PDF... Això pot trigar uns instants.', 'info');
-
-    // Forcem que totes les seccions estiguin obertes temporalment per a la captura
-    const sectionButtons = formRef.current.querySelectorAll('button[aria-expanded="false"]');
-    sectionButtons.forEach(button => (button as HTMLElement).click());
-
-    // Esperem un breu instant perquè el DOM s'actualitzi amb les seccions obertes
-    await new Promise(resolve => setTimeout(resolve, 500));
-
+  const handleExportToPdf = () => {
     try {
-      const canvas = await html2canvas(formRef.current, {
-        scale: 2, // Augmenta la resolució per a millor qualitat
-        logging: true,
-        useCORS: true, // Per si hi ha imatges externes en el futur
-        onclone: (documentClone) => {
-          // Amaguem els botons d'exportar i eliminar/afegir ítems en la versió clonada per al PDF
-          const clone = documentClone.querySelector('.tech-sheet-form-container');
-          if (clone) {
-            clone.querySelectorAll('.export-pdf-button, .add-item-button, .remove-item-button, .no-print')
-              .forEach(el => (el as HTMLElement).style.display = 'none');
-            // També podem aplicar estils específics per a la impressió si cal
-            // per exemple, assegurar que els camps de text es mostrin completament
-            clone.querySelectorAll('input, textarea').forEach(input => {
-              (input as HTMLElement).style.overflow = 'visible';
-              (input as HTMLElement).style.height = 'auto';
-            });
-          }
-        }
-      });
-
-      const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF('p', 'mm', 'a4');
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      const imgWidth = canvas.width;
-      const imgHeight = canvas.height;
-      const ratio = imgWidth / imgHeight;
-      
-      let finalImgHeight = pdfHeight;
-      let finalImgWidth = finalImgHeight * ratio;
-
-      if (finalImgWidth > pdfWidth) {
-        finalImgWidth = pdfWidth;
-        finalImgHeight = finalImgWidth / ratio;
-      }
-      
-      let position = 0;
-      let remainingHeight = imgHeight * (pdfWidth / imgWidth); // Alçada total de la imatge reescalada a l'amplada del PDF
-
-      pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, remainingHeight);
-      remainingHeight -= pdfHeight;
-
-      while (remainingHeight > 0) {
-        pdf.addPage();
-        position = remainingHeight - imgHeight * (pdfWidth / imgWidth); // Aquesta lògica necessita ser revisada per a la paginació correcta
-        pdf.addImage(imgData, 'PNG', 0, -position * (pdfHeight / remainingHeight) , pdfWidth, imgHeight * (pdfWidth / imgWidth)); // Això no és correcte, s'ha d'ajustar
-        remainingHeight -= pdfHeight;
-      }
-      
-      // Intent simplificat per ara, caldrà millorar la paginació si el contingut és molt llarg
-      // La paginació amb html2canvas i jspdf pot ser complexa.
-      // Aquesta és una versió bàsica que posa la imatge i afegeix pàgines si cal,
-      // però el tall pot no ser perfecte.
-
-      const totalCanvasHeightInMm = (imgHeight * 25.4) / (96 * 2); // 96 DPI, scale 2
-      const a4HeightInMm = 297;
-      let currentY = 0;
-      const pageMargin = 10; // mm
-      const contentWidthMm = pdf.internal.pageSize.getWidth() - 2 * pageMargin;
-      const contentHeightMm = (imgHeight / imgWidth) * contentWidthMm;
-
-
-      if (contentHeightMm <= (a4HeightInMm - 2 * pageMargin)) {
-        pdf.addImage(imgData, 'PNG', pageMargin, pageMargin, contentWidthMm, contentHeightMm);
+      let y = 15;
+      const left = 12;
+      const line = (txt: string, size = 11, bold = false) => {
+        pdf.setFontSize(size);
+        pdf.setFont('helvetica', bold ? 'bold' : 'normal');
+        pdf.text(txt, left, y);
+        y += size * 0.5 + 5;
+      };
+      // Títol
+      pdf.setFontSize(18);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text(`Fitxa Tècnica - ${formData.eventName}`, left, y);
+      y += 10;
+      pdf.setFontSize(11);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text(`Lloc: ${formData.location || '-'}`, left, y);
+      y += 6;
+      pdf.text(`Data: ${formData.date || '-'}`, left, y);
+      y += 6;
+      pdf.text(`Hora: ${formData.showTime || '-'}   Durada: ${formData.showDuration || '-'}`, left, y);
+      y += 8;
+      // Secció Personal Tècnic
+      line('Personal Tècnic', 13, true);
+      if (formData.technicalPersonnel.length > 0) {
+        pdf.setFontSize(10);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('Rol', left, y);
+        pdf.text('Nom', left + 40, y);
+        pdf.text('Notes', left + 100, y);
+        y += 5;
+        pdf.setFont('helvetica', 'normal');
+        formData.technicalPersonnel.forEach(p => {
+          pdf.text((p.role ?? '-') + '', left, y);
+          pdf.text((p.name ?? '-') + '', left + 40, y);
+          pdf.text((p.notes ?? '-') + '', left + 100, y, { maxWidth: 90 });
+          y += 5;
+        });
+        y += 2;
       } else {
-        // Paginació més robusta (encara simplificada)
-        let yPos = 0;
-        const pageHeight = pdf.internal.pageSize.getHeight() - 2 * pageMargin;
-        const imageTotalHeight = (canvas.height * contentWidthMm) / canvas.width; // Alçada total de la imatge reescalada
-        let heightLeft = imageTotalHeight;
-
-        pdf.addImage(imgData, 'PNG', pageMargin, pageMargin, contentWidthMm, imageTotalHeight);
-        heightLeft -= pageHeight;
-
-        while (heightLeft > 0) {
-          pdf.addPage();
-          yPos -= pageHeight; // Mou la "finestra" de la imatge cap avall
-          pdf.addImage(imgData, 'PNG', pageMargin, yPos + pageMargin, contentWidthMm, imageTotalHeight);
-          heightLeft -= pageHeight;
-        }
+        pdf.text('Cap personal tècnic definit.', left, y);
+        y += 5;
       }
-
-
+      // Secció Horaris
+      line('Premuntatge i Horaris', 13, true);
+      pdf.setFontSize(10);
+      pdf.text(`Premuntatge: ${(formData.preAssemblySchedule ?? '-') + ''}`, left, y);
+      y += 5;
+      if (Array.isArray(formData.assemblySchedule) && formData.assemblySchedule.length > 0) {
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('Hora', left, y);
+        pdf.text('Descripció', left + 25, y);
+        y += 5;
+        pdf.setFont('helvetica', 'normal');
+        formData.assemblySchedule.forEach(h => {
+          pdf.text((h.time ?? '-') + '', left, y);
+          pdf.text((h.description ?? '-') + '', left + 25, y, { maxWidth: 150 });
+          y += 5;
+        });
+        y += 2;
+      }
+      // Secció Logística
+      line('Logística', 13, true);
+      pdf.setFontSize(10);
+      pdf.text(`Camerinos: ${formData.dressingRooms || '-'}`, left, y);
+      y += 5;
+      pdf.text(`Actors: ${formData.actorsNumber || '-'}  ${formData.actors || ''}`, left, y, { maxWidth: 180 });
+      y += 5;
+      pdf.text(`Tècnics/Producció Cia: ${formData.companyTechniciansNumber || '-'}  ${formData.companyTechnicians || ''}`, left, y, { maxWidth: 180 });
+      y += 7;
+      // Secció Necessitats Tècniques
+      line('Necessitats Tècniques', 13, true);
+      const printNeeds = (title: string, needs: any[]) => {
+        if (needs.length === 0) return;
+        pdf.setFont('helvetica', 'bold');
+        pdf.text(title, left, y);
+        y += 5;
+        pdf.text('Qt.', left, y);
+        pdf.text('Descripció', left + 15, y);
+        pdf.text('Origen', left + 100, y);
+        y += 5;
+        pdf.setFont('helvetica', 'normal');
+        needs.forEach(n => {
+          pdf.text(String(n.quantity || '-'), left, y);
+          pdf.text(n.description || '-', left + 15, y, { maxWidth: 80 });
+          pdf.text(n.origin || '-', left + 100, y, { maxWidth: 60 });
+          y += 5;
+        });
+        y += 2;
+      };
+      printNeeds('Il·luminació', formData.lightingNeeds);
+      printNeeds('So', formData.soundNeeds);
+      if (formData.videoDetails) {
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('Vídeo', left, y);
+        y += 5;
+        pdf.setFont('helvetica', 'normal');
+        pdf.text(`Detalls: ${formData.videoDetails}`, left, y, { maxWidth: 180 });
+        y += 5;
+        printNeeds('', formData.videoNeeds);
+      }
+      printNeeds('Maquinària', formData.machineryNeeds);
+      // Altres detalls
+      line('Altres Detalls', 13, true);
+      pdf.setFontSize(10);
+      pdf.text(`Control a: ${formData.controlLocation || '-'}`, left, y);
+      y += 5;
+      pdf.text(`Material d’altres equipaments: ${formData.otherEquipment || '-'}`, left, y, { maxWidth: 180 });
+      y += 5;
+      pdf.text(`Lloguers: ${formData.rentals || '-'}`, left, y, { maxWidth: 180 });
+      y += 5;
+      pdf.text(`Plànols: ${formData.blueprints || '-'}`, left, y, { maxWidth: 180 });
+      y += 7;
+      // Contacte i Observacions
+      line('Contacte i Observacions', 13, true);
+      pdf.setFontSize(10);
+      pdf.text(`Contacte companyia: ${formData.companyContact || '-'}`, left, y, { maxWidth: 180 });
+      y += 5;
+      pdf.text(`Observacions: ${formData.observations || '-'}`, left, y, { maxWidth: 180 });
+      // Guarda el PDF
       const fileName = `Fitxa_Bolo_${eventFrame.name.replace(/[^a-z0-9]/gi, '_')}_${formData.date.replace(/\//g, '-')}.pdf`;
       pdf.save(fileName);
       showToast('PDF generat amb èxit!', 'success');
-
     } catch (error) {
-      console.error("Error generant PDF:", error);
-      showToast(`Error generant PDF: ${(error as Error).message}`, 'error');
-    } finally {
-      // Tornem a tancar les seccions que hem obert
-      sectionButtons.forEach(button => (button as HTMLElement).click());
+      showToast('Error generant PDF', 'error');
     }
   };
 
@@ -305,7 +324,7 @@ const TechSheetForm: React.FC<TechSheetFormProps> = ({ eventFrame }) => {
             value={formData.parkingInfo?.startsWith('SI') ? 'SI' : (formData.parkingInfo?.startsWith('NO') ? 'NO' : '')}
             onChange={e => {
               const val = e.target.value;
-              setFormData(prev => ({ ...prev, parkingInfo: val === 'NO' ? 'NO' : '' }));
+              setFormData(prev => ({ ...prev, parkingInfo: val === 'NO' ? 'NO' : (val === 'SI' ? 'SI' : '') }));
               setIsDirty(true);
             }}
             className="mt-1 block w-32 pl-3 pr-10 py-1 text-base border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
@@ -330,8 +349,9 @@ const TechSheetForm: React.FC<TechSheetFormProps> = ({ eventFrame }) => {
         </div>
       </TechSheetSection>
 
-      <TechSheetSection title="Personal Tècnic">
-        <div className="flex justify-end mb-2 no-print">
+      <TechSheetSection
+        title="Personal Tècnic"
+        headerActions={
           <button
             type="button"
             onClick={() => {
@@ -344,7 +364,7 @@ const TechSheetForm: React.FC<TechSheetFormProps> = ({ eventFrame }) => {
                     id: a.personGroupId,
                     role: person?.role || '',
                     name: person?.name || '',
-                    origin: '',
+                    notes: a.notes || '',
                   };
                 });
               setFormData(prev => {
@@ -359,11 +379,13 @@ const TechSheetForm: React.FC<TechSheetFormProps> = ({ eventFrame }) => {
               setIsDirty(true);
               showToast('Personal tècnic actualitzat des de les assignacions.', 'success');
             }}
-            className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-xs font-medium shadow"
+            className="ml-2 px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-xs font-medium shadow no-print"
+            title="Actualitza des d'assignacions"
           >
-            Actualitza des d'assignacions
+            <span className="font-bold">⟳</span> <span className="hidden sm:inline">Actualitza des d'assignacions</span>
           </button>
-        </div>
+        }
+      >
         {formData.technicalPersonnel.map((person, index) => (
           <React.Fragment key={person.id || `person-${index}`}> 
             <TechSheetField
@@ -381,20 +403,23 @@ const TechSheetForm: React.FC<TechSheetFormProps> = ({ eventFrame }) => {
               onBlur={handleBlur}
             />
             <TechSheetField
-              id={`person-origin-${index}`}
-              label={`Origen Personal ${index + 1}`}
-              value={person.origin}
-              onChange={(e) => handleListChange('technicalPersonnel', index, 'origin', e.target.value)}
+              id={`person-notes-${index}`}
+              label={`Notes Assignació ${index + 1}`}
+              value={person.notes || ''}
+              onChange={(e) => handleListChange('technicalPersonnel', index, 'notes', e.target.value)}
               onBlur={handleBlur}
-              placeholder="CIA / TÀG / Altre"
+              as="textarea"
+              rows={1}
+              placeholder="Comentaris específics de l'assignació..."
             />
             <div className="flex items-end">
               <button
                 type="button"
                 onClick={() => handleRemoveListItem('technicalPersonnel', index)}
-                className="remove-item-button px-3 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 text-sm no-print"
+                className="remove-item-button text-red-500 hover:bg-red-100 rounded-full w-7 h-7 flex items-center justify-center text-lg no-print"
+                title="Eliminar"
               >
-                Eliminar
+                ×
               </button>
             </div>
           </React.Fragment>
@@ -417,7 +442,7 @@ const TechSheetForm: React.FC<TechSheetFormProps> = ({ eventFrame }) => {
             value={formData.preAssemblySchedule?.startsWith('SI') ? 'SI' : (formData.preAssemblySchedule?.startsWith('NO') ? 'NO' : '')}
             onChange={e => {
               const val = e.target.value;
-              setFormData(prev => ({ ...prev, preAssemblySchedule: val === 'NO' ? 'NO' : '' }));
+              setFormData(prev => ({ ...prev, preAssemblySchedule: val === 'NO' ? 'NO' : (val === 'SI' ? 'SI' : '') }));
               setIsDirty(true);
             }}
             className="mt-1 block w-32 pl-3 pr-10 py-1 text-base border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
@@ -555,7 +580,7 @@ const TechSheetForm: React.FC<TechSheetFormProps> = ({ eventFrame }) => {
             <TechSheetField id={`light-qty-${index}`} label={`Qt. Il·lu. ${index + 1}`} value={need.quantity} onChange={e => handleListChange('lightingNeeds', index, 'quantity', e.target.value)} onBlur={handleBlur} placeholder="XX"/>
             <TechSheetField id={`light-desc-${index}`} label={`Desc. Il·lu. ${index + 1}`} value={need.description} onChange={e => handleListChange('lightingNeeds', index, 'description', e.target.value)} onBlur={handleBlur} />
             <TechSheetField id={`light-origin-${index}`} label={`Origen Il·lu. ${index + 1}`} value={need.origin} onChange={e => handleListChange('lightingNeeds', index, 'origin', e.target.value)} onBlur={handleBlur} placeholder="CIA / TÀG"/>
-            <div className="flex items-end"><button type="button" onClick={() => handleRemoveListItem('lightingNeeds', index)} className="remove-item-button px-3 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 text-sm no-print">Eliminar</button></div>
+            <div className="flex items-end"><button type="button" onClick={() => handleRemoveListItem('lightingNeeds', index)} className="remove-item-button text-red-500 hover:bg-red-100 rounded-full w-7 h-7 flex items-center justify-center text-lg no-print" title="Eliminar">×</button></div>
           </React.Fragment>
         ))}
         <div className="col-span-full mt-2 no-print">
@@ -568,7 +593,7 @@ const TechSheetForm: React.FC<TechSheetFormProps> = ({ eventFrame }) => {
             <TechSheetField id={`sound-qty-${index}`} label={`Qt. So ${index + 1}`} value={need.quantity} onChange={e => handleListChange('soundNeeds', index, 'quantity', e.target.value)} onBlur={handleBlur} placeholder="XX"/>
             <TechSheetField id={`sound-desc-${index}`} label={`Desc. So ${index + 1}`} value={need.description} onChange={e => handleListChange('soundNeeds', index, 'description', e.target.value)} onBlur={handleBlur} />
             <TechSheetField id={`sound-origin-${index}`} label={`Origen So ${index + 1}`} value={need.origin} onChange={e => handleListChange('soundNeeds', index, 'origin', e.target.value)} onBlur={handleBlur} placeholder="CIA / TÀG"/>
-            <div className="flex items-end"><button type="button" onClick={() => handleRemoveListItem('soundNeeds', index)} className="remove-item-button px-3 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 text-sm no-print">Eliminar</button></div>
+            <div className="flex items-end"><button type="button" onClick={() => handleRemoveListItem('soundNeeds', index)} className="remove-item-button text-red-500 hover:bg-red-100 rounded-full w-7 h-7 flex items-center justify-center text-lg no-print" title="Eliminar">×</button></div>
           </React.Fragment>
         ))}
         <div className="col-span-full mt-2 no-print">
@@ -582,7 +607,7 @@ const TechSheetForm: React.FC<TechSheetFormProps> = ({ eventFrame }) => {
             value={formData.videoDetails?.startsWith('SI') ? 'SI' : (formData.videoDetails?.startsWith('NO') ? 'NO' : '')}
             onChange={e => {
               const val = e.target.value;
-              setFormData(prev => ({ ...prev, videoDetails: val === 'NO' ? 'NO' : '' }));
+              setFormData(prev => ({ ...prev, videoDetails: val === 'NO' ? 'NO' : (val === 'SI' ? 'SI' : '') }));
               setIsDirty(true);
             }}
             className="mt-1 block w-32 pl-3 pr-10 py-1 text-base border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
@@ -612,7 +637,7 @@ const TechSheetForm: React.FC<TechSheetFormProps> = ({ eventFrame }) => {
                 <TechSheetField id={`video-qty-${index}`} label={`Qt. Vídeo ${index + 1}`} value={need.quantity} onChange={e => handleListChange('videoNeeds', index, 'quantity', e.target.value)} onBlur={handleBlur} placeholder="XX"/>
                 <TechSheetField id={`video-desc-${index}`} label={`Desc. Vídeo ${index + 1}`} value={need.description} onChange={e => handleListChange('videoNeeds', index, 'description', e.target.value)} onBlur={handleBlur} />
                 <TechSheetField id={`video-origin-${index}`} label={`Origen Vídeo ${index + 1}`} value={need.origin} onChange={e => handleListChange('videoNeeds', index, 'origin', e.target.value)} onBlur={handleBlur} placeholder="CIA / TÀG"/>
-                <div className="flex items-end"><button type="button" onClick={() => handleRemoveListItem('videoNeeds', index)} className="remove-item-button px-3 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 text-sm no-print">Eliminar</button></div>
+                <div className="flex items-end"><button type="button" onClick={() => handleRemoveListItem('videoNeeds', index)} className="remove-item-button text-red-500 hover:bg-red-100 rounded-full w-7 h-7 flex items-center justify-center text-lg no-print" title="Eliminar">×</button></div>
               </React.Fragment>
             ))}
             <div className="col-span-full mt-2 no-print">
@@ -627,7 +652,7 @@ const TechSheetForm: React.FC<TechSheetFormProps> = ({ eventFrame }) => {
             <TechSheetField id={`machinery-qty-${index}`} label={`Qt. Maquin. ${index + 1}`} value={need.quantity} onChange={e => handleListChange('machineryNeeds', index, 'quantity', e.target.value)} onBlur={handleBlur} placeholder="XX"/>
             <TechSheetField id={`machinery-desc-${index}`} label={`Desc. Maquin. ${index + 1}`} value={need.description} onChange={e => handleListChange('machineryNeeds', index, 'description', e.target.value)} onBlur={handleBlur} />
             <TechSheetField id={`machinery-origin-${index}`} label={`Origen Maquin. ${index + 1}`} value={need.origin} onChange={e => handleListChange('machineryNeeds', index, 'origin', e.target.value)} onBlur={handleBlur} placeholder="CIA / TÀG"/>
-            <div className="flex items-end"><button type="button" onClick={() => handleRemoveListItem('machineryNeeds', index)} className="remove-item-button px-3 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 text-sm no-print">Eliminar</button></div>
+            <div className="flex items-end"><button type="button" onClick={() => handleRemoveListItem('machineryNeeds', index)} className="remove-item-button text-red-500 hover:bg-red-100 rounded-full w-7 h-7 flex items-center justify-center text-lg no-print" title="Eliminar">×</button></div>
           </React.Fragment>
         ))}
         <div className="col-span-full mt-2 no-print">
@@ -644,7 +669,7 @@ const TechSheetForm: React.FC<TechSheetFormProps> = ({ eventFrame }) => {
             value={formData.otherEquipment?.startsWith('SI') ? 'SI' : (formData.otherEquipment?.startsWith('NO') ? 'NO' : '')}
             onChange={e => {
               const val = e.target.value;
-              setFormData(prev => ({ ...prev, otherEquipment: val === 'NO' ? 'NO' : '' }));
+              setFormData(prev => ({ ...prev, otherEquipment: val === 'NO' ? 'NO' : (val === 'SI' ? 'SI' : '') }));
               setIsDirty(true);
             }}
             className="mt-1 block w-32 pl-3 pr-10 py-1 text-base border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
@@ -674,7 +699,7 @@ const TechSheetForm: React.FC<TechSheetFormProps> = ({ eventFrame }) => {
             value={formData.rentals?.startsWith('SI') ? 'SI' : (formData.rentals?.startsWith('NO') ? 'NO' : '')}
             onChange={e => {
               const val = e.target.value;
-              setFormData(prev => ({ ...prev, rentals: val === 'NO' ? 'NO' : '' }));
+              setFormData(prev => ({ ...prev, rentals: val === 'NO' ? 'NO' : (val === 'SI' ? 'SI' : '') }));
               setIsDirty(true);
             }}
             className="mt-1 block w-32 pl-3 pr-10 py-1 text-base border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"

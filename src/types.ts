@@ -30,11 +30,13 @@ export interface Assignment {
 }
 
 // <<< NOVES INTERFÍCIES PER A LA FITXA TÈCNICA (Tech Sheet) >>>
+
 export interface TechSheetPersonnel {
   id: string;
   role: string;
   name: string;
-  origin: string; // <<< CANVIAT: Ara és un string lliure
+  /** Notes d'assignació (comentaris específics per a la fitxa tècnica) */
+  notes?: string;
 }
 
 export interface TechSheetScheduleItem {
